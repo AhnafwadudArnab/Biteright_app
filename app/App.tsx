@@ -15,6 +15,8 @@ function App() {
          <Stack.Screen name="DietPlan" component={GenerateDietPlan} />
          <Stack.Screen name="DP_your_Charts" component={DietPlannerItem} />
          <Stack.Screen name="Weekly_chart" component={WeeklyPlans} />
+         
+         <Stack.Screen name="Water_intake" component={WeeklyPlans} />
 
       </Stack.Navigator>
     </NavigationContainer>

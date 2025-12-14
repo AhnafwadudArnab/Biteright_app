@@ -64,7 +64,12 @@ export default function WeeklyPlans() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.headerRow}>
-        <TouchableOpacity style={styles.backBtn}>
+        <TouchableOpacity
+          onPress={() => {
+            router.back();
+          }}
+          style={styles.backBtn}
+        >
           <Ionicons name="arrow-back" size={24} color="#222" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Weekly Plan</Text>

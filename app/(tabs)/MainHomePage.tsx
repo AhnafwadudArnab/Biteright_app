@@ -163,6 +163,36 @@ export default function MainHomePage() {
           </View>
         </View>
 
+        {/* Water Intake */}
+        <Text style={styles.sectionTitle}>Water Intake</Text>
+        <View style={[styles.mealCard, { backgroundColor: "#E0F7FA" }]}>
+          <View style={styles.planRow}>
+            <View style={[styles.iconCircle, { backgroundColor: "#B3E5FC" }]}>
+              <Ionicons name="water" size={24} color="#039BE5" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.planTitle}>Track Your Water</Text>
+              <Text style={styles.planDesc}>
+          Stay hydrated and reach your daily goals!
+              </Text>
+            </View>
+          </View>
+          <View style={styles.planActions}>
+            <TouchableOpacity
+              style={[
+          styles.mealBtnFilled,
+          {
+            backgroundColor: "#4FC3F7",
+            alignItems: "center",
+            justifyContent: "center",
+            flex: 1,
+          },
+              ]}
+            >
+              <Text style={[styles.mealBtnTextFilled, { color: "#fff" }]}>Go</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
         {/* Quick Actions */}
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.quickActionsRow}>
@@ -200,7 +230,9 @@ export default function MainHomePage() {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.fabBtn, styles.fabBtnActive]}
-            onPress={() => {}}
+            onPress={() => {
+              router.push("../Dietplans/gen_dietplans");
+            }}
           >
             <Ionicons name="add" size={22} color="#222" />
           </TouchableOpacity>
@@ -380,7 +412,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    bottom: 50,
+    bottom: 45,
     alignItems: "center",
     zIndex: 100,
     pointerEvents: "box-none",

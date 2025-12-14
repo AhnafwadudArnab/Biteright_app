@@ -3,10 +3,10 @@ import { router, useLocalSearchParams } from "expo-router";
 import React from "react";
 import {
   ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  StyleSheet,
 } from "react-native";
 
 // Default meals template
@@ -59,9 +59,13 @@ export default function DietPlannerItem() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {/* Header */}
+      {/* add space from the top */}
+      <View style={{ height: 20 }} />
       <View style={styles.headerRow}>
         <TouchableOpacity
-          onPress={() => router.push("./(tabs)/MainHomePage")}
+          onPress={() => {
+            router.back();
+          }}
           style={styles.backBtn}
         >
           <Ionicons name="arrow-back" size={24} color="#222" />
@@ -79,9 +83,7 @@ export default function DietPlannerItem() {
       </View>
 
       {/* Date */}
-      <Text style={styles.dateText}>
-        {new Date().toLocaleDateString()}
-      </Text>
+      <Text style={styles.dateText}>{new Date().toLocaleDateString()}</Text>
 
       {/* Week Days */}
       <View style={styles.weekRow}>
@@ -151,7 +153,7 @@ export default function DietPlannerItem() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    padding: 30,
     paddingBottom: 32,
   },
   headerRow: {
