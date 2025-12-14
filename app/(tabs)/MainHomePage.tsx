@@ -166,7 +166,10 @@ export default function MainHomePage() {
         {/* Quick Actions */}
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.quickActionsRow}>
-          <TouchableOpacity style={styles.quickActionBtn}>
+          <TouchableOpacity
+            onPress={() => router.push("../Dietplans/weeklyPlans")}
+            style={styles.quickActionBtn}
+          >
             <Ionicons name="calendar" size={24} color="#2196F3" />
             <Text style={styles.quickActionText}>Weekly Plan</Text>
           </TouchableOpacity>
