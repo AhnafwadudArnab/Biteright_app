@@ -1,26 +1,26 @@
+import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import { Droplets, Edit2, Minus, RotateCcw } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  Animated,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const GLASS_ML = 250;
 
-const WaterIntake = () => {
-  const [waterConsumed, setWaterConsumed] = useState(3);
-  const [waterTarget, setWaterTarget] = useState(8);
+const WaterIntake: React.FC = () => {
+  const [waterConsumed, setWaterConsumed] = useState<number>(3);
+  const [waterTarget, setWaterTarget] = useState<number>(8);
 
-  const percentage = Math.min(
-    (waterConsumed / waterTarget) * 100,
-    100
-  );
+  const percentage = Math.min((waterConsumed / waterTarget) * 100, 100);
 
   const fillAnim = useRef(new Animated.Value(0)).current;
 
@@ -32,13 +32,37 @@ const WaterIntake = () => {
     }).start();
   }, [percentage]);
 
+  // Calculate the fill height in pixels instead of percentage strings
   const fillHeight = fillAnim.interpolate({
     inputRange: [0, 100],
-    outputRange: ["0%", "100%"],
+    outputRange: [0, 180], // 180 is the height of the circle
   });
 
   return (
+    //header container
     <ScrollView style={styles.container}>
+      {/* Header Container */}
+      <TouchableOpacity
+        onPress={() => {
+          router.back();
+        }}
+        style={{ marginTop: 35 }}
+      >
+        <Ionicons name="arrow-back" size={24} color="#222" />
+      </TouchableOpacity>
+      <View style={{ marginBottom: 17, alignItems: "center" }}>
+        <Text
+          style={{
+            fontSize: 28,
+            fontWeight: "700",
+            color: "#0891b2",
+            textAlign: "center",
+          }}
+        >
+          Water Intake
+        </Text>
+      </View>
+
       {/* Main Card */}
       <LinearGradient
         colors={["#22d3ee", "#38bdf8", "#2dd4bf"]}
@@ -58,9 +82,7 @@ const WaterIntake = () => {
             <View style={styles.centerText}>
               <Droplets size={52} color="white" />
               <Text style={styles.count}>{waterConsumed}</Text>
-              <Text style={styles.subCount}>
-                / {waterTarget} glasses
-              </Text>
+              <Text style={styles.subCount}>/ {waterTarget} glasses</Text>
             </View>
           </View>
         </View>
@@ -71,8 +93,7 @@ const WaterIntake = () => {
             : `${waterTarget - waterConsumed} more to go`}
         </Text>
         <Text style={styles.mlText}>
-          ≈ {waterConsumed * GLASS_ML}ml /{" "}
-          {waterTarget * GLASS_ML}ml
+          ≈ {waterConsumed * GLASS_ML}ml / {waterTarget * GLASS_ML}ml
         </Text>
       </LinearGradient>
 
@@ -80,11 +101,7 @@ const WaterIntake = () => {
       <View style={styles.actions}>
         <Pressable
           style={styles.addBtn}
-          onPress={() =>
-            setWaterConsumed((p) =>
-              Math.min(p + 1, waterTarget)
-            )
-          }
+          onPress={() => setWaterConsumed((p) => Math.min(p + 1, waterTarget))}
         >
           <Droplets size={20} color="#0e7490" />
           <Text style={styles.addText}>Add Water</Text>
@@ -92,9 +109,7 @@ const WaterIntake = () => {
 
         <Pressable
           style={styles.removeBtn}
-          onPress={() =>
-            setWaterConsumed((p) => Math.max(p - 1, 0))
-          }
+          onPress={() => setWaterConsumed((p) => Math.max(p - 1, 0))}
         >
           <Minus size={20} color="#4b5563" />
           <Text style={styles.removeText}>Remove</Text>
@@ -108,11 +123,8 @@ const WaterIntake = () => {
           <Edit2 size={16} color="#0891b2" />
         </View>
         <Text style={styles.goalText}>
-          Current goal:{" "}
-          <Text style={styles.bold}>
-            {waterTarget} glasses
-          </Text>{" "}
-          ({waterTarget * GLASS_ML}ml)
+          Current goal: <Text style={styles.bold}>{waterTarget} glasses</Text> (
+          {waterTarget * GLASS_ML}ml)
         </Text>
       </BlurView>
 
@@ -121,16 +133,12 @@ const WaterIntake = () => {
         <Text style={styles.logTitle}>Today&apos;s Log</Text>
 
         {waterConsumed === 0 ? (
-          <Text style={styles.emptyLog}>
-            No water logged yet today
-          </Text>
+          <Text style={styles.emptyLog}>No water logged yet today</Text>
         ) : (
           Array.from({ length: waterConsumed }).map((_, i) => (
             <View key={i} style={styles.logItem}>
               <Droplets size={16} color="#06b6d4" />
-              <Text style={styles.logText}>
-                Glass {i + 1}
-              </Text>
+              <Text style={styles.logText}>Glass {i + 1}</Text>
               <Text style={styles.time}>
                 {8 + i}:{(i * 7) % 60 < 10 ? "0" : ""}
                 {(i * 7) % 60} AM
@@ -141,10 +149,7 @@ const WaterIntake = () => {
       </View>
 
       {/* Reset */}
-      <Pressable
-        style={styles.resetBtn}
-        onPress={() => setWaterConsumed(0)}
-      >
+      <Pressable style={styles.resetBtn} onPress={() => setWaterConsumed(0)}>
         <RotateCcw size={18} />
         <Text style={styles.resetText}>Reset Today</Text>
       </Pressable>

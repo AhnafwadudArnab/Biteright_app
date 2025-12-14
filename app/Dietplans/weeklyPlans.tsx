@@ -75,7 +75,7 @@ export default function WeeklyPlans() {
         <Text style={styles.headerTitle}>Weekly Plan</Text>
         <TouchableOpacity
           onPress={() => {
-            router.push("../Dietplans/gen_dietplans");
+            router.push("../Dietplans/Diet_Planner_Item");
           }}
           style={styles.dayViewBtn}
         >

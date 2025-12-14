@@ -173,23 +173,28 @@ export default function MainHomePage() {
             <View style={{ flex: 1 }}>
               <Text style={styles.planTitle}>Track Your Water</Text>
               <Text style={styles.planDesc}>
-          Stay hydrated and reach your daily goals!
+                Stay hydrated and reach your daily goals!
               </Text>
             </View>
           </View>
           <View style={styles.planActions}>
             <TouchableOpacity
+              onPress={() => {
+                router.push("../WaterFiles/waterintake");
+              }}
               style={[
-          styles.mealBtnFilled,
-          {
-            backgroundColor: "#4FC3F7",
-            alignItems: "center",
-            justifyContent: "center",
-            flex: 1,
-          },
+                styles.mealBtnFilled,
+                {
+                  backgroundColor: "#4FC3F7",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flex: 1,
+                },
               ]}
             >
-              <Text style={[styles.mealBtnTextFilled, { color: "#fff" }]}>Go</Text>
+              <Text style={[styles.mealBtnTextFilled, { color: "#fff" }]}>
+                Go
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
