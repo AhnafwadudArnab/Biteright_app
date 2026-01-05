@@ -9,42 +9,6 @@ import {
   View,
 } from "react-native";
 
-/* Default meals */
-const defaultMeals = [
-  {
-    type: "Breakfast",
-    name: "Oatmeal with berries",
-    kcal: 350,
-    protein: 12,
-    carbs: 58,
-    fat: 8,
-  },
-  {
-    type: "Lunch",
-    name: "Grilled chicken salad",
-    kcal: 420,
-    protein: 35,
-    carbs: 25,
-    fat: 18,
-  },
-  {
-    type: "Snack",
-    name: "Greek yogurt & almonds",
-    kcal: 200,
-    protein: 15,
-    carbs: 12,
-    fat: 10,
-  },
-  {
-    type: "Dinner",
-    name: "Salmon with quinoa",
-    kcal: 550,
-    protein: 40,
-    carbs: 45,
-    fat: 22,
-  },
-];
-
 const mealTemplates = [
   [
     { type: "Breakfast", name: "Oatmeal with berries", kcal: 350, protein: 12, carbs: 58, fat: 8 },
@@ -68,7 +32,6 @@ const mealTemplates = [
 
 function getRandomMeals() {
   const template = mealTemplates[Math.floor(Math.random() * mealTemplates.length)];
-  // Optionally, randomize kcal a bit for demo
   return template.map(meal => ({
     ...meal,
     kcal: meal.kcal + Math.floor(Math.random() * 50),
@@ -91,16 +54,12 @@ const weekDays = Array.from({ length: 7 }).map((_, i) => {
 
 export default function DietPlannerItem() {
   const params = useLocalSearchParams();
-
   const calorieTarget =
     typeof params.calories === "string" ? params.calories : "1520";
-
   const mealCount =
     typeof params.meals === "string" ? parseInt(params.meals, 10) : 4;
-
   const [selectedDay, setSelectedDay] = useState(0);
 
-  // Use weekDays[selectedDay] for the current day's meals
   const meals = weekDays[selectedDay].meals;
   const totalNutrition = meals.reduce(
     (acc, meal) => {
@@ -118,11 +77,7 @@ export default function DietPlannerItem() {
       {/* Header */}
       <View style={{ height: 20 }} />
       <View style={styles.headerRow}>
-        <TouchableOpacity
-          onPress={() => {
-            router.back();
-          }}
-        >
+        <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#222" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Daily Diet Plan</Text>
@@ -166,9 +121,7 @@ export default function DietPlannerItem() {
               <Text style={styles.swapText}>Swap meal</Text>
             </TouchableOpacity>
           </View>
-
           <Text style={styles.mealName}>{meal.name}</Text>
-
           <View style={styles.nutritionRow}>
             <Text style={styles.kcalText}>{meal.kcal} kcal</Text>
             <Text style={styles.nutritionText}>P {meal.protein}g</Text>
@@ -180,22 +133,18 @@ export default function DietPlannerItem() {
       {/* Nutrition Summary */}
       <View style={styles.summaryCard}>
         <Text style={styles.summaryTitle}>Nutrition Summary</Text>
-
         <View style={styles.summaryRow}>
           <Text>Total Calories</Text>
           <Text>{totalNutrition.kcal} kcal</Text>
         </View>
-
         <View style={styles.summaryRow}>
           <Text>Protein</Text>
           <Text>{totalNutrition.protein} g</Text>
         </View>
-
         <View style={styles.summaryRow}>
           <Text>Carbs</Text>
           <Text>{totalNutrition.carbs} g</Text>
         </View>
-
         <View style={styles.summaryRow}>
           <Text>Fat</Text>
           <Text>{totalNutrition.fat} g</Text>
@@ -214,8 +163,6 @@ export default function DietPlannerItem() {
     </ScrollView>
   );
 }
-
-/* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
   container: {
@@ -242,9 +189,16 @@ const styles = StyleSheet.create({
   },
   caloriesCard: {
     backgroundColor: "#e6f7ee",
-    borderRadius: 16,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 10,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 24,
     padding: 16,
     marginBottom: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
   caloriesLabel: {
     color: "#38B36A",
@@ -256,10 +210,16 @@ const styles = StyleSheet.create({
   },
   mealCard: {
     backgroundColor: "#fff",
-    borderRadius: 16,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 12,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 24,
     padding: 16,
     marginBottom: 14,
     elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
   },
   mealHeader: {
     flexDirection: "row",
@@ -293,10 +253,16 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     backgroundColor: "#fff",
-    borderRadius: 16,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 8,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 20,
     padding: 18,
     marginTop: 10,
     elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
   },
   summaryTitle: {
     fontSize: 16,
@@ -330,7 +296,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 16,
-
   },
   dayChip: {
     paddingVertical: 6,

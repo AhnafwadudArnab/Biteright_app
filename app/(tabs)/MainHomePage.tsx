@@ -156,6 +156,9 @@ export default function MainHomePage() {
           </View>
           <View style={styles.planActions}>
             <TouchableOpacity
+            onPress={() => {
+              router.push("../Meal_trackers/Gen_meals");
+            }}
               style={[
                 styles.mealBtnFilled,
                 { alignItems: "center", justifyContent: "center" },
@@ -389,6 +392,7 @@ const styles = StyleSheet.create({
   mealBtnTextFilled: {
     color: "#fff",
     fontWeight: "bold",
+    
   },
   mealBtnOutline: {
     borderWidth: 1,

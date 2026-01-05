@@ -1,244 +1,337 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+	ScrollView,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View
+} from "react-native";
+import MealEditModal from "./Meal_edit_model";
 
-const meals = [
-	{
-		name: "Avocado Toast",
-		time: "8:30 AM",
-		kcal: 380,
-		protein: 12,
-		carbs: 45,
-		fat: 18,
-	},
-	{
-		name: "Chicken Wrap",
-		time: "1:15 PM",
-		kcal: 520,
-		protein: 32,
-		carbs: 48,
-		fat: 22,
-	},
-	{
-		name: "Protein Bar",
-		time: "4:00 PM",
-		kcal: 220,
-		protein: 20,
-		carbs: 24,
-		fat: 8,
-	},
-];
+const DAILY_GOAL = 2000;
 
-const totalKcal = meals.reduce((sum, m) => sum + m.kcal, 0);
-const totalProtein = meals.reduce((sum, m) => sum + m.protein, 0);
-const totalCarbs = meals.reduce((sum, m) => sum + m.carbs, 0);
-const totalFat = meals.reduce((sum, m) => sum + m.fat, 0);
-
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = Math.min(Math.max(width - 40, 320), 500); // Responsive width
+export type Meal = {
+  id: string;
+  type: string;
+  name: string;
+  time: string;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+};
 
 export default function GenMeals() {
-	return (
-		<ScrollView contentContainerStyle={styles.container}>
-			{/* Header */}
-			<View style={styles.headerRow}>
-				<TouchableOpacity style={styles.backBtn}>
-					<Ionicons name="arrow-back" size={24} color="#222" />
-				</TouchableOpacity>
-				<Text style={styles.headerTitle}>Meal Log</Text>
-				<TouchableOpacity style={styles.weeklyBtn}>
-					<Text style={styles.weeklyText}>Weekly</Text>
-				</TouchableOpacity>
-			</View>
-			<Text style={styles.dateText}>Today, {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</Text>
-			<View style={styles.divider} />
+  const [meals, setMeals] = React.useState<Meal[]>([
+    {
+      id: "1",
+      type: "Breakfast",
+      name: "Avocado Toast",
+      time: "8:30 AM",
+      kcal: 380,
+      protein: 12,
+      carbs: 45,
+      fat: 18,
+    },
+    {
+      id: "2",
+      type: "Lunch",
+      name: "Chicken Wrap",
+      time: "1:15 PM",
+      kcal: 520,
+      protein: 32,
+      carbs: 48,
+      fat: 22,
+    },
+    {
+      id: "3",
+      type: "Snack",
+      name: "Protein Bar",
+      time: "4:00 PM",
+      kcal: 220,
+      protein: 20,
+      carbs: 24,
+      fat: 8,
+    },
+  ]);
 
-			{/* Total Card */}
-			<View style={styles.totalCard}>
-				<Text style={styles.totalLabel}>Total Today</Text>
-				<Text style={styles.totalKcal}>{totalKcal.toLocaleString()} kcal</Text>
-				<Text style={styles.totalMacros}>P: {totalProtein}g   C: {totalCarbs}g   F: {totalFat}g</Text>
-			</View>
+  const [editingMeal, setEditingMeal] = React.useState<Meal | null>(null);
+  const [showMealModal, setShowMealModal] = React.useState(false);
 
-			{/* Meals List */}
-			<Text style={styles.sectionTitle}>Today's Meals</Text>
-			<View style={styles.addRow}>
-				<TouchableOpacity style={styles.addBtn}>
-					<Ionicons name="add" size={24} color="#fff" />
-				</TouchableOpacity>
-			</View>
-			{meals.map((meal, idx) => (
-				<View key={idx} style={[styles.mealCard, { width: CARD_WIDTH }]}> 
-					<View style={styles.mealHeader}>
-						<Text style={styles.mealName}>{meal.name}</Text>
-						<View style={styles.mealActions}>
-							<TouchableOpacity>
-								<Ionicons name="pencil-outline" size={18} color="#888" />
-							</TouchableOpacity>
-							<TouchableOpacity style={{ marginLeft: 10 }}>
-								<Ionicons name="trash-outline" size={18} color="#888" />
-							</TouchableOpacity>
-						</View>
-					</View>
-					<Text style={styles.mealTime}>{meal.time}</Text>
-					<View style={styles.nutritionRow}>
-						<Text style={styles.kcalText}>{meal.kcal} kcal</Text>
-						<Text style={styles.nutritionText}>P: {meal.protein}g</Text>
-						<Text style={styles.nutritionText}>C: {meal.carbs}g</Text>
-						<Text style={styles.nutritionText}>F: {meal.fat}g</Text>
-					</View>
-				</View>
-			))}
-		</ScrollView>
-	);
+  const totalKcal = meals.reduce((s, m) => s + m.kcal, 0);
+  const totalProtein = meals.reduce((s, m) => s + m.protein, 0);
+  const totalCarbs = meals.reduce((s, m) => s + m.carbs, 0);
+  const totalFat = meals.reduce((s, m) => s + m.fat, 0);
+
+  const progressPercent = Math.min((totalKcal / DAILY_GOAL) * 100, 100);
+
+  const handleEdit = (meal: Meal) => {
+    setEditingMeal(meal);
+    setShowMealModal(true);
+  };
+
+  const handleDelete = (meal: Meal) => {
+    setMeals((prev) => prev.filter((m) => m.id !== meal.id));
+  };
+
+  const handleSaveMeal = (meal: Meal) => {
+    if (editingMeal) {
+      setMeals((prev) => prev.map((m) => (m.id === editingMeal.id ? meal : m)));
+    } else {
+      setMeals((prev) => [...prev, { ...meal, id: Date.now().toString() }]);
+    }
+    setShowMealModal(false);
+    setEditingMeal(null);
+  };
+
+  const handleAddMeal = () => {
+    setEditingMeal(null);
+    setShowMealModal(true);
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* Header */}
+      <View style={styles.headerRow}>
+        <Ionicons name="arrow-back" size={24} color="#222" />
+        <Text style={styles.headerTitle}>Daily Meal Log</Text>
+        <Text style={styles.weeklyText}>Weekly</Text>
+      </View>
+
+      <Text style={styles.dateText}>Today, {new Date().toDateString()}</Text>
+
+      {/* Total Card */}
+      <View style={styles.totalCard}>
+        <Text style={styles.totalLabel}>Calories Consumed</Text>
+        <Text
+          style={[
+            styles.totalKcal,
+            { color: totalKcal > DAILY_GOAL ? "#FEE2E2" : "#FFFFFF" },
+          ]}
+        >
+          {totalKcal} / {DAILY_GOAL} kcal
+        </Text>
+
+        <View style={styles.progressBg}>
+          <View
+            style={[styles.progressFill, { width: `${progressPercent}%` }]}
+          />
+        </View>
+
+        <Text style={styles.totalMacros}>
+          P {totalProtein}g • C {totalCarbs}g • F {totalFat}g
+        </Text>
+      </View>
+
+      {/* Meals Header */}
+      <View style={styles.mealHeaderRow}>
+        <Text style={styles.sectionTitle}>Today's Meals</Text>
+        <TouchableOpacity style={styles.addBtn} onPress={handleAddMeal}>
+          <Ionicons name="add" size={26} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Empty State */}
+      {meals.length === 0 && (
+        <Text style={styles.emptyText}>No meals added today</Text>
+      )}
+
+      {/* Meal Cards */}
+      {meals.map((meal) => (
+        <View key={meal.id} style={styles.mealCard}>
+          <View style={styles.mealHeader}>
+            <Text style={styles.mealType}>{meal.type}</Text>
+            <View style={styles.mealActions}>
+              <TouchableOpacity onPress={() => handleEdit(meal)}>
+                <Ionicons name="create-outline" size={20} color="#38B36A" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => handleDelete(meal)}
+                style={{ marginLeft: 12 }}
+              >
+                <Ionicons name="trash-outline" size={20} color="#E57373" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <Text style={styles.mealName}>{meal.name}</Text>
+          <Text style={styles.mealTime}>{meal.time}</Text>
+
+          <View style={styles.nutritionRow}>
+            <Text style={styles.kcalText}>{meal.kcal} kcal</Text>
+            <Text style={styles.nutritionText}>P {meal.protein}g</Text>
+            <Text style={styles.nutritionText}>C {meal.carbs}g</Text>
+            <Text style={styles.nutritionText}>F {meal.fat}g</Text>
+          </View>
+        </View>
+      ))}
+
+      {showMealModal && (
+        <MealEditModal
+          meal={
+            editingMeal || {
+              id: "",
+              type: "",
+              name: "",
+              time: "",
+              kcal: 0,
+              protein: 0,
+              carbs: 0,
+              fat: 0,
+            }
+          }
+          onSave={handleSaveMeal}
+          onCancel={() => {
+            setShowMealModal(false);
+            setEditingMeal(null);
+          }}
+        />
+      )}
+    </ScrollView>
+  );
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flexGrow: 1,
-		backgroundColor: '#f7f7f7',
-		alignItems: 'center',
-		padding: 0,
-		paddingBottom: 24,
-	},
-	headerRow: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		marginTop: 24,
-		marginBottom: 2,
-		width: '100%',
-		paddingHorizontal: 20,
-	},
-	backBtn: {
-		marginRight: 8,
-		padding: 4,
-	},
-	headerTitle: {
-		flex: 1,
-		fontSize: 22,
-		fontWeight: 'bold',
-		color: '#222',
-		textAlign: 'left',
-	},
-	weeklyBtn: {
-		padding: 4,
-	},
-	weeklyText: {
-		color: '#38B36A',
-		fontWeight: '500',
-		fontSize: 15,
-	},
-	dateText: {
-		fontSize: 15,
-		color: '#666',
-		marginBottom: 8,
-		marginLeft: 24,
-		marginTop: 2,
-		alignSelf: 'flex-start',
-	},
-	divider: {
-		height: 1,
-		backgroundColor: '#eee',
-		marginVertical: 12,
-		width: '90%',
-		alignSelf: 'center',
-	},
-	totalCard: {
-		backgroundColor: '#219653',
-		borderRadius: 18,
-		padding: 24,
-		marginBottom: 18,
-		width: '90%',
-		alignSelf: 'center',
-		alignItems: 'flex-start',
-	},
-	totalLabel: {
-		color: '#fff',
-		fontSize: 16,
-		marginBottom: 8,
-	},
-	totalKcal: {
-		color: '#fff',
-		fontSize: 28,
-		fontWeight: 'bold',
-		marginBottom: 4,
-	},
-	totalMacros: {
-		color: '#fff',
-		fontSize: 15,
-		marginTop: 2,
-	},
-	sectionTitle: {
-		fontSize: 16,
-		fontWeight: 'bold',
-		marginTop: 8,
-		marginBottom: 8,
-		color: '#222',
-		alignSelf: 'flex-start',
-		marginLeft: 24,
-	},
-	addRow: {
-		width: '90%',
-		alignSelf: 'center',
-		alignItems: 'flex-end',
-		marginBottom: 8,
-	},
-	addBtn: {
-		backgroundColor: '#38B36A',
-		borderRadius: 20,
-		width: 40,
-		height: 40,
-		alignItems: 'center',
-		justifyContent: 'center',
-	},
-	mealCard: {
-		backgroundColor: '#fff',
-		borderRadius: 16,
-		padding: 18,
-		marginBottom: 16,
-		alignSelf: 'center',
-		shadowColor: '#000',
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.04,
-		shadowRadius: 4,
-		elevation: 2,
-		minWidth: 320,
-		maxWidth: 500,
-	},
-	mealHeader: {
-		flexDirection: 'row',
-		justifyContent: 'space-between',
-		alignItems: 'center',
-		marginBottom: 2,
-	},
-	mealName: {
-		fontSize: 16,
-		color: '#222',
-		fontWeight: 'bold',
-	},
-	mealActions: {
-		flexDirection: 'row',
-		alignItems: 'center',
-	},
-	mealTime: {
-		color: '#888',
-		fontSize: 13,
-		marginBottom: 4,
-	},
-	nutritionRow: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		marginTop: 2,
-	},
-	kcalText: {
-		color: '#38B36A',
-		fontWeight: 'bold',
-		marginRight: 12,
-		fontSize: 15,
-	},
-	nutritionText: {
-		color: '#888',
-		fontSize: 14,
-		marginRight: 10,
-	},
+  container: {
+    flexGrow: 1,
+    backgroundColor: "#F4F6F8",
+    paddingBottom: 24,
+  },
+
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 80,
+    paddingBottom: 8,
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#1C1C1E",
+    marginLeft: 12,
+  },
+  weeklyText: {
+    color: "#38B36A",
+    fontWeight: "600",
+    fontSize: 15,
+  },
+
+  dateText: {
+    fontSize: 14,
+    color: "#6B7280",
+    marginLeft: 20,
+    marginBottom: 12,
+  },
+
+  totalCard: {
+    backgroundColor: "#38B36A",
+    marginHorizontal: 20,
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 20,
+  },
+  totalLabel: {
+    color: "#E8F5EC",
+    fontSize: 14,
+    marginBottom: 6,
+  },
+  totalKcal: {
+    fontSize: 28,
+    fontWeight: "800",
+    marginBottom: 10,
+  },
+
+  progressBg: {
+    height: 10,
+    backgroundColor: "rgba(255,255,255,0.3)",
+    borderRadius: 10,
+    overflow: "hidden",
+    marginBottom: 10,
+  },
+  progressFill: {
+    height: "100%",
+    backgroundColor: "#FFFFFF",
+  },
+
+  totalMacros: {
+    color: "#F0FFF5",
+    fontSize: 14,
+  },
+
+  mealHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+  },
+
+  addBtn: {
+    backgroundColor: "#38B36A",
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  emptyText: {
+    textAlign: "center",
+    color: "#9CA3AF",
+    marginTop: 20,
+  },
+
+  mealCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 16,
+    marginHorizontal: 20,
+    marginBottom: 14,
+    elevation: 3,
+  },
+
+  mealHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  mealType: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  mealActions: {
+    flexDirection: "row",
+  },
+
+  mealName: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#374151",
+    marginTop: 4,
+  },
+
+  mealTime: {
+    fontSize: 13,
+    color: "#9CA3AF",
+    marginVertical: 6,
+  },
+
+  nutritionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  kcalText: {
+    color: "#38B36A",
+    fontWeight: "700",
+    marginRight: 12,
+  },
+  nutritionText: {
+    marginRight: 12,
+    color: "#6B7280",
+  },
 });
