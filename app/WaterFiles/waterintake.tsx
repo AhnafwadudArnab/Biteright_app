@@ -44,7 +44,7 @@ const WaterIntake: React.FC = () => {
       {/* Header Container */}
       <TouchableOpacity
         onPress={() => {
-          router.back();
+        router.replace("/(tabs)/MainHomePage");
         }}
         style={{ marginTop: 35 }}
       >

@@ -1,6 +1,6 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -35,6 +35,12 @@ const Button: React.FC<ButtonProps> = ({
 );
 
 export default function MainHomePage() {
+  // Example: You can fetch these from storage, API, or props in a real app
+  const [goal, setGoal] = useState(2000);
+  const [consumed, setConsumed] = useState(1200);
+
+  const remaining = goal - consumed;
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <ScrollView
@@ -86,15 +92,15 @@ export default function MainHomePage() {
           <Text style={styles.cardTitle}>Today's Calories</Text>
           <View style={styles.caloriesRow}>
             <View style={styles.calorieItem}>
-              <Text style={styles.calorieValue}>2000</Text>
+              <Text style={styles.calorieValue}>{goal}</Text>
               <Text style={styles.calorieLabel}>Goal</Text>
             </View>
             <View style={styles.calorieItem}>
-              <Text style={styles.calorieValue}>1200</Text>
+              <Text style={styles.calorieValue}>{consumed}</Text>
               <Text style={styles.calorieLabel}>Consumed</Text>
             </View>
             <View style={styles.calorieItem}>
-              <Text style={styles.calorieValue}>800</Text>
+              <Text style={styles.calorieValue}>{remaining}</Text>
               <Text style={styles.calorieLabel}>Remaining</Text>
             </View>
           </View>
@@ -125,7 +131,7 @@ export default function MainHomePage() {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
-                router.push("/Dietplans/Diet_Planner_Item");
+                router.push("/Dietplans/Daily_diet_plannigs");
               }}
               style={styles.planBtnFilled}
             >

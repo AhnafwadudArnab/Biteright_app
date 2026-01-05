@@ -118,7 +118,11 @@ export default function DietPlannerItem() {
       {/* Header */}
       <View style={{ height: 20 }} />
       <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity
+          onPress={() => {
+            router.back();
+          }}
+        >
           <Ionicons name="arrow-back" size={24} color="#222" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Daily Diet Plan</Text>
