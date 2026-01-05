@@ -118,7 +118,7 @@ export default function MainHomePage() {
             <TouchableOpacity
               style={styles.planBtnOutline}
               onPress={() => {
-                router.push("../Dietplans/gen_dietplans");
+                router.push("../Dietplans/newPlan");
               }}
             >
               <Text style={styles.planBtnText}>Generate Plan</Text>
@@ -236,7 +236,7 @@ export default function MainHomePage() {
           <TouchableOpacity
             style={[styles.fabBtn, styles.fabBtnActive]}
             onPress={() => {
-              router.push("../Dietplans/gen_dietplans");
+              router.push("../Dietplans/newPlan");
             }}
           >
             <Ionicons name="add" size={22} color="#222" />

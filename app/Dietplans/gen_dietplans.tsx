@@ -82,7 +82,6 @@ export default function GenerateDietPlan() {
           btnlabel="Generate Plan"
           TextColor="#fff"
           Pressable={() => {
-            // Pass the generated plan data to the planner item page
             router.push({
               pathname: "/Dietplans/Diet_Planner_Item",
               params: {
