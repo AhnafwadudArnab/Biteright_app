@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import {
   Award,
   BookOpen,
@@ -48,7 +49,7 @@ export default function LandingPage({
           }}
           style={[
             StyleSheet.absoluteFillObject,
-            { opacity: 0.25, resizeMode: "cover" },
+            { opacity: 0.6, resizeMode: "cover" },
           ]}
           blurRadius={2}
         />
@@ -88,7 +89,9 @@ export default function LandingPage({
                 elevation: 6,
               },
             ]}
-            onPress={onGetStarted}
+            onPress={() => {
+              router.push("/login_signup/signup");
+            }}
             activeOpacity={0.85}
           >
             <Text style={[styles.ctaText, { fontWeight: "bold" }]}>
@@ -265,7 +268,6 @@ const StatBox = ({ value, label }: StatBoxProps) => (
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-
   hero: { backgroundColor: "#3BB273", padding: 20 },
   headerRow: { flexDirection: "row", justifyContent: "space-between" },
   logo: { flexDirection: "row", alignItems: "center" },
@@ -304,7 +306,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     alignSelf: "center",
   },
-  ctaText: { color: "#3BB273", fontSize: 16, marginRight: 6 },
+  ctaText: { color: "#3BB273", fontSize: 20, marginRight: 6 },
 
   statsRow: {
     flexDirection: "row",

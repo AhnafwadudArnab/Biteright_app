@@ -2,12 +2,13 @@ import { router } from "expo-router";
 import { ArrowLeft, Lock, Mail, User } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const SignupScreen: React.FC = () => {
@@ -46,7 +47,7 @@ const SignupScreen: React.FC = () => {
             <TextInput
               value={name}
               onChangeText={setName}
-              placeholder="John Doe"
+              placeholder="Your Name"
               style={styles.input}
             />
           </View>
@@ -60,7 +61,7 @@ const SignupScreen: React.FC = () => {
             <TextInput
               value={email}
               onChangeText={setEmail}
-              placeholder="your.email@example.com"
+              placeholder="your_email@example.com"
               keyboardType="email-address"
               style={styles.input}
             />
@@ -98,15 +99,13 @@ const SignupScreen: React.FC = () => {
         </View>
 
         {/* Sign Up Button */}
-        <Pressable style={styles.signupBtn} onPress={handleSubmit}>
-          <Text style={styles.signupText}>Sign Up</Text>
-        </Pressable>
+        <TouchableOpacity style={styles.signupBtn} onPress={() => router.push("/login_signup/login")}>
+          <Text style={styles.signupText}>SignUp</Text>
+        </TouchableOpacity>
 
         {/* Login Redirect */}
         <View style={styles.loginRow}>
-          <Text style={styles.loginText}>
-            Already have an account?{" "}
-          </Text>
+          <Text style={styles.loginText}>Already have an account? </Text>
           <Pressable onPress={() => router.replace("/login_signup/login")}>
             <Text style={styles.loginLink}>Login</Text>
           </Pressable>
@@ -145,6 +144,7 @@ const styles = StyleSheet.create({
 
   form: {
     flex: 1,
+    padding: 18,
   },
 
   field: {

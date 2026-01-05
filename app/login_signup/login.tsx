@@ -14,8 +14,7 @@ type Props = {
   handleSubmit: () => void;
 };
 
-
-const Login = ({ handleSubmit }: Props) =>{
+const Login = ({ handleSubmit }: Props) => {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
 
@@ -74,19 +73,16 @@ const Login = ({ handleSubmit }: Props) =>{
         </TouchableOpacity>
 
         {/* Login button */}
-        <TouchableOpacity style={styles.loginButton} onPress={handleSubmit}>
+        <TouchableOpacity style={styles.loginButton} onPress={() => router.push("/(tabs)/MainHomePage")}>
           <Text style={styles.loginButtonText}>Login</Text>
         </TouchableOpacity>
 
         {/* Sign up */}
         <View style={styles.signupContainer}>
-          <Text style={styles.signupText}>
-            Don&apos;t have an account?{" "}
-          </Text>
+          <Text style={styles.signupText}>Don&apos;t have an account? </Text>
           <TouchableOpacity onPress={() => router.push("/login_signup/signup")}>
-  <Text style={styles.signupLink}>Sign Up</Text>
-</TouchableOpacity>
-
+            <Text style={styles.signupLink}>Sign Up</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -98,7 +94,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#ffffff",
-    padding: 32,
+    padding: 35,
   },
 
   logoContainer: {
