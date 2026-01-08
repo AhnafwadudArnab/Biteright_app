@@ -45,13 +45,13 @@ export default function MealEditModal({
     }
     onSave({
       id: meal?.id || Math.random().toString(),
-      type: "",
-      name: "",
-      time: "",
-      kcal: 0,
-      protein: 0,
-      carbs: 0,
-      fat: 0,
+      type: type,
+      name: name,
+      time: time,
+      kcal: Number(kcal),
+      protein: Number(protein) || 0,
+      carbs: Number(carbs) || 0,
+      fat: Number(fat) || 0,
     });
   }
 
