@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -139,19 +139,30 @@ const weekDays = Array.from({ length: 7 }).map((_, i) => {
 
 export default function DietPlannerItem() {
   const params = useLocalSearchParams();
-  const calorieTarget =
-    typeof params.calories === "string" ? params.calories : "1520";
-  const mealCount =
-    typeof params.meals === "string" ? parseInt(params.meals, 10) : 4;
-  const [selectedDay, setSelectedDay] = useState(0);
-
-  const meals = weekDays[selectedDay].meals;
+  // If coming from weeklyPlans, use passed meals and day, else fallback to default weekDays
+  let meals, dayLabel, date, totalKcal;
+  if (params.meals && params.day && params.date && params.totalKcal) {
+    try {
+      const mealsParam = Array.isArray(params.meals) ? params.meals[0] : params.meals;
+      meals = JSON.parse(mealsParam);
+    } catch {
+      meals = weekDays[0].meals;
+    }
+    dayLabel = params.day;
+    date = params.date;
+    totalKcal = params.totalKcal;
+  } else {
+    meals = weekDays[0].meals;
+    dayLabel = weekDays[0].label;
+    date = weekDays[0].date;
+    totalKcal = weekDays[0].totalKcal;
+  }
   const totalNutrition = meals.reduce(
-    (acc, meal) => {
-      acc.kcal += meal.kcal;
-      acc.protein += meal.protein;
-      acc.carbs += meal.carbs;
-      acc.fat += meal.fat;
+    (acc: { kcal: any; protein: any; carbs: any; fat: any; }, meal: { kcal: any; protein: any; carbs: any; fat: any; }) => {
+      acc.kcal += meal.kcal || 0;
+      acc.protein += meal.protein || 0;
+      acc.carbs += meal.carbs || 0;
+      acc.fat += meal.fat || 0;
       return acc;
     },
     { kcal: 0, protein: 0, carbs: 0, fat: 0 }
@@ -178,33 +189,14 @@ export default function DietPlannerItem() {
           <Text style={styles.weekViewText}>Week View</Text>
         </TouchableOpacity>
       </View>
-      <Text style={styles.dateText}>{new Date().toLocaleDateString()}</Text>
-      {/* Week Days */}
-      <View style={styles.weekRow}>
-        {weekDays.map((day, idx) => {
-          const isToday = idx === selectedDay;
-          return (
-            <TouchableOpacity
-              key={day.label}
-              style={[styles.dayChip, isToday && styles.todayChip]}
-              onPress={() => setSelectedDay(idx)}
-            >
-              <Text style={[styles.dayText, isToday && styles.todayText]}>
-                {day.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+      <Text style={styles.dateText}>{`Day: ${dayLabel}, Date: ${date}`}</Text>
       {/* Calories Card */}
       <View style={styles.caloriesCard}>
         <Text style={styles.caloriesLabel}>Total Daily Calories</Text>
-        <Text style={styles.caloriesValue}>
-          {weekDays[selectedDay].totalKcal} kcal
-        </Text>
+        <Text style={styles.caloriesValue}>{totalKcal} kcal</Text>
       </View>
       {/* Meals */}
-      {meals.map((meal, idx) => (
+      {meals.map((meal: { type: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; name: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; kcal: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; protein: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; carbs: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; fat: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; }, idx: React.Key | null | undefined) => (
         <View key={idx} style={styles.mealCard}>
           <View style={styles.mealHeader}>
             <Text style={styles.mealType}>{meal.type}</Text>
@@ -215,9 +207,9 @@ export default function DietPlannerItem() {
           <Text style={styles.mealName}>{meal.name}</Text>
           <View style={styles.nutritionRow}>
             <Text style={styles.kcalText}>{meal.kcal} kcal</Text>
-            <Text style={styles.nutritionText}>P {meal.protein}g</Text>
-            <Text style={styles.nutritionText}>C {meal.carbs}g</Text>
-            <Text style={styles.nutritionText}>F {meal.fat}g</Text>
+            {meal.protein !== undefined && <Text style={styles.nutritionText}>P {meal.protein}g</Text>}
+            {meal.carbs !== undefined && <Text style={styles.nutritionText}>C {meal.carbs}g</Text>}
+            {meal.fat !== undefined && <Text style={styles.nutritionText}>F {meal.fat}g</Text>}
           </View>
         </View>
       ))}

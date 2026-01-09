@@ -87,7 +87,17 @@ export default function WeeklyPlans() {
         <Text style={styles.headerTitle}>Weekly Diet Plan</Text>
 
         <TouchableOpacity
-          onPress={() => router.push("../Dietplans/Daily_diet_plannigs")}
+          onPress={() =>
+            router.push({
+              pathname: "../Dietplans/Daily_diet_plannigs",
+              params: {
+                day: weekDays[selectedDay].label,
+                date: weekDays[selectedDay].date,
+                meals: JSON.stringify(weekDays[selectedDay].meals),
+                totalKcal: weekDays[selectedDay].totalKcal.toString(),
+              },
+            })
+          }
         >
           <Text style={styles.dayViewText}>Day View</Text>
         </TouchableOpacity>
