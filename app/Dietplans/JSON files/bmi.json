@@ -1,8 +1,0 @@
-{
-  "bmiCategories": [
-    { "key": "underweight", "min": 0, "max": 18.4 },
-    { "key": "normal", "min": 18.5, "max": 24.9 },
-    { "key": "overweight", "min": 25, "max": 29.9 },
-    { "key": "obese", "min": 30, "max": 100 }
-  ]
-}

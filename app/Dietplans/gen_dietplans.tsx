@@ -31,20 +31,10 @@ export default function GenerateDietPlan() {
   };
 
   const getBMICategory = (bmi: number) => {
-    let category = "";
-    if (bmi < 18.5) {
-      category = "underweight";
-    }
-    else if (bmi >= 18.5 && bmi < 25) {
-      category = "normal";
-    }
-    else if (bmi >= 25 && bmi < 30) {
-      category = "overweight";
-    }
-    else {
-      category = "obese";
-    }
-    return category;
+    if (bmi < 18.5) return "underweight";
+    if (bmi < 25) return "normal";
+    if (bmi < 30) return "overweight";
+    return "obese";
   };
 
   const handleGenerate = () => {

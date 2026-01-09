@@ -1,6 +1,6 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useCalories } from "../CaloriesContext";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -35,11 +36,11 @@ const Button: React.FC<ButtonProps> = ({
 );
 
 export default function MainHomePage() {
-  // Example: You can fetch these from storage, API, or props in a real app
-  const [goal, setGoal] = useState(2000);
-  const [consumed, setConsumed] = useState(1200);
-
+  const { goal, consumed } = useCalories();
   const remaining = goal - consumed;
+
+  // TODO: Replace this with your actual logic to determine if a plan is generated
+  const [planGenerated, setPlanGenerated] = React.useState(false);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -89,38 +90,47 @@ export default function MainHomePage() {
 
         {/* Calories Card */}
         <View
-          style={[
-            styles.caloriesCard,
-            // {
-            //   // Glass effect: blur + semi-transparent overlay
-            //   backgroundColor: "rgba(34, 197, 94, 0.7)",
-            //   // iOS shadow for glassy look
-            //   shadowColor: "#22C55E",
-            //   shadowOffset: { width: 0, height: 8 },
-            //   shadowOpacity: 0.18,
-            //   shadowRadius: 10,
-            //   // Android elevation
-            //   elevation: 10,
-            //   borderWidth: 18,
-            //   borderColor: "rgba(255,255,255,0.18)",
-            //   // Optional: backdropFilter for web (not supported on native)
-            //   // backdropFilter: "blur(10px)",
-            // },
-          ]}
+          style={{
+            backgroundColor: "#22C55E",
+            borderRadius: 16,
+            padding: 18,
+            marginBottom: 20,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
         >
-          <Text style={styles.cardTitle}>Today's Calories</Text>
-          <View style={styles.caloriesRow}>
-            <View style={styles.calorieItem}>
-              <Text style={styles.calorieValue}>{goal}</Text>
-              <Text style={styles.calorieLabel}>Goal</Text>
-            </View>
-            <View style={styles.calorieItem}>
-              <Text style={styles.calorieValue}>{consumed}</Text>
-              <Text style={styles.calorieLabel}>Consumed</Text>
-            </View>
-            <View style={styles.calorieItem}>
-              <Text style={styles.calorieValue}>{remaining}</Text>
-              <Text style={styles.calorieLabel}>Remaining</Text>
+          <View style={{ flex: 1, alignItems: "center" }}>
+            <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
+              Today's Calories
+            </Text>
+            <View style={{ flexDirection: "row", marginTop: 10 }}>
+              <View style={{ flex: 1, alignItems: "center" }}>
+                <Text
+                  style={{ color: "#fff", fontSize: 22, fontWeight: "bold" }}
+                >
+                  {goal}
+                </Text>
+                <Text style={{ color: "#D1FAE5", fontSize: 13 }}>Goal</Text>
+              </View>
+              <View style={{ flex: 1, alignItems: "center" }}>
+                <Text
+                  style={{ color: "#fff", fontSize: 22, fontWeight: "bold" }}
+                >
+                  {consumed}
+                </Text>
+                <Text style={{ color: "#D1FAE5", fontSize: 13 }}>Consumed</Text>
+              </View>
+              <View style={{ flex: 1, alignItems: "center" }}>
+                <Text
+                  style={{ color: "#fff", fontSize: 22, fontWeight: "bold" }}
+                >
+                  {remaining}
+                </Text>
+                <Text style={{ color: "#D1FAE5", fontSize: 13 }}>
+                  Remaining
+                </Text>
+              </View>
             </View>
           </View>
         </View>
@@ -140,22 +150,46 @@ export default function MainHomePage() {
             </View>
           </View>
           <View style={styles.planActions}>
-            <TouchableOpacity
-              style={styles.planBtnOutline}
-              onPress={() => {
-                router.push("../Dietplans/newPlan");
-              }}
-            >
-              <Text style={styles.planBtnText}>Generate Plan</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                router.push("/Dietplans/Daily_diet_plannigs");
-              }}
-              style={styles.planBtnFilled}
-            >
-              <Text style={styles.planBtnTextFilled}>View Plan</Text>
-            </TouchableOpacity>
+            {!planGenerated ? (
+              // Only "Generate Plan" button, centered
+              <TouchableOpacity
+                style={[
+                  styles.planBtnOutline,
+                  { flex: 1, alignItems: "center" },
+                ]}
+                onPress={() => {
+                  router.push("../Dietplans/newPlan");
+                }}
+              >
+                <Text style={styles.planBtnText}>Generate Plan</Text>
+              </TouchableOpacity>
+            ) : (
+              // Both buttons side by side
+              <>
+                <TouchableOpacity
+                  style={[
+                    styles.planBtnOutline,
+                    { flex: 1, alignItems: "center", marginRight: 8 },
+                  ]}
+                  onPress={() => {
+                    router.push("../Dietplans/newPlan");
+                  }}
+                >
+                  <Text style={styles.planBtnText}>Generate Plan</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    router.push("../Dietplans/Daily_diet_plannings");
+                  }}
+                  style={[
+                    styles.planBtnFilled,
+                    { flex: 1, alignItems: "center" },
+                  ]}
+                >
+                  <Text style={styles.planBtnTextFilled}>View Plan</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
 

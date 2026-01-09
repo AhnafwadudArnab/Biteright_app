@@ -8,82 +8,113 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import rawMealData from "./JSON files/mealData.json";
+import doctorMealData from "./JSON files/DoctorSugg_bmi_mealplans.json";
+
+type Meal = {
+  type: string;
+  name: string;
+  kcal: number;
+};
+
+type BmiPlan = {
+  category: string;
+  dailyCalories: number;
+  doctorFocus: string[];
+  meals: Meal[];
+};
+
+type Gender = "male" | "female";
+
+type BmiMealPlans = {
+  [gender in Gender]: {
+    [range: string]: BmiPlan;
+  };
+};
+
+// Helper: Find closest BMI range key for a given BMI
+function getBmiRangeKey(bmi: number, gender: "male" | "female", bmiPlans: any) {
+  const ranges = Object.keys(bmiPlans[gender]);
+  let closestKey = ranges[0];
+  let minDiff = Infinity;
+  for (const key of ranges) {
+    const [low, high] = key.split("-").map(Number);
+    if (bmi >= low && bmi <= high) {
+      return key;
+    }
+    // If not in range, find closest
+    const diff = Math.abs((low + high) / 2 - bmi);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closestKey = key;
+    }
+  }
+  return closestKey;
+}
 
 export default function DietPlannerItem() {
   const params = useLocalSearchParams();
-  const mealData: any = rawMealData;
 
+  // Get gender
   const gender =
-    typeof params.gender === "string" ? params.gender.toLowerCase() : "male";
+    typeof params.gender === "string" &&
+    params.gender.toLowerCase() === "female"
+      ? "female"
+      : "male";
 
-  const rawBmi =
-    typeof params.bmiCategory === "string"
-      ? params.bmiCategory.toLowerCase()
-      : "normal";
+  // Get BMI from params or calculate
+  const weight =
+    typeof params.weight === "string" ? parseFloat(params.weight) : undefined;
+  const height =
+    typeof params.height === "string" ? parseFloat(params.height) : undefined;
+  let bmi = 0;
+  if (weight && height && height > 0) {
+    bmi = weight / ((height / 100) * (height / 100));
+  }
 
-  // ✅ FORCE VALID BMI CATEGORY
-  const bmiCategory = ["underweight", "normal", "overweight", "obese"].includes(
-    rawBmi
-  )
-    ? rawBmi
-    : "normal";
+  // Find closest BMI range key
+  const bmiPlans = doctorMealData.bmiMealPlans as BmiMealPlans;
+  const bmiRangeKey = getBmiRangeKey(bmi, gender, bmiPlans);
 
-  const mealsPerDay =
-    typeof params.meals === "string" ? Number(params.meals) : 4;
-
-  // ✅ GET PLAN (SAFE)
+  // Get plan for gender and BMI range
   const plan =
-    mealData?.meal_plans?.[gender]?.[bmiCategory] ??
-    mealData.meal_plans.male.normal;
+    bmiPlans[gender][
+      bmiRangeKey as keyof (typeof bmiPlans)[Gender extends keyof typeof bmiPlans
+        ? Gender
+        : never]
+    ];
 
-  // ✅ FLATTEN MEALS (CORRECT WAY)
-  const mealGroups = plan.meals;
+  // Meals per day (limit to available meals)
+  const mealsPerDay =
+    typeof params.meals === "string" ? Number(params.meals) : plan.meals.length;
 
-  const allMeals = [
-    ...(mealGroups.breakfast ?? []).map((m: any) => ({
-      ...m,
-      type: "Breakfast",
-    })),
-    ...(mealGroups.lunch ?? []).map((m: any) => ({
-      ...m,
-      type: "Lunch",
-    })),
-    ...(mealGroups.snack ?? []).map((m: any) => ({
-      ...m,
-      type: "Snack",
-    })),
-    ...(mealGroups.dinner ?? []).map((m: any) => ({
-      ...m,
-      type: "Dinner",
-    })),
-  ];
-
-  // ✅ RESPECT MEALS PER DAY
-  const initialMeals = allMeals.slice(0, Number(mealsPerDay) || 4).map(m => ({ ...m, done: false }));
+  // Slice meals if needed
+  const initialMeals = plan.meals
+    .slice(0, mealsPerDay)
+    .map((m: any) => ({ ...m, done: false }));
 
   const [meals, setMeals] = React.useState<any[]>(initialMeals);
   const [totalKcal, setTotalKcal] = React.useState<number>(
-    initialMeals.length > 0
-      ? initialMeals.reduce((sum, m) => sum + (m.kcal || 0), 0)
-      : plan?.daily_calories || 0
+    initialMeals.reduce((sum: any, m: { kcal: any }) => sum + (m.kcal || 0), 0)
   );
 
-  // ✅ DATE
+  // Calories for completed meals
+  const completedKcal = meals.reduce(
+    (acc, meal) => acc + (meal.done ? meal.kcal || 0 : 0),
+    0
+  );
+
+  // Date
   const today = new Date();
   const dayLabel = today.toLocaleString("en-US", { weekday: "short" });
   const date = today.getDate();
 
-  // ✅ NUTRITION SUMMARY (SAFE)
+  // Nutrition summary
   const totalNutrition = meals.reduce(
     (acc: any, meal: any) => {
-      acc.kcal += meal.kcal || 0;
-      acc.protein += meal.protein || 0;
-      acc.carbs += meal.carbs || 0;
-      acc.fat += meal.fat || 0;
+      if (!meal.done) acc.kcal += meal.kcal || 0;
       return acc;
     },
-    { kcal: 0, protein: 0, carbs: 0, fat: 0 }
+    { kcal: 0 }
   );
 
   return (
@@ -92,18 +123,18 @@ export default function DietPlannerItem() {
 
       {/* Header */}
       <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => router.push("/(tabs)/MainHomePage")}>
+        <TouchableOpacity onPress={() => router.push("../MainHomePage")}>
           <Ionicons name="arrow-back" size={24} color="#222" />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Daily Diet Plan</Text>
+        <Text style={styles.headerTitle}>Your Daily Diet Plan</Text>
 
         <TouchableOpacity
           style={styles.weekViewBtn}
           onPress={() => router.push("../Dietplans/weeklyPlans")}
         >
           <Ionicons name="calendar-outline" size={20} color="#38B36A" />
-          <Text style={styles.weekViewText}>Week View</Text>
+          <Text style={styles.weekViewText}></Text>
         </TouchableOpacity>
       </View>
 
@@ -112,7 +143,40 @@ export default function DietPlannerItem() {
       {/* Calories Card */}
       <View style={styles.caloriesCard}>
         <Text style={styles.caloriesLabel}>Total Daily Calories</Text>
-        <Text style={styles.caloriesValue}>{totalKcal} kcal</Text>
+        <Text style={styles.caloriesValue}>{plan.dailyCalories} kcal</Text>
+        <Text style={{ color: "#888", fontSize: 13, marginTop: 4 }}>
+          {plan.category}
+        </Text>
+        <Text style={{ color: "#38B36A", fontSize: 13, marginTop: 2 }}>
+          Focus: {plan.doctorFocus.join(", ")}
+        </Text>
+        {/* ✅ Completed kcal box */}
+        <View
+          style={{
+            position: "absolute",
+            top: 40,
+            right: 16,
+            backgroundColor: "#fff",
+            borderRadius: 10,
+            padding: 8,
+            minWidth: 120,
+            minHeight: 60,
+            alignItems: "center",
+            borderWidth: 1,
+            borderColor: "#38B36A",
+          }}
+        >
+          <Text
+            style={{
+              color: "#38B36A",
+              fontWeight: "bold",
+              fontSize: 15,
+            }}
+          >
+            {completedKcal} kcal
+          </Text>
+          <Text style={{ color: "#888", fontSize: 11 }}>Completed</Text>
+        </View>
       </View>
 
       {/* Meals */}
@@ -146,15 +210,6 @@ export default function DietPlannerItem() {
 
           <View style={styles.nutritionRow}>
             <Text style={styles.kcalText}>{meal.kcal} kcal</Text>
-            {meal.protein !== undefined && (
-              <Text style={styles.nutritionText}>P {meal.protein}g</Text>
-            )}
-            {meal.carbs !== undefined && (
-              <Text style={styles.nutritionText}>C {meal.carbs}g</Text>
-            )}
-            {meal.fat !== undefined && (
-              <Text style={styles.nutritionText}>F {meal.fat}g</Text>
-            )}
           </View>
         </View>
       ))}
@@ -168,42 +223,12 @@ export default function DietPlannerItem() {
           <Text>{totalNutrition.kcal} kcal</Text>
         </View>
         <View style={styles.summaryRow}>
-          <Text>BMI Category</Text>
-          <Text style={{ textTransform: "capitalize" }}>
-            {(() => {
-              const weight = typeof params.weight === "string" ? parseFloat(params.weight) : undefined;
-              const height = typeof params.height === "string" ? parseFloat(params.height) : undefined;
-              if (weight && height && height > 0) {
-                const bmi = weight / ((height / 100) * (height / 100));
-                let category = "";
-                if (bmi < 18.5) {
-                  category = "Underweight";
-                } else if (bmi >= 18.5 && bmi < 25) {
-                  category = "Normal";
-                } else if (bmi >= 25 && bmi < 30) {
-                  category = "Overweight";
-                } else {
-                  category = "Obese";
-                }
-                return category;
-              }
-              return "N/A";
-            })()}
-          </Text>
+          <Text>BMI Value</Text>
+          <Text>{bmi ? bmi.toFixed(1) : "N/A"}</Text>
         </View>
         <View style={styles.summaryRow}>
-          <Text>BMI Value</Text>
-          <Text>
-            {(() => {
-              const weight = typeof params.weight === "string" ? parseFloat(params.weight) : undefined;
-              const height = typeof params.height === "string" ? parseFloat(params.height) : undefined;
-              if (weight && height && height > 0) {
-                const bmi = weight / ((height / 100) * (height / 100));
-                return bmi.toFixed(1);
-              }
-              return "N/A";
-            })()}
-          </Text>
+          <Text>BMI Category</Text>
+          <Text>{plan.category}</Text>
         </View>
       </View>
 
@@ -235,7 +260,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "bold",
     marginLeft: 12,
     color: "#222",

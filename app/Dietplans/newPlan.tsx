@@ -103,7 +103,7 @@ export default function GenerateDietPlan() {
         {/* Diet Type */}
         <Text style={styles.label}>Diet Type</Text>
         <View style={styles.row}>
-          {["Veg", "Non-Veg", "Keto"].map((d) => (
+          {["Veg", "Non-Veg"].map((d) => (
             <TouchableOpacity
               key={d}
               style={[styles.optionBtn, dietType === d && styles.activeBtn]}
@@ -160,6 +160,12 @@ export default function GenerateDietPlan() {
             alignSelf: "center",
           }}
           onPress={() => {
+            if (!age || !height || !weight) {
+              alert(
+                "Please fill in all required fields: Age, Height, and Weight."
+              );
+              return;
+            }
             router.push({
               pathname: "/Dietplans/Daily_diet_plannigs",
               params: {

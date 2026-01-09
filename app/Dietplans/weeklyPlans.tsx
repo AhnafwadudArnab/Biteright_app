@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
@@ -9,61 +9,85 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import doctorMealData from "./JSON files/DoctorSugg_bmi_mealplans.json";
 
 /* ===== DATA ===== */
 
-// Example meal templates
-const mealTemplates = [
-  [
-    { type: "Breakfast", name: "Oatmeal with berries", kcal: 350 },
-    { type: "Lunch", name: "Grilled chicken salad", kcal: 420 },
-    { type: "Snack", name: "Greek yogurt & almonds", kcal: 200 },
-    { type: "Dinner", name: "Salmon with quinoa", kcal: 550 },
-  ],
-  [
-    { type: "Breakfast", name: "Egg white omelette", kcal: 300 },
-    { type: "Lunch", name: "Turkey sandwich", kcal: 410 },
-    { type: "Snack", name: "Fruit salad", kcal: 180 },
-    { type: "Dinner", name: "Grilled shrimp & rice", kcal: 520 },
-  ],
-  [
-    { type: "Breakfast", name: "Avocado toast", kcal: 320 },
-    { type: "Lunch", name: "Quinoa bowl", kcal: 430 },
-    { type: "Snack", name: "Protein bar", kcal: 210 },
-    { type: "Dinner", name: "Chicken stir fry", kcal: 540 },
-  ],
-  // Add more templates as needed
-];
-
-// Generate random meals for each day
-function getRandomMeals() {
-  const template =
-    mealTemplates[Math.floor(Math.random() * mealTemplates.length)];
-  // Optionally, randomize kcal a bit for demo
-  return template.map((meal) => ({
-    ...meal,
-    kcal: meal.kcal + Math.floor(Math.random() * 50), // add up to 50 kcal randomly
-  }));
+// Helper: Find closest BMI range key for a given BMI
+function getBmiRangeKey(bmi: number, gender: "male" | "female", bmiPlans: any) {
+  const ranges = Object.keys(bmiPlans[gender]);
+  let closestKey = ranges[0];
+  let minDiff = Infinity;
+  for (const key of ranges) {
+    const [low, high] = key.split("-").map(Number);
+    if (bmi >= low && bmi <= high) {
+      return key;
+    }
+    // If not in range, find closest
+    const diff = Math.abs(((low + high) / 2) - bmi);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closestKey = key;
+    }
+  }
+  return closestKey;
 }
 
-const today = new Date();
-const weekDays = Array.from({ length: 7 }).map((_, i) => {
-  const d = new Date(today);
-  d.setDate(today.getDate() + i);
-  const label = d.toLocaleString("en-US", { weekday: "short" });
-  const meals = getRandomMeals();
-  const totalKcal = meals.reduce((sum, meal) => sum + meal.kcal, 0);
-  return {
-    label,
-    date: d.getDate(),
-    meals,
-    totalKcal,
-  };
-});
-
-/* ===== COMPONENT ===== */
+// Shuffle array utility
+function shuffleArray(array: any[]) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
 export default function WeeklyPlans() {
+  const params = useLocalSearchParams();
+
+  // Get user info from params (or set defaults for demo)
+  const gender =
+    typeof params.gender === "string" && params.gender.toLowerCase() === "female"
+      ? "female"
+      : "male";
+  const weight = typeof params.weight === "string" ? parseFloat(params.weight) : 70;
+  const height = typeof params.height === "string" ? parseFloat(params.height) : 170;
+
+  // Calculate BMI
+  let bmi = 0;
+  if (weight && height && height > 0) {
+    bmi = weight / ((height / 100) * (height / 100));
+  }
+
+  // Get plan from JSON
+  const bmiPlans = doctorMealData.bmiMealPlans;
+  const bmiRangeKey = getBmiRangeKey(bmi, gender, bmiPlans);
+  const plan =
+    bmiPlans[gender][bmiRangeKey as keyof typeof bmiPlans[typeof gender]] || {
+      category: "No Plan",
+      dailyCalories: 0,
+      doctorFocus: [],
+      meals: [],
+    };
+
+  // Prepare 7 days using the same plan, optionally shuffle meals for variety
+  const today = new Date();
+  const weekDays = Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const label = d.toLocaleString("en-US", { weekday: "short" });
+    // Only shuffle if meals exist
+    const meals = plan.meals && plan.meals.length > 0 ? shuffleArray(plan.meals) : [];
+    const totalKcal = meals.reduce((sum, meal) => sum + (meal.kcal || 0), 0);
+    return {
+      label,
+      date: d.getDate(),
+      meals,
+      totalKcal,
+    };
+  });
+
   const [selectedDay, setSelectedDay] = useState(0);
 
   const handleSwap = (mealType: string) => {
@@ -91,6 +115,9 @@ export default function WeeklyPlans() {
             router.push({
               pathname: "../Dietplans/Daily_diet_plannigs",
               params: {
+                gender,
+                height: height.toString(),
+                weight: weight.toString(),
                 day: weekDays[selectedDay].label,
                 date: weekDays[selectedDay].date,
                 meals: JSON.stringify(weekDays[selectedDay].meals),
@@ -166,24 +193,32 @@ export default function WeeklyPlans() {
       <View style={styles.divider} />
 
       {/* ===== DAILY MEALS (SELECTED DAY) ===== */}
-      {weekDays[selectedDay].meals.map((meal, idx) => (
-        <View key={idx} style={styles.mealCard}>
-          <View style={styles.mealHeader}>
-            <Text style={styles.mealType}>{meal.type}</Text>
-            <TouchableOpacity onPress={() => handleSwap(meal.type)}>
-              <Ionicons name="swap-horizontal" size={20} color="#38B36A" />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.mealRow}>
-            <View>
-              <Text style={styles.mealName}>{meal.name}</Text>
-              <Text style={styles.kcalText}>{meal.kcal} kcal</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={22} color="#bbb" />
-          </View>
+      {weekDays[selectedDay].meals.length === 0 ? (
+        <View style={styles.mealCard}>
+          <Text style={styles.mealName}>
+            No meals available for your BMI and gender.
+          </Text>
         </View>
-      ))}
+      ) : (
+        weekDays[selectedDay].meals.map((meal, idx) => (
+          <View key={idx} style={styles.mealCard}>
+            <View style={styles.mealHeader}>
+              <Text style={styles.mealType}>{meal.type}</Text>
+              <TouchableOpacity onPress={() => handleSwap(meal.type)}>
+                <Ionicons name="swap-horizontal" size={20} color="#38B36A" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.mealRow}>
+              <View>
+                <Text style={styles.mealName}>{meal.name}</Text>
+                <Text style={styles.kcalText}>{meal.kcal} kcal</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={22} color="#bbb" />
+            </View>
+          </View>
+        ))
+      )}
     </ScrollView>
   );
 }

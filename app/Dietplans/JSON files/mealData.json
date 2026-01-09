@@ -5,17 +5,29 @@
         "daily_calories": 2800,
         "meals": {
           "breakfast": [
-            { "name": "Oatmeal with peanut butter & banana", "kcal": 550, "type": "Breakfast" },
+            {
+              "name": "Oatmeal with peanut butter & banana",
+              "kcal": 550,
+              "type": "Breakfast"
+            },
             { "name": "Boiled eggs (3)", "kcal": 240, "type": "Breakfast" }
           ],
           "lunch": [
-            { "name": "Rice, chicken curry, lentils", "kcal": 750, "type": "Lunch" }
+            {
+              "name": "Rice, chicken curry, lentils",
+              "kcal": 750,
+              "type": "Lunch"
+            }
           ],
           "snack": [
             { "name": "Protein shake & nuts", "kcal": 400, "type": "Snack" }
           ],
           "dinner": [
-            { "name": "Salmon, potatoes, vegetables", "kcal": 650, "type": "Dinner" }
+            {
+              "name": "Salmon, potatoes, vegetables",
+              "kcal": 650,
+              "type": "Dinner"
+            }
           ]
         }
       },
@@ -23,10 +35,18 @@
         "daily_calories": 2400,
         "meals": {
           "breakfast": [
-            { "name": "Egg omelette & whole wheat toast", "kcal": 450, "type": "Breakfast" }
+            {
+              "name": "Egg omelette & whole wheat toast",
+              "kcal": 450,
+              "type": "Breakfast"
+            }
           ],
           "lunch": [
-            { "name": "Grilled chicken, brown rice", "kcal": 650, "type": "Lunch" }
+            {
+              "name": "Grilled chicken, brown rice",
+              "kcal": 650,
+              "type": "Lunch"
+            }
           ],
           "snack": [
             { "name": "Greek yogurt & fruits", "kcal": 300, "type": "Snack" }
@@ -49,7 +69,11 @@
             { "name": "Nuts & green tea", "kcal": 200, "type": "Snack" }
           ],
           "dinner": [
-            { "name": "Steamed fish & vegetables", "kcal": 450, "type": "Dinner" }
+            {
+              "name": "Steamed fish & vegetables",
+              "kcal": 450,
+              "type": "Dinner"
+            }
           ]
         }
       },
@@ -66,7 +90,11 @@
             { "name": "Apple & almonds", "kcal": 180, "type": "Snack" }
           ],
           "dinner": [
-            { "name": "Vegetable soup & grilled fish", "kcal": 400, "type": "Dinner" }
+            {
+              "name": "Vegetable soup & grilled fish",
+              "kcal": 400,
+              "type": "Dinner"
+            }
           ]
         }
       }
@@ -76,16 +104,28 @@
         "daily_calories": 2400,
         "meals": {
           "breakfast": [
-            { "name": "Milk oats with honey & fruits", "kcal": 500, "type": "Breakfast" }
+            {
+              "name": "Milk oats with honey & fruits",
+              "kcal": 500,
+              "type": "Breakfast"
+            }
           ],
           "lunch": [
-            { "name": "Rice, fish curry, vegetables", "kcal": 650, "type": "Lunch" }
+            {
+              "name": "Rice, fish curry, vegetables",
+              "kcal": 650,
+              "type": "Lunch"
+            }
           ],
           "snack": [
             { "name": "Smoothie & nuts", "kcal": 350, "type": "Snack" }
           ],
           "dinner": [
-            { "name": "Chicken & sweet potatoes", "kcal": 550, "type": "Dinner" }
+            {
+              "name": "Chicken & sweet potatoes",
+              "kcal": 550,
+              "type": "Dinner"
+            }
           ]
         }
       },
@@ -112,9 +152,7 @@
           "breakfast": [
             { "name": "Boiled eggs & fruit", "kcal": 300, "type": "Breakfast" }
           ],
-          "lunch": [
-            { "name": "Chicken salad", "kcal": 450, "type": "Lunch" }
-          ],
+          "lunch": [{ "name": "Chicken salad", "kcal": 450, "type": "Lunch" }],
           "snack": [
             { "name": "Green tea & nuts", "kcal": 180, "type": "Snack" }
           ],
@@ -130,13 +168,19 @@
             { "name": "Vegetable omelette", "kcal": 280, "type": "Breakfast" }
           ],
           "lunch": [
-            { "name": "Low-carb salad with protein", "kcal": 420, "type": "Lunch" }
+            {
+              "name": "Low-carb salad with protein",
+              "kcal": 420,
+              "type": "Lunch"
+            }
           ],
-          "snack": [
-            { "name": "Apple", "kcal": 150, "type": "Snack" }
-          ],
+          "snack": [{ "name": "Apple", "kcal": 150, "type": "Snack" }],
           "dinner": [
-            { "name": "Steamed vegetables & soup", "kcal": 350, "type": "Dinner" }
+            {
+              "name": "Steamed vegetables & soup",
+              "kcal": 350,
+              "type": "Dinner"
+            }
           ]
         }
       }
