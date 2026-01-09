@@ -88,7 +88,26 @@ export default function MainHomePage() {
         </View>
 
         {/* Calories Card */}
-        <View style={styles.caloriesCard}>
+        <View
+          style={[
+            styles.caloriesCard,
+            // {
+            //   // Glass effect: blur + semi-transparent overlay
+            //   backgroundColor: "rgba(34, 197, 94, 0.7)",
+            //   // iOS shadow for glassy look
+            //   shadowColor: "#22C55E",
+            //   shadowOffset: { width: 0, height: 8 },
+            //   shadowOpacity: 0.18,
+            //   shadowRadius: 10,
+            //   // Android elevation
+            //   elevation: 10,
+            //   borderWidth: 18,
+            //   borderColor: "rgba(255,255,255,0.18)",
+            //   // Optional: backdropFilter for web (not supported on native)
+            //   // backdropFilter: "blur(10px)",
+            // },
+          ]}
+        >
           <Text style={styles.cardTitle}>Today's Calories</Text>
           <View style={styles.caloriesRow}>
             <View style={styles.calorieItem}>
@@ -156,9 +175,9 @@ export default function MainHomePage() {
           </View>
           <View style={styles.planActions}>
             <TouchableOpacity
-            onPress={() => {
-              router.push("../Meal_trackers/Gen_meals");
-            }}
+              onPress={() => {
+                router.push("../Meal_trackers/Gen_meals");
+              }}
               style={[
                 styles.mealBtnFilled,
                 { alignItems: "center", justifyContent: "center" },
@@ -392,7 +411,6 @@ const styles = StyleSheet.create({
   mealBtnTextFilled: {
     color: "#fff",
     fontWeight: "bold",
-    
   },
   mealBtnOutline: {
     borderWidth: 1,

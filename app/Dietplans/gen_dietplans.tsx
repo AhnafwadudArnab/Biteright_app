@@ -83,7 +83,7 @@ export default function GenerateDietPlan() {
           TextColor="#fff"
           Pressable={() => {
             router.push({
-              pathname: "/Dietplans/Diet_Planner_Item",
+              pathname: "../Dietplans/gen_dietplans",
               params: {
                 calories,
                 preference,

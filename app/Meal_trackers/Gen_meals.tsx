@@ -1,13 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
-	ScrollView,
-	StyleSheet,
-	Text,
-	TouchableOpacity,
-	View
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import MealEditModal from "./Meal_edit_model";
+import { router } from "expo-router";
 
 const DAILY_GOAL = 2000;
 
@@ -94,7 +95,14 @@ export default function GenMeals() {
     <ScrollView contentContainerStyle={styles.container}>
       {/* Header */}
       <View style={styles.headerRow}>
-        <Ionicons name="arrow-back" size={24} color="#222" />
+        <Ionicons
+          name="arrow-back"
+          size={24}
+          color="#222"
+          onPress={() => {
+            router.push("/(tabs)/MainHomePage");
+          }}
+        />
         <Text style={styles.headerTitle}>Daily Meal Log</Text>
         <Text style={styles.weeklyText}>Weekly</Text>
       </View>

@@ -11,28 +11,113 @@ import {
 
 const mealTemplates = [
   [
-    { type: "Breakfast", name: "Oatmeal with berries", kcal: 350, protein: 12, carbs: 58, fat: 8 },
-    { type: "Lunch", name: "Grilled chicken salad", kcal: 420, protein: 35, carbs: 25, fat: 18 },
-    { type: "Snack", name: "Greek yogurt & almonds", kcal: 200, protein: 15, carbs: 12, fat: 10 },
-    { type: "Dinner", name: "Salmon with quinoa", kcal: 550, protein: 40, carbs: 45, fat: 22 },
+    {
+      type: "Breakfast",
+      name: "Oatmeal with berries",
+      kcal: 350,
+      protein: 12,
+      carbs: 58,
+      fat: 8,
+    },
+    {
+      type: "Lunch",
+      name: "Grilled chicken salad",
+      kcal: 420,
+      protein: 35,
+      carbs: 25,
+      fat: 18,
+    },
+    {
+      type: "Snack",
+      name: "Greek yogurt & almonds",
+      kcal: 200,
+      protein: 15,
+      carbs: 12,
+      fat: 10,
+    },
+    {
+      type: "Dinner",
+      name: "Salmon with quinoa",
+      kcal: 550,
+      protein: 40,
+      carbs: 45,
+      fat: 22,
+    },
   ],
   [
-    { type: "Breakfast", name: "Egg white omelette", kcal: 300, protein: 18, carbs: 4, fat: 10 },
-    { type: "Lunch", name: "Turkey sandwich", kcal: 410, protein: 28, carbs: 40, fat: 12 },
-    { type: "Snack", name: "Fruit salad", kcal: 180, protein: 3, carbs: 42, fat: 1 },
-    { type: "Dinner", name: "Grilled shrimp & rice", kcal: 520, protein: 35, carbs: 60, fat: 9 },
+    {
+      type: "Breakfast",
+      name: "Egg white omelette",
+      kcal: 300,
+      protein: 18,
+      carbs: 4,
+      fat: 10,
+    },
+    {
+      type: "Lunch",
+      name: "Turkey sandwich",
+      kcal: 410,
+      protein: 28,
+      carbs: 40,
+      fat: 12,
+    },
+    {
+      type: "Snack",
+      name: "Fruit salad",
+      kcal: 180,
+      protein: 3,
+      carbs: 42,
+      fat: 1,
+    },
+    {
+      type: "Dinner",
+      name: "Grilled shrimp & rice",
+      kcal: 520,
+      protein: 35,
+      carbs: 60,
+      fat: 9,
+    },
   ],
   [
-    { type: "Breakfast", name: "Avocado toast", kcal: 320, protein: 8, carbs: 36, fat: 14 },
-    { type: "Lunch", name: "Quinoa bowl", kcal: 430, protein: 16, carbs: 60, fat: 12 },
-    { type: "Snack", name: "Protein bar", kcal: 210, protein: 20, carbs: 23, fat: 7 },
-    { type: "Dinner", name: "Chicken stir fry", kcal: 540, protein: 38, carbs: 48, fat: 16 },
+    {
+      type: "Breakfast",
+      name: "Avocado toast",
+      kcal: 320,
+      protein: 8,
+      carbs: 36,
+      fat: 14,
+    },
+    {
+      type: "Lunch",
+      name: "Quinoa bowl",
+      kcal: 430,
+      protein: 16,
+      carbs: 60,
+      fat: 12,
+    },
+    {
+      type: "Snack",
+      name: "Protein bar",
+      kcal: 210,
+      protein: 20,
+      carbs: 23,
+      fat: 7,
+    },
+    {
+      type: "Dinner",
+      name: "Chicken stir fry",
+      kcal: 540,
+      protein: 38,
+      carbs: 48,
+      fat: 16,
+    },
   ],
 ];
 
 function getRandomMeals() {
-  const template = mealTemplates[Math.floor(Math.random() * mealTemplates.length)];
-  return template.map(meal => ({
+  const template =
+    mealTemplates[Math.floor(Math.random() * mealTemplates.length)];
+  return template.map((meal) => ({
     ...meal,
     kcal: meal.kcal + Math.floor(Math.random() * 50),
   }));
@@ -77,7 +162,11 @@ export default function DietPlannerItem() {
       {/* Header */}
       <View style={{ height: 20 }} />
       <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity
+          onPress={() => {
+            router.push("/(tabs)/MainHomePage");
+          }}
+        >
           <Ionicons name="arrow-back" size={24} color="#222" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Daily Diet Plan</Text>
@@ -110,7 +199,9 @@ export default function DietPlannerItem() {
       {/* Calories Card */}
       <View style={styles.caloriesCard}>
         <Text style={styles.caloriesLabel}>Total Daily Calories</Text>
-        <Text style={styles.caloriesValue}>{weekDays[selectedDay].totalKcal} kcal</Text>
+        <Text style={styles.caloriesValue}>
+          {weekDays[selectedDay].totalKcal} kcal
+        </Text>
       </View>
       {/* Meals */}
       {meals.map((meal, idx) => (

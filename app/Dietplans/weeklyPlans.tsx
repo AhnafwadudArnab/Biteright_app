@@ -37,11 +37,12 @@ const mealTemplates = [
 
 // Generate random meals for each day
 function getRandomMeals() {
-  const template = mealTemplates[Math.floor(Math.random() * mealTemplates.length)];
+  const template =
+    mealTemplates[Math.floor(Math.random() * mealTemplates.length)];
   // Optionally, randomize kcal a bit for demo
-  return template.map(meal => ({
+  return template.map((meal) => ({
     ...meal,
-    kcal: meal.kcal + Math.floor(Math.random() * 50) // add up to 50 kcal randomly
+    kcal: meal.kcal + Math.floor(Math.random() * 50), // add up to 50 kcal randomly
   }));
 }
 
@@ -75,7 +76,11 @@ export default function WeeklyPlans() {
     <ScrollView contentContainerStyle={styles.container}>
       {/* Header */}
       <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity
+          onPress={() => {
+            router.push("/(tabs)/MainHomePage");
+          }}
+        >
           <Ionicons name="arrow-back" size={24} color="#222" />
         </TouchableOpacity>
 
@@ -220,7 +225,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: 100,
     height: 100,
-    
   },
   dayCardActive: {
     backgroundColor: "#38B36A",
