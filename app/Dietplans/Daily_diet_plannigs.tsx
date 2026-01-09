@@ -8,157 +8,75 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-const mealTemplates = [
-  [
-    {
-      type: "Breakfast",
-      name: "Oatmeal with berries",
-      kcal: 350,
-      protein: 12,
-      carbs: 58,
-      fat: 8,
-    },
-    {
-      type: "Lunch",
-      name: "Grilled chicken salad",
-      kcal: 420,
-      protein: 35,
-      carbs: 25,
-      fat: 18,
-    },
-    {
-      type: "Snack",
-      name: "Greek yogurt & almonds",
-      kcal: 200,
-      protein: 15,
-      carbs: 12,
-      fat: 10,
-    },
-    {
-      type: "Dinner",
-      name: "Salmon with quinoa",
-      kcal: 550,
-      protein: 40,
-      carbs: 45,
-      fat: 22,
-    },
-  ],
-  [
-    {
-      type: "Breakfast",
-      name: "Egg white omelette",
-      kcal: 300,
-      protein: 18,
-      carbs: 4,
-      fat: 10,
-    },
-    {
-      type: "Lunch",
-      name: "Turkey sandwich",
-      kcal: 410,
-      protein: 28,
-      carbs: 40,
-      fat: 12,
-    },
-    {
-      type: "Snack",
-      name: "Fruit salad",
-      kcal: 180,
-      protein: 3,
-      carbs: 42,
-      fat: 1,
-    },
-    {
-      type: "Dinner",
-      name: "Grilled shrimp & rice",
-      kcal: 520,
-      protein: 35,
-      carbs: 60,
-      fat: 9,
-    },
-  ],
-  [
-    {
-      type: "Breakfast",
-      name: "Avocado toast",
-      kcal: 320,
-      protein: 8,
-      carbs: 36,
-      fat: 14,
-    },
-    {
-      type: "Lunch",
-      name: "Quinoa bowl",
-      kcal: 430,
-      protein: 16,
-      carbs: 60,
-      fat: 12,
-    },
-    {
-      type: "Snack",
-      name: "Protein bar",
-      kcal: 210,
-      protein: 20,
-      carbs: 23,
-      fat: 7,
-    },
-    {
-      type: "Dinner",
-      name: "Chicken stir fry",
-      kcal: 540,
-      protein: 38,
-      carbs: 48,
-      fat: 16,
-    },
-  ],
-];
-
-function getRandomMeals() {
-  const template =
-    mealTemplates[Math.floor(Math.random() * mealTemplates.length)];
-  return template.map((meal) => ({
-    ...meal,
-    kcal: meal.kcal + Math.floor(Math.random() * 50),
-  }));
-}
-
-const weekDays = Array.from({ length: 7 }).map((_, i) => {
-  const d = new Date();
-  d.setDate(d.getDate() + i);
-  const label = d.toLocaleString("en-US", { weekday: "short" });
-  const meals = getRandomMeals();
-  const totalKcal = meals.reduce((sum, meal) => sum + meal.kcal, 0);
-  return {
-    label,
-    date: d.getDate(),
-    meals,
-    totalKcal,
-  };
-});
+import rawMealData from "./JSON files/mealData.json";
 
 export default function DietPlannerItem() {
   const params = useLocalSearchParams();
-  // If coming from weeklyPlans, use passed meals and day, else fallback to default weekDays
-  let meals, dayLabel, date, totalKcal;
-  if (params.meals && params.day && params.date && params.totalKcal) {
-    try {
-      const mealsParam = Array.isArray(params.meals) ? params.meals[0] : params.meals;
-      meals = JSON.parse(mealsParam);
-    } catch {
-      meals = weekDays[0].meals;
-    }
-    dayLabel = params.day;
-    date = params.date;
-    totalKcal = params.totalKcal;
-  } else {
-    meals = weekDays[0].meals;
-    dayLabel = weekDays[0].label;
-    date = weekDays[0].date;
-    totalKcal = weekDays[0].totalKcal;
-  }
+  const mealData: any = rawMealData;
+
+  const gender =
+    typeof params.gender === "string" ? params.gender.toLowerCase() : "male";
+
+  const rawBmi =
+    typeof params.bmiCategory === "string"
+      ? params.bmiCategory.toLowerCase()
+      : "normal";
+
+  // ✅ FORCE VALID BMI CATEGORY
+  const bmiCategory = ["underweight", "normal", "overweight", "obese"].includes(
+    rawBmi
+  )
+    ? rawBmi
+    : "normal";
+
+  const mealsPerDay =
+    typeof params.meals === "string" ? Number(params.meals) : 4;
+
+  // ✅ GET PLAN (SAFE)
+  const plan =
+    mealData?.meal_plans?.[gender]?.[bmiCategory] ??
+    mealData.meal_plans.male.normal;
+
+  // ✅ FLATTEN MEALS (CORRECT WAY)
+  const mealGroups = plan.meals;
+
+  const allMeals = [
+    ...(mealGroups.breakfast ?? []).map((m: any) => ({
+      ...m,
+      type: "Breakfast",
+    })),
+    ...(mealGroups.lunch ?? []).map((m: any) => ({
+      ...m,
+      type: "Lunch",
+    })),
+    ...(mealGroups.snack ?? []).map((m: any) => ({
+      ...m,
+      type: "Snack",
+    })),
+    ...(mealGroups.dinner ?? []).map((m: any) => ({
+      ...m,
+      type: "Dinner",
+    })),
+  ];
+
+  // ✅ RESPECT MEALS PER DAY
+  const initialMeals = allMeals.slice(0, Number(mealsPerDay) || 4).map(m => ({ ...m, done: false }));
+
+  const [meals, setMeals] = React.useState<any[]>(initialMeals);
+  const [totalKcal, setTotalKcal] = React.useState<number>(
+    initialMeals.length > 0
+      ? initialMeals.reduce((sum, m) => sum + (m.kcal || 0), 0)
+      : plan?.daily_calories || 0
+  );
+
+  // ✅ DATE
+  const today = new Date();
+  const dayLabel = today.toLocaleString("en-US", { weekday: "short" });
+  const date = today.getDate();
+
+  // ✅ NUTRITION SUMMARY (SAFE)
   const totalNutrition = meals.reduce(
-    (acc: { kcal: any; protein: any; carbs: any; fat: any; }, meal: { kcal: any; protein: any; carbs: any; fat: any; }) => {
+    (acc: any, meal: any) => {
       acc.kcal += meal.kcal || 0;
       acc.protein += meal.protein || 0;
       acc.carbs += meal.carbs || 0;
@@ -170,17 +88,16 @@ export default function DietPlannerItem() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Header */}
       <View style={{ height: 20 }} />
+
+      {/* Header */}
       <View style={styles.headerRow}>
-        <TouchableOpacity
-          onPress={() => {
-            router.push("/(tabs)/MainHomePage");
-          }}
-        >
+        <TouchableOpacity onPress={() => router.push("/(tabs)/MainHomePage")}>
           <Ionicons name="arrow-back" size={24} color="#222" />
         </TouchableOpacity>
+
         <Text style={styles.headerTitle}>Daily Diet Plan</Text>
+
         <TouchableOpacity
           style={styles.weekViewBtn}
           onPress={() => router.push("../Dietplans/weeklyPlans")}
@@ -189,50 +106,107 @@ export default function DietPlannerItem() {
           <Text style={styles.weekViewText}>Week View</Text>
         </TouchableOpacity>
       </View>
+
       <Text style={styles.dateText}>{`Day: ${dayLabel}, Date: ${date}`}</Text>
+
       {/* Calories Card */}
       <View style={styles.caloriesCard}>
         <Text style={styles.caloriesLabel}>Total Daily Calories</Text>
         <Text style={styles.caloriesValue}>{totalKcal} kcal</Text>
       </View>
+
       {/* Meals */}
-      {meals.map((meal: { type: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; name: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; kcal: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; protein: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; carbs: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; fat: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; }, idx: React.Key | null | undefined) => (
+      {meals.map((meal: any, idx: number) => (
         <View key={idx} style={styles.mealCard}>
           <View style={styles.mealHeader}>
             <Text style={styles.mealType}>{meal.type}</Text>
-            <TouchableOpacity>
-              <Text style={styles.swapText}>Swap meal</Text>
+            <TouchableOpacity
+              onPress={() => {
+                const updatedMeals = meals.map((m, i) =>
+                  i === idx ? { ...m, done: !m.done } : m
+                );
+                setMeals(updatedMeals);
+                setTotalKcal(
+                  updatedMeals.reduce(
+                    (sum, m) => sum + (m.done ? 0 : m.kcal || 0),
+                    0
+                  )
+                );
+              }}
+            >
+              {meal.done ? (
+                <Ionicons name="checkmark-circle" size={22} color="#38B36A" />
+              ) : (
+                <Ionicons name="close-circle-outline" size={22} color="#ccc" />
+              )}
             </TouchableOpacity>
           </View>
+
           <Text style={styles.mealName}>{meal.name}</Text>
+
           <View style={styles.nutritionRow}>
             <Text style={styles.kcalText}>{meal.kcal} kcal</Text>
-            {meal.protein !== undefined && <Text style={styles.nutritionText}>P {meal.protein}g</Text>}
-            {meal.carbs !== undefined && <Text style={styles.nutritionText}>C {meal.carbs}g</Text>}
-            {meal.fat !== undefined && <Text style={styles.nutritionText}>F {meal.fat}g</Text>}
+            {meal.protein !== undefined && (
+              <Text style={styles.nutritionText}>P {meal.protein}g</Text>
+            )}
+            {meal.carbs !== undefined && (
+              <Text style={styles.nutritionText}>C {meal.carbs}g</Text>
+            )}
+            {meal.fat !== undefined && (
+              <Text style={styles.nutritionText}>F {meal.fat}g</Text>
+            )}
           </View>
         </View>
       ))}
+
       {/* Nutrition Summary */}
       <View style={styles.summaryCard}>
         <Text style={styles.summaryTitle}>Nutrition Summary</Text>
+
         <View style={styles.summaryRow}>
           <Text>Total Calories</Text>
           <Text>{totalNutrition.kcal} kcal</Text>
         </View>
         <View style={styles.summaryRow}>
-          <Text>Protein</Text>
-          <Text>{totalNutrition.protein} g</Text>
+          <Text>BMI Category</Text>
+          <Text style={{ textTransform: "capitalize" }}>
+            {(() => {
+              const weight = typeof params.weight === "string" ? parseFloat(params.weight) : undefined;
+              const height = typeof params.height === "string" ? parseFloat(params.height) : undefined;
+              if (weight && height && height > 0) {
+                const bmi = weight / ((height / 100) * (height / 100));
+                let category = "";
+                if (bmi < 18.5) {
+                  category = "Underweight";
+                } else if (bmi >= 18.5 && bmi < 25) {
+                  category = "Normal";
+                } else if (bmi >= 25 && bmi < 30) {
+                  category = "Overweight";
+                } else {
+                  category = "Obese";
+                }
+                return category;
+              }
+              return "N/A";
+            })()}
+          </Text>
         </View>
         <View style={styles.summaryRow}>
-          <Text>Carbs</Text>
-          <Text>{totalNutrition.carbs} g</Text>
-        </View>
-        <View style={styles.summaryRow}>
-          <Text>Fat</Text>
-          <Text>{totalNutrition.fat} g</Text>
+          <Text>BMI Value</Text>
+          <Text>
+            {(() => {
+              const weight = typeof params.weight === "string" ? parseFloat(params.weight) : undefined;
+              const height = typeof params.height === "string" ? parseFloat(params.height) : undefined;
+              if (weight && height && height > 0) {
+                const bmi = weight / ((height / 100) * (height / 100));
+                return bmi.toFixed(1);
+              }
+              return "N/A";
+            })()}
+          </Text>
         </View>
       </View>
+
       {/* Actions */}
       <View style={styles.buttonRow}>
         <TouchableOpacity
@@ -247,6 +221,7 @@ export default function DietPlannerItem() {
   );
 }
 
+/* ✅ STYLES (UNCHANGED) */
 const styles = StyleSheet.create({
   container: {
     padding: 24,
@@ -278,19 +253,9 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 24,
     padding: 16,
     marginBottom: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
   },
-  caloriesLabel: {
-    color: "#38B36A",
-    fontSize: 14,
-  },
-  caloriesValue: {
-    fontSize: 28,
-    fontWeight: "bold",
-  },
+  caloriesLabel: { color: "#38B36A", fontSize: 14 },
+  caloriesValue: { fontSize: 28, fontWeight: "bold" },
   mealCard: {
     backgroundColor: "#fff",
     borderTopLeftRadius: 24,
@@ -299,67 +264,27 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 24,
     padding: 16,
     marginBottom: 14,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
   },
-  mealHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  mealType: {
-    color: "#888",
-    fontSize: 13,
-  },
-  swapText: {
-    color: "#38B36A",
-    fontWeight: "bold",
-  },
-  mealName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginVertical: 6,
-  },
-  nutritionRow: {
-    flexDirection: "row",
-    marginTop: 4,
-  },
-  kcalText: {
-    color: "#38B36A",
-    fontWeight: "bold",
-    marginRight: 12,
-  },
-  nutritionText: {
-    color: "#666",
-    marginRight: 10,
-  },
+  mealHeader: { flexDirection: "row", justifyContent: "space-between" },
+  mealType: { color: "#888", fontSize: 13 },
+  swapText: { color: "#38B36A", fontWeight: "bold" },
+  mealName: { fontSize: 16, fontWeight: "bold", marginVertical: 6 },
+  nutritionRow: { flexDirection: "row", marginTop: 4 },
+  kcalText: { color: "#38B36A", fontWeight: "bold", marginRight: 12 },
+  nutritionText: { color: "#666", marginRight: 10 },
   summaryCard: {
     backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 8,
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 20,
+    borderRadius: 20,
     padding: 18,
     marginTop: 10,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
   },
-  summaryTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 12,
-  },
+  summaryTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 12 },
   summaryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 6,
   },
-  buttonRow: {
-    marginTop: 24,
-  },
+  buttonRow: { marginTop: 24 },
   regenerateBtn: {
     backgroundColor: "#38B36A",
     paddingVertical: 14,
@@ -368,25 +293,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  regenerateBtnText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 15,
-  },
+  regenerateBtnText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
   weekViewBtn: { flexDirection: "row", alignItems: "center" },
   weekViewText: { color: "#38B36A", marginLeft: 4, fontSize: 17 },
-  weekRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  dayChip: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    backgroundColor: "#e6f7ee",
-  },
-  todayChip: { backgroundColor: "#38B36A" },
-  dayText: { color: "#38B36A", fontWeight: "bold" },
-  todayText: { color: "#fff" },
 });

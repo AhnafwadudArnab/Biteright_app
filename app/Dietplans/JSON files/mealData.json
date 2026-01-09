@@ -1,0 +1,145 @@
+{
+  "meal_plans": {
+    "male": {
+      "underweight": {
+        "daily_calories": 2800,
+        "meals": {
+          "breakfast": [
+            { "name": "Oatmeal with peanut butter & banana", "kcal": 550, "type": "Breakfast" },
+            { "name": "Boiled eggs (3)", "kcal": 240, "type": "Breakfast" }
+          ],
+          "lunch": [
+            { "name": "Rice, chicken curry, lentils", "kcal": 750, "type": "Lunch" }
+          ],
+          "snack": [
+            { "name": "Protein shake & nuts", "kcal": 400, "type": "Snack" }
+          ],
+          "dinner": [
+            { "name": "Salmon, potatoes, vegetables", "kcal": 650, "type": "Dinner" }
+          ]
+        }
+      },
+      "normal": {
+        "daily_calories": 2400,
+        "meals": {
+          "breakfast": [
+            { "name": "Egg omelette & whole wheat toast", "kcal": 450, "type": "Breakfast" }
+          ],
+          "lunch": [
+            { "name": "Grilled chicken, brown rice", "kcal": 650, "type": "Lunch" }
+          ],
+          "snack": [
+            { "name": "Greek yogurt & fruits", "kcal": 300, "type": "Snack" }
+          ],
+          "dinner": [
+            { "name": "Fish curry & vegetables", "kcal": 550, "type": "Dinner" }
+          ]
+        }
+      },
+      "overweight": {
+        "daily_calories": 2000,
+        "meals": {
+          "breakfast": [
+            { "name": "Boiled eggs & fruit", "kcal": 350, "type": "Breakfast" }
+          ],
+          "lunch": [
+            { "name": "Grilled chicken salad", "kcal": 500, "type": "Lunch" }
+          ],
+          "snack": [
+            { "name": "Nuts & green tea", "kcal": 200, "type": "Snack" }
+          ],
+          "dinner": [
+            { "name": "Steamed fish & vegetables", "kcal": 450, "type": "Dinner" }
+          ]
+        }
+      },
+      "obese": {
+        "daily_calories": 1700,
+        "meals": {
+          "breakfast": [
+            { "name": "Vegetable omelette", "kcal": 300, "type": "Breakfast" }
+          ],
+          "lunch": [
+            { "name": "Low-carb chicken salad", "kcal": 450, "type": "Lunch" }
+          ],
+          "snack": [
+            { "name": "Apple & almonds", "kcal": 180, "type": "Snack" }
+          ],
+          "dinner": [
+            { "name": "Vegetable soup & grilled fish", "kcal": 400, "type": "Dinner" }
+          ]
+        }
+      }
+    },
+    "female": {
+      "underweight": {
+        "daily_calories": 2400,
+        "meals": {
+          "breakfast": [
+            { "name": "Milk oats with honey & fruits", "kcal": 500, "type": "Breakfast" }
+          ],
+          "lunch": [
+            { "name": "Rice, fish curry, vegetables", "kcal": 650, "type": "Lunch" }
+          ],
+          "snack": [
+            { "name": "Smoothie & nuts", "kcal": 350, "type": "Snack" }
+          ],
+          "dinner": [
+            { "name": "Chicken & sweet potatoes", "kcal": 550, "type": "Dinner" }
+          ]
+        }
+      },
+      "normal": {
+        "daily_calories": 2000,
+        "meals": {
+          "breakfast": [
+            { "name": "Egg toast & fruits", "kcal": 400, "type": "Breakfast" }
+          ],
+          "lunch": [
+            { "name": "Grilled fish & rice", "kcal": 550, "type": "Lunch" }
+          ],
+          "snack": [
+            { "name": "Yogurt & berries", "kcal": 250, "type": "Snack" }
+          ],
+          "dinner": [
+            { "name": "Vegetable curry & roti", "kcal": 450, "type": "Dinner" }
+          ]
+        }
+      },
+      "overweight": {
+        "daily_calories": 1700,
+        "meals": {
+          "breakfast": [
+            { "name": "Boiled eggs & fruit", "kcal": 300, "type": "Breakfast" }
+          ],
+          "lunch": [
+            { "name": "Chicken salad", "kcal": 450, "type": "Lunch" }
+          ],
+          "snack": [
+            { "name": "Green tea & nuts", "kcal": 180, "type": "Snack" }
+          ],
+          "dinner": [
+            { "name": "Vegetable soup & fish", "kcal": 380, "type": "Dinner" }
+          ]
+        }
+      },
+      "obese": {
+        "daily_calories": 1500,
+        "meals": {
+          "breakfast": [
+            { "name": "Vegetable omelette", "kcal": 280, "type": "Breakfast" }
+          ],
+          "lunch": [
+            { "name": "Low-carb salad with protein", "kcal": 420, "type": "Lunch" }
+          ],
+          "snack": [
+            { "name": "Apple", "kcal": 150, "type": "Snack" }
+          ],
+          "dinner": [
+            { "name": "Steamed vegetables & soup", "kcal": 350, "type": "Dinner" }
+          ]
+        }
+      }
+    }
+  }
+}
