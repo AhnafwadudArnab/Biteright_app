@@ -1,6 +1,6 @@
 // import app from "@/Backend_Server/src/app";
 import { router } from "expo-router";
-import { ArrowLeft, Lock, Mail, User } from "lucide-react-native";
+import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   Pressable,
@@ -20,6 +20,8 @@ const SignupScreen: React.FC = () => {
   const [gender, setGender] = useState<string>("male"); // Default to 'male'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -103,30 +105,36 @@ const SignupScreen: React.FC = () => {
         {/* Password */}
         <View style={styles.field}>
           <Text style={styles.label}>Password</Text>
-          <View style={styles.inputWrapper}>
+          <View style={[styles.inputWrapper, { flexDirection: "row", alignItems: "center" }]}> 
             <Lock size={20} color="#9CA3AF" style={styles.icon} />
             <TextInput
               value={password}
               onChangeText={setPassword}
               placeholder="Create a password"
-              secureTextEntry
-              style={styles.input}
+              secureTextEntry={!showPassword}
+              style={[styles.input, { paddingLeft: 40, flex: 1 }]}
             />
+            <TouchableOpacity onPress={() => setShowPassword((prev) => !prev)} style={{ position: "absolute", right: 16 }}>
+              {showPassword ? <Eye size={20} color="#9CA3AF" /> : <EyeOff size={20} color="#9CA3AF" />}
+            </TouchableOpacity>
           </View>
         </View>
 
         {/* Confirm Password */}
         <View style={styles.field}>
           <Text style={styles.label}>Confirm Password</Text>
-          <View style={styles.inputWrapper}>
+          <View style={[styles.inputWrapper, { flexDirection: "row", alignItems: "center" }]}> 
             <Lock size={20} color="#9CA3AF" style={styles.icon} />
             <TextInput
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               placeholder="Confirm your password"
-              secureTextEntry
-              style={styles.input}
+              secureTextEntry={!showConfirmPassword}
+              style={[styles.input, { paddingLeft: 40, flex: 1 }]}
             />
+            <TouchableOpacity onPress={() => setShowConfirmPassword((prev) => !prev)} style={{ position: "absolute", right: 16 }}>
+              {showConfirmPassword ? <Eye size={20} color="#9CA3AF" /> : <EyeOff size={20} color="#9CA3AF" />}
+            </TouchableOpacity>
           </View>
         </View>
 
