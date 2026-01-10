@@ -296,7 +296,7 @@ export default function MainHomePage() {
       {/* Floating Glassy Icon Navigation - always on top */}
       <View style={styles.fabContainer} pointerEvents="box-none">
         <View style={styles.fabBar}>
-          <TouchableOpacity style={styles.fabBtn} onPress={() => {}}>
+          <TouchableOpacity style={styles.fabBtn} onPress={() => {router.push("/(tabs)/MainHomePage");}}>
             <Ionicons name="home" size={22} color="#5B4DF7" />
           </TouchableOpacity>
           {/* <TouchableOpacity style={styles.fabBtn} onPress={() => {}}>
