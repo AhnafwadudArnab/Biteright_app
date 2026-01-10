@@ -15,6 +15,7 @@
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
+    "cors": "^2.8.5",
     "expo": "~54.0.29",
     "expo-blur": "~15.0.8",
     "expo-constants": "~18.0.12",
@@ -29,7 +30,9 @@
     "expo-symbols": "~1.0.8",
     "expo-system-ui": "~6.0.9",
     "expo-web-browser": "~15.0.10",
+    "express": "^5.2.1",
     "lucide-react-native": "^0.561.0",
+    "pg-hstore": "^2.3.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
@@ -38,15 +41,32 @@
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
     "react-native-web": "^0.21.2",
-    "react-native-worklets": "0.5.1"
+    "react-native-worklets": "0.5.1",
+    "sequelize": "^6.37.7"
   },
   "devDependencies": {
     "@react-native-community/cli": "latest",
+    "@types/cors": "^2.8.19",
     "@types/react": "~19.1.0",
     "@types/react-native": "^0.72.8",
+    "@types/sequelize": "^4.28.20",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
+    "ts-node": "^10.9.2",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "private": true,
+  "description": "This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AhnafwadudArnab/Biteright_app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/AhnafwadudArnab/Biteright_app/issues"
+  },
+  "homepage": "https://github.com/AhnafwadudArnab/Biteright_app#readme"
 }

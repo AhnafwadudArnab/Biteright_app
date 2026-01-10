@@ -1,3 +1,4 @@
+// import app from "@/Backend_Server/src/app";
 import { router } from "expo-router";
 import { ArrowLeft, Lock, Mail, User } from "lucide-react-native";
 import React, { useState } from "react";
@@ -16,9 +17,40 @@ const SignupScreen: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [gender, setGender] = useState<string>("male"); // Default to 'male'
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = () => {
-    // signup logic here
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // IMPORTANT: Replace with your computer's local IP address for mobile testing
+      const response = await fetch("http://192.168.68.104:3000/users/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          confirm_password: confirmPassword,
+          gender, // Always 'male' or 'female'
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.message || "Registration failed");
+      } else {
+        // Registration successful, redirect to login
+        router.replace("/login_signup/login");
+      }
+    } catch (err) {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -98,9 +130,41 @@ const SignupScreen: React.FC = () => {
           </View>
         </View>
 
+        {/* Gender */}
+        <View style={styles.field}>
+          <Text style={styles.label}>Gender</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+            <TouchableOpacity
+              style={[styles.radioBtn, gender === 'male' && styles.radioBtnSelected]}
+              onPress={() => setGender('male')}
+            >
+              <View style={[styles.radioCircle, gender === 'male' && styles.radioCircleSelected]} />
+              <Text style={styles.radioLabel}>Male</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.radioBtn, gender === 'female' && styles.radioBtnSelected]}
+              onPress={() => setGender('female')}
+            >
+              <View style={[styles.radioCircle, gender === 'female' && styles.radioCircleSelected]} />
+              <Text style={styles.radioLabel}>Female</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Error Message */}
+        {error && (
+          <Text style={{ color: "red", marginBottom: 8 }}>{error}</Text>
+        )}
+
         {/* Sign Up Button */}
-        <TouchableOpacity style={styles.signupBtn} onPress={() => router.push("/login_signup/login")}>
-          <Text style={styles.signupText}>SignUp</Text>
+        <TouchableOpacity
+          style={styles.signupBtn}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          <Text style={styles.signupText}>
+            {loading ? "Signing Up..." : "SignUp"}
+          </Text>
         </TouchableOpacity>
 
         {/* Login Redirect */}
@@ -202,5 +266,33 @@ const styles = StyleSheet.create({
 
   loginLink: {
     color: "#3BB273",
+  },
+
+  // Radio button styles
+  radioBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 24,
+  },
+  radioBtnSelected: {},
+  radioCircle: {
+    height: 20,
+    width: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#3BB273",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 8,
+    backgroundColor: "white",
+  },
+  radioCircleSelected: {
+    backgroundColor: "#3BB273",
+    borderColor: "#3BB273",
+  },
+  radioLabel: {
+    fontSize: 16,
+    color: "#374151",
+    marginRight: 8,
   },
 });

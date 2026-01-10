@@ -48,3 +48,32 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+# Biteright App
+
+## How to Start the Project
+
+### 1. Start the Backend Server
+
+- Open a terminal and navigate to the `Backend_Server` folder:
+
+  cd Backend_Server
+  npm install
+  npm start
+
+- The backend will run on http://localhost:3000 by default.
+
+### 2. Start the Expo Frontend
+
+- Open a separate terminal and navigate to the main project folder:
+
+  cd ..
+  npm install
+  npm start
+
+- This will start the Expo app for development.
+
+## Notes
+
+- Always run backend and frontend in separate terminals.
+- Make sure both are running for full app functionality.

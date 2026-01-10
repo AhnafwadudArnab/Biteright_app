@@ -1,22 +1,46 @@
+import { router } from "expo-router";
 import { Leaf, Lock, Mail } from "lucide-react-native";
 import React from "react";
-import { router } from "expo-router";
 
 import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
-type Props = {
-  handleSubmit: () => void;
-};
 
-const Login = ({ handleSubmit }: Props) => {
+const Login = () => {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch("http://localhost:3000/users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.message || "Login failed");
+      } else {
+        // Login successful, redirect to main page
+        router.push("/(tabs)/MainHomePage");
+      }
+    } catch (err) {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -72,9 +96,15 @@ const Login = ({ handleSubmit }: Props) => {
           <Text style={styles.forgotText}>Forgot Password?</Text>
         </TouchableOpacity>
 
+
+        {/* Error Message */}
+        {error && (
+          <Text style={{ color: 'red', marginBottom: 8 }}>{error}</Text>
+        )}
+
         {/* Login button */}
-        <TouchableOpacity style={styles.loginButton} onPress={() => router.push("/(tabs)/MainHomePage")}>
-          <Text style={styles.loginButtonText}>Login</Text>
+        <TouchableOpacity style={styles.loginButton} onPress={handleSubmit} disabled={loading}>
+          <Text style={styles.loginButtonText}>{loading ? "Logging in..." : "Login"}</Text>
         </TouchableOpacity>
 
         {/* Sign up */}
