@@ -24,22 +24,30 @@ const SignupScreen: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async () => {
+    if (!name || !email || !password || !confirmPassword || !gender) {
+      setError("All fields are required");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
     setLoading(true);
     setError(null);
+    const payload = {
+      name,
+      email,
+      password,
+      gender, // Always 'male' or 'female'
+    };
+    console.log('Signup payload:', payload);
     try {
-      // IMPORTANT: Replace with your computer's local IP address for mobile testing
       const response = await fetch("http://192.168.68.104:3000/users/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          confirm_password: confirmPassword,
-          gender, // Always 'male' or 'female'
-        }),
+        body: JSON.stringify(payload),
       });
       const data = await response.json();
       if (!response.ok) {

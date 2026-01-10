@@ -17,6 +17,10 @@ class User extends Model {
 }
 
 User.init({
+        password: {
+            type: DataTypes.STRING(255),
+            allowNull: false,
+        },
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,

@@ -3,19 +3,17 @@ import User from "../models/userModel";
 
 // Signup (Register) a new user
 export const signupUser = async (req: Request, res: Response) => {
-  const { name, email, password, confirm_password, gender } = req.body;
+  const { name, email, password, gender } = req.body;
 
   // Debug log to verify received data
   console.log('Signup request body:', req.body);
   console.log('Gender received:', gender);
 
-  if (!name || !email || !password || !confirm_password || !gender) {
+  if (!name || !email || !password || !gender) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
-  if (password !== confirm_password) {
-    return res.status(400).json({ message: "Passwords do not match" });
-  }
+  // Password match check is now handled on frontend only
 
   try {
     // Check if user already exists
