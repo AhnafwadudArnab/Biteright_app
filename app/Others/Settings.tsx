@@ -38,13 +38,37 @@ export default function SettingsScreen() {
       <Text style={styles.header}>Settings</Text>
       </View>
 
-      <SettingItem icon="person-outline" title="Account" onPress={() => router.push("/Others/UserProfile")} />
-      <SettingItem icon="restaurant-outline" title="Diet Preferences" onPress={() => router.push("/Others/Settings_page files/dietplan_set")} />
-      <SettingItem icon="fitness-outline" title="Health & Goals" onPress={() => router.push("/Others/Settings_page files/health&goal")} />
-      <SettingItem icon="notifications-outline" title="Notifications" onPress={() => router.push("/Others/Settings_page files/notifications")} />
-      <SettingItem icon="color-palette-outline" title="App Preferences" onPress={() => router.push("/Others/Settings_page files/App_pref")} />
-      <SettingItem icon="lock-closed-outline" title="Privacy & Security" onPress={() => router.push("/Others/Settings_page files/Privacypolicy")} />
-      <SettingItem icon="information-circle-outline" title="About" onPress={() => router.push("/Others/Settings_page files/AboutScreen")} />
+      <SettingItem
+      icon="person-outline"
+      title="Account"
+      onPress={() => router.push("/Others/UserProfile")}
+      />
+      <SettingItem
+      icon="fitness-outline"
+      title="Health & Goals"
+      onPress={() => router.push("/Others/Settings_page files/health&goal")}
+      />
+      <SettingItem
+      icon="notifications-outline"
+      title="Notifications"
+      // Remove arrow, add switch
+      onPress={undefined}
+      />
+      <SettingItem
+      icon="color-palette-outline"
+      title="App Preferences"
+      onPress={() => router.push("/Others/Settings_page files/App_pref")}
+      />
+      <SettingItem
+      icon="lock-closed-outline"
+      title="Privacy & Security"
+      onPress={() => router.push("/Others/Settings_page files/Privacypolicy")}
+      />
+      <SettingItem
+      icon="information-circle-outline"
+      title="About"
+      onPress={() => router.push("/Others/Settings_page files/AboutScreen")}
+      />
     </ScrollView>
   );
 }

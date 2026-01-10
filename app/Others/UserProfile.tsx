@@ -20,7 +20,10 @@ export default function UserProfile() {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => router.push("../(tabs)/MainHomePage")}
+      >
         <Ionicons name="arrow-back" size={24} color="#222" />
       </TouchableOpacity>
       <View style={styles.avatarContainer}>
@@ -29,10 +32,18 @@ export default function UserProfile() {
         <Text style={styles.email}>{user.email}</Text>
       </View>
       <View style={styles.infoCard}>
-        <Text style={styles.infoLabel}>Age: <Text style={styles.infoValue}>{user.age}</Text></Text>
-        <Text style={styles.infoLabel}>Gender: <Text style={styles.infoValue}>{user.gender}</Text></Text>
-        <Text style={styles.infoLabel}>Height: <Text style={styles.infoValue}>{user.height} cm</Text></Text>
-        <Text style={styles.infoLabel}>Weight: <Text style={styles.infoValue}>{user.weight} kg</Text></Text>
+        <Text style={styles.infoLabel}>
+          Age: <Text style={styles.infoValue}>{user.age}</Text>
+        </Text>
+        <Text style={styles.infoLabel}>
+          Gender: <Text style={styles.infoValue}>{user.gender}</Text>
+        </Text>
+        <Text style={styles.infoLabel}>
+          Height: <Text style={styles.infoValue}>{user.height} cm</Text>
+        </Text>
+        <Text style={styles.infoLabel}>
+          Weight: <Text style={styles.infoValue}>{user.weight} kg</Text>
+        </Text>
       </View>
       <TouchableOpacity
         style={styles.settingsButton}
@@ -70,5 +81,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 8,
   },
-  settingsText: { marginLeft: 8, color: "#2563EB", fontWeight: "600", fontSize: 16 },
+  settingsText: {
+    marginLeft: 8,
+    color: "#2563EB",
+    fontWeight: "600",
+    fontSize: 16,
+  },
 });
