@@ -8,7 +8,7 @@ const Stack = createNativeStackNavigator();
 import { NavigationContainer } from "@react-navigation/native";
 import MainHomePage from "./(tabs)/MainHomePage";
 import DietPlannerItem from "./Dietplans/Daily_diet_plannigs";
-import GenerateDietPlan from "./Dietplans/gen_dietplans";
+import GenerateDietPlan from "./Dietplans/newPlan";
 import WeeklyPlans from "./Dietplans/weeklyPlans";
 import WaterIntake from "./WaterFiles/waterintake";
 

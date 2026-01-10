@@ -12,7 +12,7 @@ import {
 
 export default function GenerateDietPlan() {
   const [age, setAge] = useState("");
-  const [gender, setGender] = useState("Male");
+  const [gender, setGender] = useState("male");
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
   const [goal, setGoal] = useState("Maintain");
@@ -47,7 +47,7 @@ export default function GenerateDietPlan() {
         {/* Gender */}
         <Text style={styles.label}>Gender</Text>
         <View style={styles.row}>
-          {["Male", "Female"].map((g) => (
+          {["male", "female"].map((g) => (
             <TouchableOpacity
               key={g}
               style={[styles.optionBtn, gender === g && styles.activeBtn]}
@@ -56,7 +56,7 @@ export default function GenerateDietPlan() {
               <Text
                 style={[styles.optionText, gender === g && styles.activeText]}
               >
-                {g}
+                {g.charAt(0).toUpperCase() + g.slice(1)}
               </Text>
             </TouchableOpacity>
           ))}
@@ -161,20 +161,28 @@ export default function GenerateDietPlan() {
           }}
           onPress={() => {
             if (!age || !height || !weight) {
-              alert(
-                "Please fill in all required fields: Age, Height, and Weight."
-              );
+              alert("Please fill in all required fields: Age, Height, and Weight.");
               return;
             }
+            const heightNum = parseFloat(height);
+            const weightNum = parseFloat(weight);
+            if (isNaN(heightNum) || isNaN(weightNum) || heightNum <= 0 || weightNum <= 0) {
+              alert("Please enter valid numeric values for Height and Weight.");
+              return;
+            }
+            // Calculate BMI before navigating
+            const bmi = weightNum / ((heightNum / 100) * (heightNum / 100));
+            alert(`Your BMI is ${bmi.toFixed(1)}`);
             router.push({
               pathname: "/Dietplans/Daily_diet_plannigs",
               params: {
                 age,
-                gender,
-                height,
-                weight,
+                gender: gender.toLowerCase(),
+                height: heightNum.toString(),
+                weight: weightNum.toString(),
+                bmi: bmi.toFixed(1),
                 goal,
-                dietType,
+                dietType: dietType.toLowerCase(),
                 meals: meals.toString(),
                 allergies,
               },

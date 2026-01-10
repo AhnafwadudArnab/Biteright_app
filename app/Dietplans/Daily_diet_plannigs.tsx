@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import doctorMealData from "./JSON files/DoctorSugg_bmi_mealplans.json";
+import { fetchMealPlan } from "./api.native";
 
 type Meal = {
   type: string;
@@ -31,71 +31,58 @@ type BmiMealPlans = {
   };
 };
 
-// Helper: Find closest BMI range key for a given BMI
-function getBmiRangeKey(bmi: number, gender: "male" | "female", bmiPlans: any) {
-  const ranges = Object.keys(bmiPlans[gender]);
-  let closestKey = ranges[0];
-  let minDiff = Infinity;
-  for (const key of ranges) {
-    const [low, high] = key.split("-").map(Number);
-    if (bmi >= low && bmi <= high) {
-      return key;
-    }
-    // If not in range, find closest
-    const diff = Math.abs((low + high) / 2 - bmi);
-    if (diff < minDiff) {
-      minDiff = diff;
-      closestKey = key;
-    }
-  }
-  return closestKey;
-}
+// No longer needed: getBmiRangeKey
 
 export default function DietPlannerItem() {
   const params = useLocalSearchParams();
-
-  // Get gender
   const gender =
     typeof params.gender === "string" &&
     params.gender.toLowerCase() === "female"
       ? "female"
       : "male";
-
-  // Get BMI from params or calculate
   const weight =
     typeof params.weight === "string" ? parseFloat(params.weight) : undefined;
   const height =
     typeof params.height === "string" ? parseFloat(params.height) : undefined;
-  let bmi = 0;
-  if (weight && height && height > 0) {
-    bmi = weight / ((height / 100) * (height / 100));
-  }
+  const bmi = typeof params.bmi === "string" ? parseFloat(params.bmi) : (weight && height && height > 0 ? weight / ((height / 100) * (height / 100)) : 0);
+  const [plan, setPlan] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [meals, setMeals] = useState<any[]>([]);
+  const [totalKcal, setTotalKcal] = useState<number>(0);
 
-  // Find closest BMI range key
-  const bmiPlans = doctorMealData.bmiMealPlans as BmiMealPlans;
-  const bmiRangeKey = getBmiRangeKey(bmi, gender, bmiPlans);
-
-  // Get plan for gender and BMI range
-  const plan =
-    bmiPlans[gender][
-      bmiRangeKey as keyof (typeof bmiPlans)[Gender extends keyof typeof bmiPlans
-        ? Gender
-        : never]
-    ];
-
-  // Meals per day (limit to available meals)
-  const mealsPerDay =
-    typeof params.meals === "string" ? Number(params.meals) : plan.meals.length;
-
-  // Slice meals if needed
-  const initialMeals = plan.meals
-    .slice(0, mealsPerDay)
-    .map((m: any) => ({ ...m, done: false }));
-
-  const [meals, setMeals] = React.useState<any[]>(initialMeals);
-  const [totalKcal, setTotalKcal] = React.useState<number>(
-    initialMeals.reduce((sum: any, m: { kcal: any }) => sum + (m.kcal || 0), 0)
-  );
+  useEffect(() => {
+    console.log('Params:', params);
+    console.log('gender:', gender, 'weight:', weight, 'height:', height, 'bmi:', bmi);
+    setLoading(true);
+    fetchMealPlan(gender, Number(bmi))
+      .then((data) => {
+        setPlan(data);
+        const mealsPerDay =
+          typeof params.meals === "string"
+            ? Number(params.meals)
+            : data.meals.length;
+        const initialMeals = data.meals
+          .slice(0, mealsPerDay)
+          .map((m: any) => ({ ...m, done: false }));
+        setMeals(initialMeals);
+        setTotalKcal(
+          initialMeals.reduce(
+            (sum: any, m: { kcal: any }) => sum + (m.kcal || 0),
+            0
+          )
+        );
+      })
+      .catch((err) => {
+        setPlan({
+          _debug: {
+            gender,
+            bmi: bmi.toFixed(1),
+            error: err?.message || err,
+          },
+        });
+      })
+      .finally(() => setLoading(false));
+  }, [gender, bmi, params.meals]);
 
   // Calories for completed meals
   const completedKcal = meals.reduce(
@@ -117,13 +104,33 @@ export default function DietPlannerItem() {
     { kcal: 0 }
   );
 
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+  if (!plan || (plan && plan._debug)) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ color: "red", fontWeight: "bold" }}>No plan found.</Text>
+        {plan && plan._debug && (
+          <Text style={{ color: "#555", marginTop: 8, fontSize: 13 }}>
+            Gender: {plan._debug.gender}, BMI: {plan._debug.bmi}
+            {plan._debug.error ? `\nError: ${plan._debug.error}` : ""}
+          </Text>
+        )}
+      </View>
+    );
+  }
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={{ height: 20 }} />
 
       {/* Header */}
       <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => router.push("../MainHomePage")}>
+        <TouchableOpacity onPress={() => router.push("../MainHomePage")}> 
           <Ionicons name="arrow-back" size={24} color="#222" />
         </TouchableOpacity>
 
@@ -224,7 +231,11 @@ export default function DietPlannerItem() {
         </View>
         <View style={styles.summaryRow}>
           <Text>BMI Value</Text>
-          <Text>{bmi ? bmi.toFixed(1) : "N/A"}</Text>
+          <Text>
+            {weight && height && height > 0
+              ? (weight / ((height / 100) * (height / 100))).toFixed(1)
+              : "N/A"}
+          </Text>
         </View>
         <View style={styles.summaryRow}>
           <Text>BMI Category</Text>

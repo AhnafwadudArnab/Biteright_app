@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -9,29 +9,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import doctorMealData from "./JSON files/DoctorSugg_bmi_mealplans.json";
+import { fetchMealPlan } from "./api.native";
 
 /* ===== DATA ===== */
 
-// Helper: Find closest BMI range key for a given BMI
-function getBmiRangeKey(bmi: number, gender: "male" | "female", bmiPlans: any) {
-  const ranges = Object.keys(bmiPlans[gender]);
-  let closestKey = ranges[0];
-  let minDiff = Infinity;
-  for (const key of ranges) {
-    const [low, high] = key.split("-").map(Number);
-    if (bmi >= low && bmi <= high) {
-      return key;
-    }
-    // If not in range, find closest
-    const diff = Math.abs(((low + high) / 2) - bmi);
-    if (diff < minDiff) {
-      minDiff = diff;
-      closestKey = key;
-    }
-  }
-  return closestKey;
-}
+// No longer needed: getBmiRangeKey
 
 // Shuffle array utility
 function shuffleArray(array: any[]) {
@@ -45,31 +27,20 @@ function shuffleArray(array: any[]) {
 
 export default function WeeklyPlans() {
   const params = useLocalSearchParams();
-
-  // Get user info from params (or set defaults for demo)
-  const gender =
-    typeof params.gender === "string" && params.gender.toLowerCase() === "female"
-      ? "female"
-      : "male";
+  const gender = typeof params.gender === "string" && params.gender.toLowerCase() === "female" ? "female" : "male";
   const weight = typeof params.weight === "string" ? parseFloat(params.weight) : 70;
   const height = typeof params.height === "string" ? parseFloat(params.height) : 170;
-
-  // Calculate BMI
-  let bmi = 0;
-  if (weight && height && height > 0) {
-    bmi = weight / ((height / 100) * (height / 100));
-  }
-
-  // Get plan from JSON
-  const bmiPlans = doctorMealData.bmiMealPlans;
-  const bmiRangeKey = getBmiRangeKey(bmi, gender, bmiPlans);
-  const plan =
-    bmiPlans[gender][bmiRangeKey as keyof typeof bmiPlans[typeof gender]] || {
-      category: "No Plan",
-      dailyCalories: 0,
-      doctorFocus: [],
-      meals: [],
-    };
+  const [plan, setPlan] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedDay, setSelectedDay] = useState(0);
+  useEffect(() => {
+    const bmi = weight && height && height > 0 ? weight / ((height / 100) * (height / 100)) : 0;
+    setLoading(true);
+    fetchMealPlan(gender, Number(bmi.toFixed(1)))
+      .then(setPlan)
+      .catch(() => setPlan(null))
+      .finally(() => setLoading(false));
+  }, [gender, weight, height]);
 
   // Prepare 7 days using the same plan, optionally shuffle meals for variety
   const today = new Date();
@@ -78,7 +49,7 @@ export default function WeeklyPlans() {
     d.setDate(today.getDate() + i);
     const label = d.toLocaleString("en-US", { weekday: "short" });
     // Only shuffle if meals exist
-    const meals = plan.meals && plan.meals.length > 0 ? shuffleArray(plan.meals) : [];
+    const meals = plan && plan.meals && plan.meals.length > 0 ? shuffleArray(plan.meals) : [];
     const totalKcal = meals.reduce((sum, meal) => sum + (meal.kcal || 0), 0);
     return {
       label,
@@ -88,13 +59,15 @@ export default function WeeklyPlans() {
     };
   });
 
-  const [selectedDay, setSelectedDay] = useState(0);
-
   const handleSwap = (mealType: string) => {
     Alert.alert("Swap Meal", `Swap action for ${mealType}`);
   };
 
   const weeklyCalories = weekDays.reduce((sum, day) => sum + day.totalKcal, 0);
+
+  if (loading) {
+    return <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}><Text>Loading...</Text></View>;
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
