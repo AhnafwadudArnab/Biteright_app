@@ -2,49 +2,68 @@
 
 CREATE DATABASE IF NOT EXISTS biteright_app;
 USE biteright_app;
-
--- Users table
-CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(150) UNIQUE,
+  gender ENUM('male', 'female') NOT NULL,
+  age INT,
+  height_cm DECIMAL(5,2),
+  weight_kg DECIMAL(5,2),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
--- Diet Plans table
-CREATE TABLE IF NOT EXISTS diet_plans (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    plan_name VARCHAR(100),
-    start_date DATE,
-    end_date DATE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+CREATE TABLE bmi_records (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  bmi_value DECIMAL(4,2) NOT NULL,
+  category ENUM(
+    'severely_underweight',
+    'underweight',
+    'normal',
+    'overweight',
+    'obese'
+  ) NOT NULL,
+  recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
-
--- Meals table
-CREATE TABLE IF NOT EXISTS meals (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    diet_plan_id INT NOT NULL,
-    meal_type VARCHAR(50), -- e.g., Breakfast, Lunch, Dinner, Snack
-    meal_name VARCHAR(100),
-    calories INT,
-    protein INT,
-    carbs INT,
-    fat INT,
-    meal_date DATE,
-    FOREIGN KEY (diet_plan_id) REFERENCES diet_plans(id)
+CREATE TABLE diet_plans (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  bmi_min DECIMAL(4,1),
+  bmi_max DECIMAL(4,1),
+  gender ENUM('male','female'),
+  goal ENUM('weight_gain','maintenance','weight_loss'),
+  daily_calories INT,
+  description TEXT
 );
-
--- Water Intake table
-CREATE TABLE IF NOT EXISTS water_intake (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    intake_ml INT,
-    intake_date DATE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+CREATE TABLE meals (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150),
+  meal_type ENUM('breakfast','lunch','snack','dinner'),
+  calories INT,
+  protein DECIMAL(5,2),
+  carbs DECIMAL(5,2),
+  fat DECIMAL(5,2)
 );
-
--- Add more tables as needed for tracking, preferences, etc.
+CREATE TABLE diet_plan_meals (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  diet_plan_id INT,
+  meal_id INT,
+  FOREIGN KEY (diet_plan_id) REFERENCES diet_plans(id) ON DELETE CASCADE,
+  FOREIGN KEY (meal_id) REFERENCES meals(id) ON DELETE CASCADE
+);
+CREATE TABLE meal_logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  meal_id INT,
+  eaten_at DATETIME,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (meal_id) REFERENCES meals(id) ON DELETE CASCADE
+);
+CREATE TABLE progress (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  weight_kg DECIMAL(5,2),
+  note VARCHAR(255),
+  recorded_at DATE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);

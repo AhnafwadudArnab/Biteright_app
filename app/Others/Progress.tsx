@@ -1,5 +1,14 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { router } from "expo-router";
 import React from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const DAILY_GOAL = {
   calories: 2000,
@@ -51,6 +60,7 @@ const ProgressBar = ({
 };
 
 export default function ProgressScreen() {
+  const navigation = useNavigation();
   const bmi = 22.4;
   const bmiStatus = "Normal";
 
@@ -60,9 +70,17 @@ export default function ProgressScreen() {
       contentContainerStyle={{ flexGrow: 1, paddingBottom: 32 }}
       showsVerticalScrollIndicator={false}
     >
+      {/* Back Button */}
+      <View style={{ marginTop: 20, marginBottom: 4 }}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.push("../MainHomePage")}
+        >
+          <Ionicons name="arrow-back" size={24} color="#222" />
+        </TouchableOpacity>
+      </View>
       {/* Header */}
       <Text style={styles.title}>Your Progress</Text>
-
       {/* Summary */}
       <View style={styles.summaryCard}>
         <View>
@@ -133,11 +151,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8FAFC",
     paddingHorizontal: 16,
   },
+  backButton: {
+    marginTop: 25,
+    marginBottom: 4,
+    alignSelf: "flex-start",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+  },
+  backButtonText: {
+    marginTop: 3,
+    fontSize: 16,
+  },
   title: {
     textAlign: "center",
     fontSize: 24,
     fontWeight: "700",
-    marginBottom: 16,
+    marginTop: 3, // Add some top margin to push it down
+    marginBottom: 15,
   },
   summaryCard: {
     flexDirection: "row",
