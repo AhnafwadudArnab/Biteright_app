@@ -81,7 +81,11 @@ export default function MainHomePage() {
                   color="#8B5CF6"
                 />
               </TouchableOpacity>
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  router.push("../Others/Settings");
+                }}
+              >
                 <Ionicons name="settings-outline" size={24} color="#8B5CF6" />
               </TouchableOpacity>
             </View>
@@ -295,9 +299,9 @@ export default function MainHomePage() {
           <TouchableOpacity style={styles.fabBtn} onPress={() => {}}>
             <Ionicons name="home" size={22} color="#5B4DF7" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.fabBtn} onPress={() => {}}>
+          {/* <TouchableOpacity style={styles.fabBtn} onPress={() => {}}>
             <Ionicons name="fast-food" size={22} color="#222" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity
             style={[styles.fabBtn, styles.fabBtnActive]}
             onPress={() => {
@@ -306,10 +310,21 @@ export default function MainHomePage() {
           >
             <Ionicons name="add" size={22} color="#222" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.fabBtn} onPress={() => {}}>
+          
+          <TouchableOpacity
+            style={styles.fabBtn}
+            onPress={() => {
+              router.push("/Others/Progress");
+            }}
+          >
             <Ionicons name="stats-chart" size={22} color="#222" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.fabBtn} onPress={() => {}}>
+          <TouchableOpacity
+            style={styles.fabBtn}
+            onPress={() => {
+              router.push("/Others/UserProfile");
+            }}
+          >
             <Ionicons name="person" size={22} color="#222" />
           </TouchableOpacity>
         </View>
