@@ -270,7 +270,10 @@ export default function MainHomePage() {
             <Ionicons name="calendar" size={24} color="#2196F3" />
             <Text style={styles.quickActionText}>Weekly Plan</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.quickActionBtn}>
+          <TouchableOpacity
+            onPress={() => router.push("../Others/Progress")}
+            style={styles.quickActionBtn}
+          >
             <Ionicons name="bar-chart" size={24} color="#8B5CF6" />
             <Text style={styles.quickActionText}>Progress</Text>
           </TouchableOpacity>
