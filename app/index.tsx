@@ -1,12 +1,16 @@
-import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { Redirect } from "expo-router";
 import * as React from "react";
+
+
+const Stack = createNativeStackNavigator();
+
+import { NavigationContainer } from "@react-navigation/native";
 import MainHomePage from "./(tabs)/MainHomePage";
-import GenerateDietPlan from "./Dietplans/gen_dietplans";
 import DietPlannerItem from "./Dietplans/Daily_diet_plannigs";
+import GenerateDietPlan from "./Dietplans/gen_dietplans";
 import WeeklyPlans from "./Dietplans/weeklyPlans";
 import WaterIntake from "./WaterFiles/waterintake";
-const Stack = createNativeStackNavigator();
 
 function App() {
   return (
@@ -21,5 +25,3 @@ function App() {
     </NavigationContainer>
   );
 }
-
-export default App;

@@ -14,3 +14,5 @@ export const CaloriesProvider = ({ children }: { children: React.ReactNode }) =>
 };
 
 export const useCalories = () => useContext(CaloriesContext);
+
+export default CaloriesContext;
