@@ -2,22 +2,39 @@ import { Platform } from 'react-native';
 import { NetworkInfo } from 'react-native-network-info';
 
 let cachedIp: string | null = null;
-const BACKEND_PORT = 3000;
+
+// Home and University IP/Port
+const HOME_IP = '192.168.68.104';
+const HOME_PORT = 3000;
+const UNIVERSITY_IP = '10.10.10.10'; // Change to your university IP
+const UNIVERSITY_PORT = 3000; // Change to your university port
+
+// Toggle this value to switch between home/university
+const USE_UNIVERSITY = false; // Set true for university, false for home
+
+function getSelectedIpPort() {
+  if (USE_UNIVERSITY) {
+    return { ip: UNIVERSITY_IP, port: UNIVERSITY_PORT };
+  } else {
+    return { ip: HOME_IP, port: HOME_PORT };
+  }
+}
 
 async function getApiBaseUrl() {
+  const { ip, port } = getSelectedIpPort();
   // Android emulator
-  if (Platform.OS === 'android') return `http://192.168.68.104:${BACKEND_PORT}`;
+  if (Platform.OS === 'android') return `http://${ip}:${port}`;
   // iOS simulator
-  if (Platform.OS === 'ios') return `http://localhost:${BACKEND_PORT}`;
+  if (Platform.OS === 'ios') return `http://localhost:${port}`;
   // Real device: use local IP
-  if (cachedIp) return `http://${cachedIp}:${BACKEND_PORT}`;
+  if (cachedIp) return `http://${cachedIp}:${port}`;
   try {
-    const ip = await NetworkInfo.getIPV4Address();
-    cachedIp = ip;
-    if (ip && ip !== '127.0.0.1') return `http://${ip}:${BACKEND_PORT}`;
+    const ipAddr = await NetworkInfo.getIPV4Address();
+    cachedIp = ipAddr;
+    if (ipAddr && ipAddr !== '127.0.0.1') return `http://${ipAddr}:${port}`;
   } catch {}
   // Fallback
-  return `http://localhost:${BACKEND_PORT}`;
+  return `http://localhost:${port}`;
 }
 
 export async function fetchMealPlan(gender: string, bmi: number) {
