@@ -6,7 +6,7 @@ let cachedIp: string | null = null;
 // Home and University IP/Port
 const HOME_IP = '192.168.68.104';
 const HOME_PORT = 3000;
-const UNIVERSITY_IP = '10.10.10.10'; // Change to your university IP
+const UNIVERSITY_IP = '10.15.52.69'; // Change to your university IP
 const UNIVERSITY_PORT = 3000; // Change to your university port
 
 // Toggle this value to switch between home/university
