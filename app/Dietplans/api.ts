@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 function getApiBaseUrl() {
   // For Android emulator use 10.0.2.2, for iOS simulator use localhost, for web use localhost
-  if (Platform.OS === 'android') return 'http://192.168.68.104:3000';
+  if (Platform.OS === 'android') return 'http://10.15.52.69:3000';
   return 'http://localhost:3000';
 }
 

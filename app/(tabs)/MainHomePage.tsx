@@ -82,11 +82,11 @@ export default function MainHomePage() {
                 />
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => {
-                  router.push("../Others/Settings");
-                }}
+                // onPress={() => {
+                //   router.push("C:\Users\ahana\Music\MAD\Biteright_app\app\MotivationScreen.tsx");
+                // }}
               >
-                <Ionicons name="settings-outline" size={24} color="#8B5CF6" />
+                <Ionicons name="trending-up-outline" size={24} color="#8B5CF6" />
               </TouchableOpacity>
             </View>
           </View>
