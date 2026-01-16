@@ -1,58 +1,76 @@
-import { DataTypes, Model } from 'sequelize';
-import sequelize from './db';
+import { DataTypes, Model } from "sequelize";
+import sequelize from "./db";
 
 class User extends Model {
-    public id!: number;
-    public name!: string;
-    public email!: string;
-    public gender!: 'male' | 'female';
-    public age!: number;
-    public height_cm!: number;
-    public weight_kg!: number;
-    public created_at!: Date;
-
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
-    password: any;
+  public id!: string; // UUID
+  public email!: string;
+  public password!: string;
+  public name?: string;
+  public age?: number;
+  public gender?: string;
+  public height_cm?: number;
+  public weight_kg?: number;
+  public activity_level?: string;
+  public readonly created_at!: Date;
+  public readonly updated_at!: Date;
 }
 
-User.init({
-        password: {
-            type: DataTypes.STRING(255),
-            allowNull: false,
-        },
+User.init(
+  {
     id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-    },
-    name: {
-        type: DataTypes.STRING(100),
-        allowNull: false,
+      type: DataTypes.CHAR(36),
+      primaryKey: true,
+      defaultValue: DataTypes.UUIDV4,
     },
     email: {
-        type: DataTypes.STRING(150),
-        unique: true,
+      type: DataTypes.STRING(255),
+      unique: true,
+      allowNull: false,
     },
-    gender: {
-        type: DataTypes.ENUM('male', 'female'),
-        allowNull: false,
+    password: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    name: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
     },
     age: {
-        type: DataTypes.INTEGER,
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    gender: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
     },
     height_cm: {
-        type: DataTypes.DECIMAL(5, 2),
+      type: DataTypes.INTEGER,
+      allowNull: true,
     },
     weight_kg: {
-        type: DataTypes.DECIMAL(5, 2),
+      type: DataTypes.DECIMAL(5, 2),
+      allowNull: true,
     },
-}, {
+    activity_level: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+  },
+  {
     sequelize,
-    tableName: 'users',
+    tableName: "users",
     timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: false,
-});
+    createdAt: "created_at",
+    updatedAt: "updated_at",
+  }
+);
 
 export default User;

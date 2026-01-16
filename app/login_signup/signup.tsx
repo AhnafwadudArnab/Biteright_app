@@ -42,7 +42,7 @@ const SignupScreen: React.FC = () => {
     };
     console.log('Signup payload:', payload);
     try {
-      const response = await fetch("http://10.15.52.69:3000/users/register", {
+      const response = await fetch("http://192.168.68.102:3000/users/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

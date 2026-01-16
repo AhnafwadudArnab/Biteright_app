@@ -2,18 +2,22 @@ import { Request, Response } from "express";
 import User from "../models/userModel";
 
 // Signup (Register) a new user
-export const signupUser = async (req: Request, res: Response) => {
-  const { name, email, password, gender } = req.body;
 
-  // Debug log to verify received data
-  console.log('Signup request body:', req.body);
-  console.log('Gender received:', gender);
+export const signupUser = async (req: Request, res: Response) => {
+  const {
+    name,
+    email,
+    password,
+    gender,
+    age,
+    height_cm,
+    weight_kg,
+    activity_level,
+  } = req.body;
 
   if (!name || !email || !password || !gender) {
     return res.status(400).json({ message: "All fields are required" });
   }
-
-  // Password match check is now handled on frontend only
 
   try {
     // Check if user already exists
@@ -22,13 +26,16 @@ export const signupUser = async (req: Request, res: Response) => {
       return res.status(409).json({ message: "Email already registered" });
     }
 
-    // Hash password before saving (simple hash for demo, use bcrypt in production)
-    // const hashedPassword = someHashFunction(password); // Uncomment and implement if needed
+    // Store password as plain text (not recommended for production)
     const newUser = await User.create({
       name,
       email,
-      password, // Replace with hashedPassword if using hashing
+      password,
       gender,
+      age,
+      height_cm,
+      weight_kg,
+      activity_level,
     });
 
     res
@@ -40,6 +47,7 @@ export const signupUser = async (req: Request, res: Response) => {
 };
 
 // Login user
+
 export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
@@ -53,12 +61,11 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Replace this with proper password hashing check in production
+    // Compare with plain password (not recommended for production)
     if (user.password !== password) {
       return res.status(401).json({ message: "Invalid password" });
     }
 
-    // Set session or token here if needed
     res.status(200).json({ message: "Login successful", user });
   } catch (error) {
     res.status(500).json({ message: "Error logging in", error });
