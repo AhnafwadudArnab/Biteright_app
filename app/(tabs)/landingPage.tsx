@@ -185,7 +185,12 @@ export default function LandingPage({
           Join thousands achieving their goals
         </Text>
 
-        <TouchableOpacity style={styles.finalBtn} onPress={onGetStarted}>
+        <TouchableOpacity
+          style={styles.finalBtn}
+          onPress={() => {
+            router.push("/login_signup/signup");
+          }}
+        >
           <Text style={styles.finalBtnText}>Start Your Journey</Text>
         </TouchableOpacity>
       </View>

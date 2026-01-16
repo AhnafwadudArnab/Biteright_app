@@ -1,3 +1,15 @@
+-- Flat table for direct meal plan uploads (for compatibility with upload_bmi_mealplans.js and DoctorSugg_bmi_mealplans.json)
+CREATE TABLE IF NOT EXISTS doctor_bmi_mealplans (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    gender VARCHAR(10) NOT NULL,
+    bmi_range VARCHAR(20) NOT NULL,
+    category VARCHAR(50),
+    daily_calories INT,
+    doctor_focus TEXT,
+    meal_type VARCHAR(20),
+    meal_name VARCHAR(255),
+    meal_kcal INT
+);
 -- MySQL schema for Biteright_app
 
 CREATE DATABASE IF NOT EXISTS biteright_app;

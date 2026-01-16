@@ -1,120 +1,169 @@
 {
-    "meta": {
-        "source": "Doctor & Dietitian Standard BMI Guidelines",
-        "note": "Calories adjusted per BMI point and gender"
+  "meta": {
+    "source": "Doctor & Dietitian Standard BMI Guidelines",
+    "note": "Calories adjusted per BMI point and gender"
+  },
+  "bmiMealPlans": {
+    "male": {
+      "10-10.9": {
+        "category": "Severely Underweight",
+        "dailyCalories": 3200,
+        "doctorFocus": ["Rapid weight gain", "Muscle recovery"],
+        "meals": [
+          {
+            "type": "Breakfast",
+            "name": "Oats with milk, banana & peanut butter",
+            "kcal": 700
+          },
+          {
+            "type": "Lunch",
+            "name": "Rice, chicken curry & lentils",
+            "kcal": 900
+          },
+          { "type": "Snack", "name": "Protein shake & nuts", "kcal": 500 },
+          {
+            "type": "Dinner",
+            "name": "Fish, potatoes & vegetables",
+            "kcal": 800
+          },
+          { "type": "Snack", "name": "Yogurt & honey", "kcal": 300 }
+        ]
+      },
+      "11-11.9": {
+        "category": "Severely Underweight",
+        "dailyCalories": 3100,
+        "doctorFocus": ["Weight gain", "High protein"],
+        "meals": [
+          { "type": "Breakfast", "name": "Egg omelette & toast", "kcal": 650 },
+          { "type": "Lunch", "name": "Chicken rice bowl", "kcal": 850 },
+          { "type": "Snack", "name": "Milk & dates", "kcal": 450 },
+          { "type": "Dinner", "name": "Salmon & quinoa", "kcal": 750 },
+          { "type": "Snack", "name": "Banana smoothie", "kcal": 400 }
+        ]
+      },
+      "18-18.9": {
+        "category": "Underweight",
+        "dailyCalories": 2800,
+        "doctorFocus": ["Healthy weight gain"],
+        "meals": [
+          { "type": "Breakfast", "name": "Oatmeal with fruits", "kcal": 550 },
+          { "type": "Lunch", "name": "Grilled chicken & rice", "kcal": 750 },
+          { "type": "Snack", "name": "Nuts & yogurt", "kcal": 400 },
+          { "type": "Dinner", "name": "Fish & vegetables", "kcal": 700 },
+          { "type": "Snack", "name": "Milk", "kcal": 400 }
+        ]
+      },
+      "22-22.9": {
+        "category": "Normal",
+        "dailyCalories": 2400,
+        "doctorFocus": ["Maintenance"],
+        "meals": [
+          { "type": "Breakfast", "name": "Egg toast & fruit", "kcal": 450 },
+          { "type": "Lunch", "name": "Chicken salad", "kcal": 600 },
+          { "type": "Snack", "name": "Apple & almonds", "kcal": 300 },
+          { "type": "Dinner", "name": "Fish, rice & veggies", "kcal": 650 },
+          { "type": "Snack", "name": "Milk", "kcal": 400 }
+        ]
+      },
+      "27-27.9": {
+        "category": "Overweight",
+        "dailyCalories": 2000,
+        "doctorFocus": ["Fat loss", "Portion control"],
+        "meals": [
+          { "type": "Breakfast", "name": "Omelette & vegetables", "kcal": 350 },
+          { "type": "Lunch", "name": "Grilled chicken & quinoa", "kcal": 500 },
+          { "type": "Snack", "name": "Fruit bowl", "kcal": 250 },
+          { "type": "Dinner", "name": "Steamed fish & salad", "kcal": 500 },
+          { "type": "Snack", "name": "Green tea", "kcal": 150 }
+        ]
+      },
+      "35-35.9": {
+        "category": "Obese Class II",
+        "dailyCalories": 1700,
+        "doctorFocus": ["Medical weight loss"],
+        "meals": [
+          { "type": "Breakfast", "name": "Oats & berries", "kcal": 300 },
+          { "type": "Lunch", "name": "Vegetable soup & chicken", "kcal": 450 },
+          { "type": "Snack", "name": "Cucumber yogurt", "kcal": 200 },
+          { "type": "Dinner", "name": "Grilled fish & greens", "kcal": 450 },
+          { "type": "Snack", "name": "Herbal tea", "kcal": 100 }
+        ]
+      },
+      "23.0-29.9": {
+        "category": "Slightly Overweight",
+        "dailyCalories": 2200,
+        "doctorFocus": ["Weight management", "Balanced nutrition"],
+        "meals": [
+          {
+            "type": "Breakfast",
+            "name": "Whole grain toast & eggs",
+            "kcal": 400
+          },
+          {
+            "type": "Lunch",
+            "name": "Grilled chicken & brown rice",
+            "kcal": 600
+          },
+          { "type": "Snack", "name": "Greek yogurt & berries", "kcal": 250 },
+          { "type": "Dinner", "name": "Baked fish & vegetables", "kcal": 650 },
+          { "type": "Snack", "name": "Apple", "kcal": 300 }
+        ]
+      }
     },
-    "bmiMealPlans": {
-        "male": {
-            "10-10.9": {
-                "category": "Severely Underweight",
-                "dailyCalories": 3200,
-                "doctorFocus": ["Rapid weight gain", "Muscle recovery"],
-                "meals": [
-                    { "type": "Breakfast", "name": "Oats with milk, banana & peanut butter", "kcal": 700 },
-                    { "type": "Lunch", "name": "Rice, chicken curry & lentils", "kcal": 900 },
-                    { "type": "Snack", "name": "Protein shake & nuts", "kcal": 500 },
-                    { "type": "Dinner", "name": "Fish, potatoes & vegetables", "kcal": 800 },
-                    { "type": "Snack", "name": "Yogurt & honey", "kcal": 300 }
-                ]
-            },
-            "11-11.9": {
-                "category": "Severely Underweight",
-                "dailyCalories": 3100,
-                "doctorFocus": ["Weight gain", "High protein"],
-                "meals": [
-                    { "type": "Breakfast", "name": "Egg omelette & toast", "kcal": 650 },
-                    { "type": "Lunch", "name": "Chicken rice bowl", "kcal": 850 },
-                    { "type": "Snack", "name": "Milk & dates", "kcal": 450 },
-                    { "type": "Dinner", "name": "Salmon & quinoa", "kcal": 750 },
-                    { "type": "Snack", "name": "Banana smoothie", "kcal": 400 }
-                ]
-            },
-            "18-18.9": {
-                "category": "Underweight",
-                "dailyCalories": 2800,
-                "doctorFocus": ["Healthy weight gain"],
-                "meals": [
-                    { "type": "Breakfast", "name": "Oatmeal with fruits", "kcal": 550 },
-                    { "type": "Lunch", "name": "Grilled chicken & rice", "kcal": 750 },
-                    { "type": "Snack", "name": "Nuts & yogurt", "kcal": 400 },
-                    { "type": "Dinner", "name": "Fish & vegetables", "kcal": 700 },
-                    { "type": "Snack", "name": "Milk", "kcal": 400 }
-                ]
-            },
-            "22-22.9": {
-                "category": "Normal",
-                "dailyCalories": 2400,
-                "doctorFocus": ["Maintenance"],
-                "meals": [
-                    { "type": "Breakfast", "name": "Egg toast & fruit", "kcal": 450 },
-                    { "type": "Lunch", "name": "Chicken salad", "kcal": 600 },
-                    { "type": "Snack", "name": "Apple & almonds", "kcal": 300 },
-                    { "type": "Dinner", "name": "Fish, rice & veggies", "kcal": 650 },
-                    { "type": "Snack", "name": "Milk", "kcal": 400 }
-                ]
-            },
-            "27-27.9": {
-                "category": "Overweight",
-                "dailyCalories": 2000,
-                "doctorFocus": ["Fat loss", "Portion control"],
-                "meals": [
-                    { "type": "Breakfast", "name": "Omelette & vegetables", "kcal": 350 },
-                    { "type": "Lunch", "name": "Grilled chicken & quinoa", "kcal": 500 },
-                    { "type": "Snack", "name": "Fruit bowl", "kcal": 250 },
-                    { "type": "Dinner", "name": "Steamed fish & salad", "kcal": 500 },
-                    { "type": "Snack", "name": "Green tea", "kcal": 150 }
-                ]
-            },
-            "35-35.9": {
-                "category": "Obese Class II",
-                "dailyCalories": 1700,
-                "doctorFocus": ["Medical weight loss"],
-                "meals": [
-                    { "type": "Breakfast", "name": "Oats & berries", "kcal": 300 },
-                    { "type": "Lunch", "name": "Vegetable soup & chicken", "kcal": 450 },
-                    { "type": "Snack", "name": "Cucumber yogurt", "kcal": 200 },
-                    { "type": "Dinner", "name": "Grilled fish & greens", "kcal": 450 },
-                    { "type": "Snack", "name": "Herbal tea", "kcal": 100 }
-                ]
-            }
-        },
-        "female": {
-            "10-10.9": {
-                "category": "Severely Underweight",
-                "dailyCalories": 2800,
-                "doctorFocus": ["Hormonal balance", "Healthy weight gain"],
-                "meals": [
-                    { "type": "Breakfast", "name": "Smoothie bowl & granola", "kcal": 600 },
-                    { "type": "Lunch", "name": "Rice, lentils & egg", "kcal": 750 },
-                    { "type": "Snack", "name": "Nuts & dates", "kcal": 450 },
-                    { "type": "Dinner", "name": "Chicken pasta", "kcal": 700 },
-                    { "type": "Snack", "name": "Milk", "kcal": 300 }
-                ]
-            },
-            "22-22.9": {
-                "category": "Normal",
-                "dailyCalories": 2000,
-                "doctorFocus": ["Maintenance"],
-                "meals": [
-                    { "type": "Breakfast", "name": "Avocado toast & egg", "kcal": 400 },
-                    { "type": "Lunch", "name": "Fish salad", "kcal": 500 },
-                    { "type": "Snack", "name": "Fruit bowl", "kcal": 250 },
-                    { "type": "Dinner", "name": "Rice, veggies & chicken", "kcal": 550 },
-                    { "type": "Snack", "name": "Yogurt", "kcal": 300 }
-                ]
-            },
-            "30-30.9": {
-                "category": "Obese Class I",
-                "dailyCalories": 1500,
-                "doctorFocus": ["Fat loss", "Blood sugar control"],
-                "meals": [
-                    { "type": "Breakfast", "name": "Boiled eggs & fruit", "kcal": 250 },
-                    { "type": "Lunch", "name": "Vegetable stir fry", "kcal": 400 },
-                    { "type": "Snack", "name": "Apple", "kcal": 200 },
-                    { "type": "Dinner", "name": "Steamed fish & salad", "kcal": 450 },
-                    { "type": "Snack", "name": "Green tea", "kcal": 100 }
-                ]
-            }
-        }
+    "female": {
+      "10-10.9": {
+        "category": "Severely Underweight",
+        "dailyCalories": 2800,
+        "doctorFocus": ["Hormonal balance", "Healthy weight gain"],
+        "meals": [
+          {
+            "type": "Breakfast",
+            "name": "Smoothie bowl & granola",
+            "kcal": 600
+          },
+          { "type": "Lunch", "name": "Rice, lentils & egg", "kcal": 750 },
+          { "type": "Snack", "name": "Nuts & dates", "kcal": 450 },
+          { "type": "Dinner", "name": "Chicken pasta", "kcal": 700 },
+          { "type": "Snack", "name": "Milk", "kcal": 300 }
+        ]
+      },
+      "22-22.9": {
+        "category": "Normal",
+        "dailyCalories": 2000,
+        "doctorFocus": ["Maintenance"],
+        "meals": [
+          { "type": "Breakfast", "name": "Avocado toast & egg", "kcal": 400 },
+          { "type": "Lunch", "name": "Fish salad", "kcal": 500 },
+          { "type": "Snack", "name": "Fruit bowl", "kcal": 250 },
+          { "type": "Dinner", "name": "Rice, veggies & chicken", "kcal": 550 },
+          { "type": "Snack", "name": "Yogurt", "kcal": 300 }
+        ]
+      },
+
+      "30-30.9": {
+        "category": "Obese Class I",
+        "dailyCalories": 1500,
+        "doctorFocus": ["Fat loss", "Blood sugar control"],
+        "meals": [
+          { "type": "Breakfast", "name": "Boiled eggs & fruit", "kcal": 250 },
+          { "type": "Lunch", "name": "Vegetable stir fry", "kcal": 400 },
+          { "type": "Snack", "name": "Apple", "kcal": 200 },
+          { "type": "Dinner", "name": "Steamed fish & salad", "kcal": 450 },
+          { "type": "Snack", "name": "Green tea", "kcal": 100 }
+        ]
+      },
+      "23.0-29.9": {
+        "category": "Slightly Overweight",
+        "dailyCalories": 1800,
+        "doctorFocus": ["Weight management", "Balanced nutrition"],
+        "meals": [
+          { "type": "Breakfast", "name": "Oatmeal & banana", "kcal": 350 },
+          { "type": "Lunch", "name": "Grilled chicken salad", "kcal": 500 },
+          { "type": "Snack", "name": "Yogurt & nuts", "kcal": 250 },
+          { "type": "Dinner", "name": "Baked salmon & veggies", "kcal": 500 },
+          { "type": "Snack", "name": "Orange", "kcal": 200 }
+        ]
+      }
     }
+  }
 }

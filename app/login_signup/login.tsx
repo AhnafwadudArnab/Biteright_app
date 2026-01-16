@@ -59,6 +59,7 @@ const Login = () => {
       <Text style={styles.heading}>Welcome Back</Text>
       <Text style={styles.subHeading}>
         Log in to continue your healthy journey
+      ! 😊
       </Text>
 
       {/* Form */}
