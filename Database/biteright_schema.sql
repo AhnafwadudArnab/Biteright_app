@@ -1,5 +1,69 @@
 -- MySQL schema for Biteright_app
+-- Users table
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100),
+    age INT,
+    gender VARCHAR(10),
+    height_cm FLOAT,
+    weight_kg FLOAT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
+-- Meal Plans table
+CREATE TABLE meal_plans (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    plan_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    start_date DATE,
+    end_date DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Meals table
+CREATE TABLE meals (
+    id SERIAL PRIMARY KEY,
+    meal_plan_id INT REFERENCES meal_plans(id) ON DELETE CASCADE,
+    meal_type VARCHAR(20) NOT NULL, -- e.g., breakfast, lunch, dinner, snack
+    meal_time TIME,
+    calories INT,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Water Intake table
+CREATE TABLE water_intake (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    intake_date DATE NOT NULL,
+    amount_ml INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- User Progress table
+CREATE TABLE user_progress (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    progress_date DATE NOT NULL,
+    weight_kg FLOAT,
+    calories_consumed INT,
+    calories_burned INT,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Motivation/Notifications table (optional)
+CREATE TABLE notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 CREATE DATABASE IF NOT EXISTS biteright_app;
 
 USE biteright_app;
@@ -12,7 +76,8 @@ CREATE TABLE users (
     age INT,
     height_cm DECIMAL(5, 2),
     weight_kg DECIMAL(5, 2),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    password VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE bmi_records (
