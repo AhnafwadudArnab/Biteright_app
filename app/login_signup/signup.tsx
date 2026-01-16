@@ -3,13 +3,13 @@ import { router } from "expo-router";
 import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 const SignupScreen: React.FC = () => {
@@ -40,15 +40,18 @@ const SignupScreen: React.FC = () => {
       password,
       gender, // Always 'male' or 'female'
     };
-    console.log('Signup payload:', payload);
+    console.log("Signup payload:", payload);
     try {
-      const response = await fetch("http://192.168.68.102:3000/users/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        require("../serverhost").SERVER_URL + "/users/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
       const data = await response.json();
       if (!response.ok) {
         setError(data.message || "Registration failed");
@@ -113,7 +116,12 @@ const SignupScreen: React.FC = () => {
         {/* Password */}
         <View style={styles.field}>
           <Text style={styles.label}>Password</Text>
-          <View style={[styles.inputWrapper, { flexDirection: "row", alignItems: "center" }]}> 
+          <View
+            style={[
+              styles.inputWrapper,
+              { flexDirection: "row", alignItems: "center" },
+            ]}
+          >
             <Lock size={20} color="#9CA3AF" style={styles.icon} />
             <TextInput
               value={password}
@@ -122,8 +130,15 @@ const SignupScreen: React.FC = () => {
               secureTextEntry={!showPassword}
               style={[styles.input, { paddingLeft: 40, flex: 1 }]}
             />
-            <TouchableOpacity onPress={() => setShowPassword((prev) => !prev)} style={{ position: "absolute", right: 16 }}>
-              {showPassword ? <Eye size={20} color="#9CA3AF" /> : <EyeOff size={20} color="#9CA3AF" />}
+            <TouchableOpacity
+              onPress={() => setShowPassword((prev) => !prev)}
+              style={{ position: "absolute", right: 16 }}
+            >
+              {showPassword ? (
+                <Eye size={20} color="#9CA3AF" />
+              ) : (
+                <EyeOff size={20} color="#9CA3AF" />
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -131,7 +146,12 @@ const SignupScreen: React.FC = () => {
         {/* Confirm Password */}
         <View style={styles.field}>
           <Text style={styles.label}>Confirm Password</Text>
-          <View style={[styles.inputWrapper, { flexDirection: "row", alignItems: "center" }]}> 
+          <View
+            style={[
+              styles.inputWrapper,
+              { flexDirection: "row", alignItems: "center" },
+            ]}
+          >
             <Lock size={20} color="#9CA3AF" style={styles.icon} />
             <TextInput
               value={confirmPassword}
@@ -140,8 +160,15 @@ const SignupScreen: React.FC = () => {
               secureTextEntry={!showConfirmPassword}
               style={[styles.input, { paddingLeft: 40, flex: 1 }]}
             />
-            <TouchableOpacity onPress={() => setShowConfirmPassword((prev) => !prev)} style={{ position: "absolute", right: 16 }}>
-              {showConfirmPassword ? <Eye size={20} color="#9CA3AF" /> : <EyeOff size={20} color="#9CA3AF" />}
+            <TouchableOpacity
+              onPress={() => setShowConfirmPassword((prev) => !prev)}
+              style={{ position: "absolute", right: 16 }}
+            >
+              {showConfirmPassword ? (
+                <Eye size={20} color="#9CA3AF" />
+              ) : (
+                <EyeOff size={20} color="#9CA3AF" />
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -149,19 +176,41 @@ const SignupScreen: React.FC = () => {
         {/* Gender */}
         <View style={styles.field}>
           <Text style={styles.label}>Gender</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 8,
+            }}
+          >
             <TouchableOpacity
-              style={[styles.radioBtn, gender === 'male' && styles.radioBtnSelected]}
-              onPress={() => setGender('male')}
+              style={[
+                styles.radioBtn,
+                gender === "male" && styles.radioBtnSelected,
+              ]}
+              onPress={() => setGender("male")}
             >
-              <View style={[styles.radioCircle, gender === 'male' && styles.radioCircleSelected]} />
+              <View
+                style={[
+                  styles.radioCircle,
+                  gender === "male" && styles.radioCircleSelected,
+                ]}
+              />
               <Text style={styles.radioLabel}>Male</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.radioBtn, gender === 'female' && styles.radioBtnSelected]}
-              onPress={() => setGender('female')}
+              style={[
+                styles.radioBtn,
+                gender === "female" && styles.radioBtnSelected,
+              ]}
+              onPress={() => setGender("female")}
             >
-              <View style={[styles.radioCircle, gender === 'female' && styles.radioCircleSelected]} />
+              <View
+                style={[
+                  styles.radioCircle,
+                  gender === "female" && styles.radioCircleSelected,
+                ]}
+              />
               <Text style={styles.radioLabel}>Female</Text>
             </TouchableOpacity>
           </View>

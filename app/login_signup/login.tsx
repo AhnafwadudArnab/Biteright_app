@@ -3,13 +3,12 @@ import { Eye, EyeOff, Leaf, Lock, Mail } from "lucide-react-native";
 import React from "react";
 
 import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
-
 
 const Login = () => {
   const [email, setEmail] = React.useState("");
@@ -22,13 +21,16 @@ const Login = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("http://192.168.68.102:3000/users/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        require("../serverhost").SERVER_URL + "/users/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
       const data = await response.json();
       if (!response.ok) {
         setError(data.message || "Login failed");
@@ -80,7 +82,12 @@ const Login = () => {
         {/* Password */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Password</Text>
-          <View style={[styles.inputWrapper, { flexDirection: "row", alignItems: "center" }]}> 
+          <View
+            style={[
+              styles.inputWrapper,
+              { flexDirection: "row", alignItems: "center" },
+            ]}
+          >
             <Lock size={20} color="#9CA3AF" style={styles.icon} />
             <TextInput
               value={password}
@@ -89,8 +96,15 @@ const Login = () => {
               secureTextEntry={!showPassword}
               style={[styles.input, { flex: 1, paddingLeft: 40 }]}
             />
-            <TouchableOpacity onPress={() => setShowPassword((prev) => !prev)} style={{ position: "absolute", right: 16 }}>
-              {showPassword ? <Eye size={20} color="#9CA3AF" /> : <EyeOff size={20} color="#9CA3AF" />}
+            <TouchableOpacity
+              onPress={() => setShowPassword((prev) => !prev)}
+              style={{ position: "absolute", right: 16 }}
+            >
+              {showPassword ? (
+                <Eye size={20} color="#9CA3AF" />
+              ) : (
+                <EyeOff size={20} color="#9CA3AF" />
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -100,15 +114,20 @@ const Login = () => {
           <Text style={styles.forgotText}>Forgot Password?</Text>
         </TouchableOpacity>
 
-
         {/* Error Message */}
         {error && (
-          <Text style={{ color: 'red', marginBottom: 8 }}>{error}</Text>
+          <Text style={{ color: "red", marginBottom: 8 }}>{error}</Text>
         )}
 
         {/* Login button */}
-        <TouchableOpacity style={styles.loginButton} onPress={handleSubmit} disabled={loading}>
-          <Text style={styles.loginButtonText}>{loading ? "Logging in..." : "Login"}</Text>
+        <TouchableOpacity
+          style={styles.loginButton}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          <Text style={styles.loginButtonText}>
+            {loading ? "Logging in..." : "Login"}
+          </Text>
         </TouchableOpacity>
 
         {/* Sign up */}

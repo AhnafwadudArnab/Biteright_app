@@ -26,11 +26,11 @@ export const signupUser = async (req: Request, res: Response) => {
       return res.status(409).json({ message: "Email already registered" });
     }
 
-    // Store password as plain text (not recommended for production)
+    // Store password as password_hash (no hashing for now)
     const newUser = await User.create({
       name,
       email,
-      password,
+      password_hash: password,
       gender,
       age,
       height_cm,
@@ -61,8 +61,8 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Compare with plain password (not recommended for production)
-    if (user.password !== password) {
+    // Compare with password_hash (no hashing for now)
+    if (user.password_hash !== password) {
       return res.status(401).json({ message: "Invalid password" });
     }
 

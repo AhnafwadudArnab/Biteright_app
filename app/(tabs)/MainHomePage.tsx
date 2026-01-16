@@ -82,11 +82,15 @@ export default function MainHomePage() {
                 />
               </TouchableOpacity>
               <TouchableOpacity
-                // onPress={() => {
-                //   router.push("C:\Users\ahana\Music\MAD\Biteright_app\app\MotivationScreen.tsx");
-                // }}
+                onPress={() => {
+                  router.push("../MotivationScreen");
+                }}
               >
-                <Ionicons name="trending-up-outline" size={24} color="#8B5CF6" />
+                <Ionicons
+                  name="trending-up-outline"
+                  size={24}
+                  color="#8B5CF6"
+                />
               </TouchableOpacity>
             </View>
           </View>
@@ -296,7 +300,12 @@ export default function MainHomePage() {
       {/* Floating Glassy Icon Navigation - always on top */}
       <View style={styles.fabContainer} pointerEvents="box-none">
         <View style={styles.fabBar}>
-          <TouchableOpacity style={styles.fabBtn} onPress={() => {router.push("/(tabs)/MainHomePage");}}>
+          <TouchableOpacity
+            style={styles.fabBtn}
+            onPress={() => {
+              router.push("/(tabs)/MainHomePage");
+            }}
+          >
             <Ionicons name="home" size={22} color="#5B4DF7" />
           </TouchableOpacity>
           {/* <TouchableOpacity style={styles.fabBtn} onPress={() => {}}>
@@ -310,7 +319,7 @@ export default function MainHomePage() {
           >
             <Ionicons name="add" size={22} color="#222" />
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             style={styles.fabBtn}
             onPress={() => {
