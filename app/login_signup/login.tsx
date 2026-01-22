@@ -3,11 +3,11 @@ import { Eye, EyeOff, Leaf, Lock, Mail } from "lucide-react-native";
 import React from "react";
 
 import {
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const Login = () => {
@@ -29,7 +29,7 @@ const Login = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ email, password }),
-        }
+        },
       );
       const data = await response.json();
       if (!response.ok) {
@@ -58,8 +58,7 @@ const Login = () => {
       {/* Heading */}
       <Text style={styles.heading}>Welcome Back</Text>
       <Text style={styles.subHeading}>
-        Log in to continue your healthy journey
-      ! 😊
+        Log in to continue your healthy journey ! 😊
       </Text>
 
       {/* Form */}
@@ -79,7 +78,6 @@ const Login = () => {
             />
           </View>
         </View>
-
         {/* Password */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Password</Text>
@@ -109,17 +107,14 @@ const Login = () => {
             </TouchableOpacity>
           </View>
         </View>
-
         {/* Forgot password */}
         <TouchableOpacity style={styles.forgotButton}>
           <Text style={styles.forgotText}>Forgot Password?</Text>
         </TouchableOpacity>
-
         {/* Error Message */}
         {error && (
           <Text style={{ color: "red", marginBottom: 8 }}>{error}</Text>
         )}
-
         {/* Login button */}
         <TouchableOpacity
           style={styles.loginButton}
@@ -130,12 +125,17 @@ const Login = () => {
             {loading ? "Logging in..." : "Login"}
           </Text>
         </TouchableOpacity>
-
         {/* Sign up */}
         <View style={styles.signupContainer}>
           <Text style={styles.signupText}>Don&apos;t have an account? </Text>
           <TouchableOpacity onPress={() => router.push("/login_signup/signup")}>
             <Text style={styles.signupLink}>Sign Up</Text>
+          </TouchableOpacity>
+        </View>{" "}
+        <View style={styles.signupContainer}>
+          <Text style={styles.signupText}>MainHomePage </Text>
+          <TouchableOpacity onPress={() => router.push("../MainHomePage")}>
+            <Text style={styles.signupLink}>Go to</Text>
           </TouchableOpacity>
         </View>
       </View>
