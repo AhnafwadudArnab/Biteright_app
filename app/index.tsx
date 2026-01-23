@@ -1,7 +1,4 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Redirect } from "expo-router";
-import * as React from "react";
-
 
 const Stack = createNativeStackNavigator();
 
@@ -12,7 +9,7 @@ import GenerateDietPlan from "./Dietplans/newPlan";
 import WeeklyPlans from "./Dietplans/weeklyPlans";
 import WaterIntake from "./WaterFiles/waterintake";
 
-function App() {
+export default function HomeScreen() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
