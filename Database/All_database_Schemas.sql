@@ -1,8 +1,9 @@
--- MySQL schema for Biteright_app
-CREATE DATABASE IF NOT EXISTS biteright_app;
+-- MySQL schema for Biteright_app (UPDATED DATABASE NAME)
 
-USE biteright_app;
+CREATE DATABASE IF NOT EXISTS sql12815086;
+USE sql12815086;
 
+-- User information
 CREATE TABLE users (
     id CHAR(36) PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -14,9 +15,10 @@ CREATE TABLE users (
     weight_kg DECIMAL(5, 2),
     activity_level VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NULL
 );
 
+-- User goals (calorie, water, target weight)
 CREATE TABLE user_goals (
     id CHAR(36) PRIMARY KEY,
     user_id CHAR(36),
@@ -27,6 +29,7 @@ CREATE TABLE user_goals (
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
+-- Food items (master list)
 CREATE TABLE foods (
     id CHAR(36) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -37,6 +40,7 @@ CREATE TABLE foods (
     serving_size VARCHAR(100)
 );
 
+-- Meals (user's meal log)
 CREATE TABLE meals (
     id CHAR(36) PRIMARY KEY,
     user_id CHAR(36),
@@ -46,6 +50,7 @@ CREATE TABLE meals (
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
+-- Meal items (foods in a meal)
 CREATE TABLE meal_items (
     id CHAR(36) PRIMARY KEY,
     meal_id CHAR(36),
@@ -56,6 +61,7 @@ CREATE TABLE meal_items (
     FOREIGN KEY (food_id) REFERENCES foods (id)
 );
 
+-- Daily nutrition summary (for dashboard)
 CREATE TABLE daily_nutrition_summary (
     id CHAR(36) PRIMARY KEY,
     user_id CHAR(36),
@@ -68,6 +74,7 @@ CREATE TABLE daily_nutrition_summary (
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
+-- Water intake log
 CREATE TABLE water_intake (
     id CHAR(36) PRIMARY KEY,
     user_id CHAR(36),
@@ -76,6 +83,7 @@ CREATE TABLE water_intake (
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
+-- Diet plans (master)
 CREATE TABLE diet_plans (
     id CHAR(36) PRIMARY KEY,
     name VARCHAR(100),
@@ -84,6 +92,7 @@ CREATE TABLE diet_plans (
     duration_days INT
 );
 
+-- User's selected diet plans
 CREATE TABLE user_diet_plans (
     id CHAR(36) PRIMARY KEY,
     user_id CHAR(36),
@@ -94,6 +103,7 @@ CREATE TABLE user_diet_plans (
     FOREIGN KEY (diet_plan_id) REFERENCES diet_plans (id)
 );
 
+-- Motivation logs (user notes)
 CREATE TABLE motivation_logs (
     id CHAR(36) PRIMARY KEY,
     user_id CHAR(36),
@@ -102,6 +112,7 @@ CREATE TABLE motivation_logs (
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
+-- BMI records (user's BMI history)
 CREATE TABLE bmi_records (
     id CHAR(36) PRIMARY KEY,
     user_id CHAR(36) NOT NULL,
@@ -117,6 +128,7 @@ CREATE TABLE bmi_records (
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
+-- Doctor suggested meal plans (optional, can be deleted if not used)
 CREATE TABLE IF NOT EXISTS doctor_bmi_mealplans (
     id INT AUTO_INCREMENT PRIMARY KEY,
     gender VARCHAR(10) NOT NULL,
@@ -129,10 +141,7 @@ CREATE TABLE IF NOT EXISTS doctor_bmi_mealplans (
     meal_kcal INT
 );
 
-
---Plans:
-
--- DoctorSugg_bmi_mealplans.sql (cleaned)
+-- Doctor suggested BMI meal plans (seed data)
 
 -- MALE BMI PLANS
 INSERT INTO diet_plans (id, name, description, calorie_target, duration_days) VALUES
@@ -170,3 +179,6 @@ INSERT INTO meal_items (id, meal_id, food_id, quantity, calories) VALUES
 ('mi-male-10-10.9-3', 'meal-male-10-10.9-snack1', 'food-male-10-10.9-3', 1, 500),
 ('mi-male-10-10.9-4', 'meal-male-10-10.9-dinner', 'food-male-10-10.9-4', 1, 800),
 ('mi-male-10-10.9-5', 'meal-male-10-10.9-snack2', 'food-male-10-10.9-5', 1, 300);
+
+-- If you want to DROP any table, use:
+-- DROP TABLE IF EXISTS doctor_bmi_mealplans;
