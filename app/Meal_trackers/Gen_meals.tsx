@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import MealEditModal from "./Meal_edit_model";
+import MealEditModal from "../Meal_trackers/Meal_edit_model";
 import { router } from "expo-router";
 
 const DAILY_GOAL = 2000;

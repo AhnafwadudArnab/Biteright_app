@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Modal,
   StyleSheet,
@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import type { Meal } from "./Gen_meals";
+import type { Meal } from "./Gen_meals.ts";
 
 type MealEditModalProps = {
   meal: Meal;

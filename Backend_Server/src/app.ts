@@ -24,7 +24,3 @@ app.listen(PORT, () => {
 });
 
 export default app;
-
-// function cors(): any {
-//     throw new Error('Function not implemented.');
-// }

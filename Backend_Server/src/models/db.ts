@@ -1,7 +1,8 @@
 import { Sequelize } from 'sequelize';
 
-const sequelize = new Sequelize('biteright_app', 'root', '', {
-    host: '127.0.0.1',
+const sequelize = new Sequelize('sql12815086', 'sql12815086', 'isb7WZJZ8d', {
+    host: "sql12.freesqldatabase.com",
+    port: 3306,
     dialect: 'mysql',
 });
 

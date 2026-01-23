@@ -1,11 +1,16 @@
-import { NavigationContainer } from "@react-navigation/native";
-import MainHomePage from "./(tabs)/MainHomePage.js";
-import DietPlannerItem from "./Dietplans/Daily_diet_plannigs.js";
-import GenerateDietPlan from "./Dietplans/newPlan.js";
-import WeeklyPlans from "./Dietplans/weeklyPlans.js";
-import WaterIntake from "./WaterFiles/waterintake.js";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { Redirect } from "expo-router";
+import * as React from "react";
+
+
 const Stack = createNativeStackNavigator();
+
+import { NavigationContainer } from "@react-navigation/native";
+import MainHomePage from "./(tabs)/MainHomePage";
+import DietPlannerItem from "./Dietplans/Daily_diet_plannigs";
+import GenerateDietPlan from "./Dietplans/newPlan";
+import WeeklyPlans from "./Dietplans/weeklyPlans";
+import WaterIntake from "./WaterFiles/waterintake";
 
 function App() {
   return (
@@ -20,5 +25,3 @@ function App() {
     </NavigationContainer>
   );
 }
-
-export default App;
