@@ -1,79 +1,131 @@
-# Welcome to your Expo app 👋
+🥗 BiteRight – Smart Diet & Water Tracking App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+BiteRight is a React Native (Expo) mobile application designed to help users plan their daily and weekly diets, track water intake, and maintain healthier eating habits through a simple and intuitive interface.
 
-## Get started
+🚀 Features
 
-1. Install dependencies
+📅 Daily Diet Planning
 
-   ```bash
-   npm install
-   ```
+🗓 Weekly Diet Charts
 
-2. Start the app
+💧 Water Intake Tracking
 
-   ```bash
-   npx expo start
-   ```
+📊 Diet Progress Visualization
 
-In the output, you'll find options to open the app in a
+🧭 Smooth Navigation using React Navigation
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+⚡ Built with Expo for fast development
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+🛠 Tech Stack
 
-## Get a fresh project
+React Native
 
-When you're ready, run:
+Expo
 
-```bash
-npm run reset-project
-```
+Expo Router
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+React Navigation (Native Stack)
 
-## Learn more
+JavaScript (ES Modules)
 
-To learn more about developing your project with Expo, look at the following resources:
+📁 Project Structure
+Biteright_app/
+│
+├── app/
+│   ├── (tabs)/
+│   │   ├── MainHomePage.js
+│   │   └── landingPage.js
+│   │
+│   ├── Dietplans/
+│   │   ├── Daily_diet_plannigs.js
+│   │   ├── newPlan.js
+│   │   └── weeklyPlans.js
+│   │
+│   ├── WaterFiles/
+│   │   └── waterintake.js
+│   │
+│   └── index.tsx
+│
+├── assets/
+├── package.json
+├── app.json
+└── README.md
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+⚙️ Installation & Setup
+1️⃣ Clone the Repository
+git clone https://github.com/your-username/BiteRight.git
+cd Biteright_app
 
-## Join the community
+2️⃣ Install Dependencies
+npm install
 
-Join our community of developers creating universal apps.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+or
 
-# Biteright App
+yarn install
 
-## How to Start the Project
+▶️ Running the App
+npx expo start
 
-### 1. Start the Backend Server
 
-- Open a terminal and navigate to the `Backend_Server` folder:
+Then choose:
 
-  cd Backend_Server
-  npm install
-  npm start
+Android Emulator
 
-- The backend will run on http://localhost:3000 by default.
+iOS Simulator
 
-### 2. Start the Expo Frontend
+Expo Go (QR Code)
 
-- Open a separate terminal and navigate to the main project folder:
+🧭 Navigation Overview
 
-  cd ..
-  npm install
-  npm start
+The app uses React Navigation Native Stack:
 
-- This will start the Expo app for development.
+<Stack.Navigator screenOptions={{ headerShown: false }}>
+  <Stack.Screen name="LandingPage" component={LandingPage} />
+  <Stack.Screen name="MainHomePage" component={MainHomePage} />
+  <Stack.Screen name="DietPlan" component={GenerateDietPlan} />
+  <Stack.Screen name="DP_your_Charts" component={DietPlannerItem} />
+  <Stack.Screen name="Weekly_chart" component={WeeklyPlans} />
+  <Stack.Screen name="Water_intake" component={WaterIntake} />
+</Stack.Navigator>
 
-## Notes
 
-- Always run backend and frontend in separate terminals.
-- Make sure both are running for full app functionality.
+⚠️ Important:
+When using Expo Router + Node16/Nodenext, all imports must include the .js extension.
+
+🐛 Common Issues & Fixes
+❌ Module not found error
+
+Cause: Missing .js extension in imports.
+
+Fix:
+
+import MainHomePage from "./(tabs)/MainHomePage.js";
+
+🧪 Future Improvements
+
+🔐 User Authentication
+
+☁️ Cloud Data Storage
+
+🍎 Calorie & Nutrition Analysis
+
+📈 Advanced Analytics & Charts
+
+🎨 Improved UI / Dark Mode
+
+🤝 Contributing
+
+Contributions are welcome!
+
+Fork the repo
+
+Create a new branch
+
+Commit your changes
+
+Open a Pull Request
+
+📄 License
+
+This project is licensed under the MIT License.
