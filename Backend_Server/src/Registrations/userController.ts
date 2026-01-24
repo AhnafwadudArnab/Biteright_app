@@ -1,8 +1,10 @@
-import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import User from "../models/userModel";
+import ProfileUser from "../models/Profileuser";
+import { v4 as uuidv4 } from "uuid";
 
-export const signupUser = async (req: Request, res: Response) => {
+// Register new user
+export const registerUser = async (req: Request, res: Response) => {
   const {
     name,
     email,
@@ -54,13 +56,12 @@ export const signupUser = async (req: Request, res: Response) => {
       return res.status(409).json({ message: "Email already registered" });
     }
 
-    // Find the current max id and increment by 1
-    const lastUser = await User.findOne({ order: [["id", "DESC"]] });
-    const nextId = lastUser && lastUser.id ? lastUser.id + 1 : 1;
+    // Generate UUID for user id
+    const userId = uuidv4();
 
     // Store password as plain text (not recommended for production)
     const newUser: User = await User.create({
-      id: nextId,
+      id: userId,
       name,
       email,
       password, // Store plain password
@@ -69,6 +70,20 @@ export const signupUser = async (req: Request, res: Response) => {
       height_cm: parsedHeight,
       weight_kg: parsedWeight,
       activity_level,
+    });
+
+    // Create profileUser row for this user
+    await ProfileUser.create({
+      user_id: userId,
+      age: parsedAge || 0,
+      avatar: null,
+      height_cm: parsedHeight || 0,
+      start_weight_kg: parsedWeight || 0,
+      current_weight_kg: parsedWeight || 0,
+      target_weight_kg: 0,
+      goal: "Maintain Weight",
+      diet: null,
+      activity: null,
     });
 
     const { password: _pw, ...safeUser } = newUser.toJSON();

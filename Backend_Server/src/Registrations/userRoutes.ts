@@ -2,12 +2,12 @@ import express from "express";
 import { addDietMeal, updateDietMeal } from "./dietMealController";
 import { addMealItem, updateMealItem } from "./mealItemController";
 import { getMealPlanByBmi } from "./mealPlanController";
-import { loginUser, signupUser } from "./userController";
+import { loginUser, registerUser } from "./userController";
 
 const router = express.Router();
 
 // Route for user registration
-router.post("/register", signupUser);
+router.post("/register", registerUser);
 
 // Route for user login
 router.post("/login", loginUser);
