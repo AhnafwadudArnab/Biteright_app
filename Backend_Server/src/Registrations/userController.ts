@@ -1,7 +1,6 @@
+import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import User from "../models/userModel";
-
-// Signup (Register) a new user
 
 export const signupUser = async (req: Request, res: Response) => {
   const {
@@ -13,41 +12,76 @@ export const signupUser = async (req: Request, res: Response) => {
     height_cm,
     weight_kg,
     activity_level,
+  }: {
+    name?: string;
+    email?: string;
+    password?: string;
+    gender?: string;
+    age?: string | number;
+    height_cm?: string | number;
+    weight_kg?: string | number;
+    activity_level?: string;
   } = req.body;
 
   if (!name || !email || !password || !gender) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
+  const parsedAge =
+    age !== undefined && age !== null && age !== "" ? Number(age) : undefined;
+  const parsedHeight =
+    height_cm !== undefined && height_cm !== null && height_cm !== ""
+      ? Number(height_cm)
+      : undefined;
+  const parsedWeight =
+    weight_kg !== undefined && weight_kg !== null && weight_kg !== ""
+      ? Number(weight_kg)
+      : undefined;
+
+  if (
+    (parsedAge !== undefined && isNaN(parsedAge)) ||
+    (parsedHeight !== undefined && isNaN(parsedHeight)) ||
+    (parsedWeight !== undefined && isNaN(parsedWeight))
+  ) {
+    return res
+      .status(400)
+      .json({ message: "Age, height, and weight must be numbers" });
+  }
+
   try {
-    // Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(409).json({ message: "Email already registered" });
     }
 
-    // Store password as password_hash (no hashing for now)
-    const newUser = await User.create({
+    // Hash the password before saving
+    const saltRounds: number = 10;
+    const passwordStr: string = String(password);
+    const hashedPassword: string = await bcrypt.hash(passwordStr, saltRounds);
+
+    const newUser: User = await User.create({
       name,
       email,
-      password_hash: password,
+      password: hashedPassword, // Store hashed password
       gender,
-      age,
-      height_cm,
-      weight_kg,
+      age: parsedAge,
+      height_cm: parsedHeight,
+      weight_kg: parsedWeight,
       activity_level,
     });
 
-    res
-      .status(201)
-      .json({ message: "User registered successfully", user: newUser });
+    const { password: _pw, ...safeUser } = newUser.toJSON();
+
+    res.status(201).json({
+      message: "User registered successfully",
+      user: safeUser,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error registering user", error });
+    res.status(500).json({ message: "Error registering user" });
   }
 };
 
 // Login user
-
 export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
@@ -61,34 +95,19 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Compare with password_hash (no hashing for now)
-    if (user.password_hash !== password) {
+    const passwordStr: string = String(password);
+    const isMatch: boolean = await bcrypt.compare(passwordStr, user.password);
+    if (!isMatch) {
       return res.status(401).json({ message: "Invalid password" });
     }
 
-    res.status(200).json({ message: "Login successful", user });
+    const { password: _pw, ...safeUser } = user.toJSON();
+
+    res.status(200).json({
+      message: "Login successful",
+      user: safeUser,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error logging in", error });
-  }
-};
-
-// Logout user
-export const logoutUser = async (req: Request, res: Response) => {
-  res.status(200).json({ message: "Logout successful" });
-};
-
-// Get user profile
-export const getUserProfile = async (req: Request, res: Response) => {
-  const userId = req.params.id;
-
-  try {
-    const user = await User.findByPk(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.status(200).json({ user });
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching user profile", error });
+    res.status(500).json({ message: "Error logging in" });
   }
 };

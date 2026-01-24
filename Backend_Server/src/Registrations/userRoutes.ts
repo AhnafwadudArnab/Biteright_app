@@ -1,6 +1,6 @@
 import express from 'express';
 import { getMealPlanByBmi } from './mealPlanController';
-import { getUserProfile, loginUser, signupUser } from './userController';
+import { loginUser, signupUser } from './userController';
 
 const router = express.Router();
 
@@ -9,11 +9,7 @@ router.post('/register', signupUser);
 
 // Route for user login
 router.post('/login', loginUser);
-
-// Route for getting user profile
-router.get('/profile', getUserProfile);
-
-// Route for fetching meal plan by gender and BMI
+// Route for fetching meal plan by BMI
 router.get('/mealplan', getMealPlanByBmi);
 
 export default router;

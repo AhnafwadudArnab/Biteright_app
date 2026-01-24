@@ -4,7 +4,7 @@ import sequelize from "./db";
 class User extends Model {
   public id!: string; // UUID
   public email!: string;
-  public password_hash!: string;
+  public password!: string;
   public name?: string;
   public age?: number;
   public gender?: string;
@@ -27,7 +27,7 @@ User.init(
       unique: true,
       allowNull: false,
     },
-    password_hash: {
+    password: {
       type: DataTypes.TEXT,
       allowNull: false,
     },
@@ -70,7 +70,7 @@ User.init(
     timestamps: true,
     createdAt: "created_at",
     updatedAt: "updated_at",
-  }
+  },
 );
 
 export default User;
