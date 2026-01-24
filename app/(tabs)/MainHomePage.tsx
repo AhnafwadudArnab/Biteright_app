@@ -108,39 +108,39 @@ export default function MainHomePage() {
             alignItems: "center",
           }}
         >
-          <View style={{ flex: 1, alignItems: "center" }}>
+            <View style={{ flex: 1, alignItems: "center" }}>
             <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
               Today's Calories
             </Text>
-            <View style={{ flexDirection: "row", marginTop: 10 }}>
+            <View style={{ flexDirection: "row", marginTop: 10, width: "100%" }}>
               <View style={{ flex: 1, alignItems: "center" }}>
-                <Text
-                  style={{ color: "#fff", fontSize: 22, fontWeight: "bold" }}
-                >
-                  {goal}
-                </Text>
-                <Text style={{ color: "#D1FAE5", fontSize: 13 }}>Goal</Text>
+              <Text
+                style={{ color: "#fff", fontSize: 22, fontWeight: "bold" }}
+              >
+                {isNaN(goal) || goal < 0 ? 0 : goal}
+              </Text>
+              <Text style={{ color: "#D1FAE5", fontSize: 13 }}>Goal</Text>
               </View>
               <View style={{ flex: 1, alignItems: "center" }}>
-                <Text
-                  style={{ color: "#fff", fontSize: 22, fontWeight: "bold" }}
-                >
-                  {consumed}
-                </Text>
-                <Text style={{ color: "#D1FAE5", fontSize: 13 }}>Consumed</Text>
+              <Text
+                style={{ color: "#fff", fontSize: 22, fontWeight: "bold" }}
+              >
+                {isNaN(consumed) || consumed < 0 ? 0 : consumed}
+              </Text>
+              <Text style={{ color: "#D1FAE5", fontSize: 13 }}>Consumed</Text>
               </View>
               <View style={{ flex: 1, alignItems: "center" }}>
-                <Text
-                  style={{ color: "#fff", fontSize: 22, fontWeight: "bold" }}
-                >
-                  {remaining}
-                </Text>
-                <Text style={{ color: "#D1FAE5", fontSize: 13 }}>
-                  Remaining
-                </Text>
+              <Text
+                style={{ color: "#fff", fontSize: 22, fontWeight: "bold" }}
+              >
+                {isNaN(remaining) || remaining < 0 ? 0 : remaining}
+              </Text>
+              <Text style={{ color: "#D1FAE5", fontSize: 13 }}>
+                Remaining
+              </Text>
               </View>
             </View>
-          </View>
+            </View>
         </View>
 
         {/* Personalized Diet Plan */}

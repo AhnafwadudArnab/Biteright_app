@@ -55,7 +55,8 @@ export default function UserProfile() {
         return;
       }
 
-      const res = await fetch(`http://YOUR_IP:PORT/api/users/${userId}`);
+      // TODO: Replace with your actual backend URL
+      const res = await fetch(`http://localhost:3000/api/users/${userId}`);
       const data = await res.json();
       if (!res.ok) return;
 
@@ -159,7 +160,26 @@ export default function UserProfile() {
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: "#F4FAF6" }}>
+      <View
+        style={{
+          paddingTop: 48,
+          paddingHorizontal: 24,
+          backgroundColor: "#F4FAF6",
+          alignItems: "center",
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 28,
+            fontWeight: "bold",
+            color: "#2E7D32",
+            textAlign: "center",
+          }}
+        >
+          My Profile
+        </Text>
+      </View>
       <ScrollView style={styles.container}>
         {/* ================= HEADER ================= */}
         <View style={styles.headerCard}>
@@ -273,7 +293,13 @@ export default function UserProfile() {
 /* ============================
    REUSABLE COMPONENTS
 ============================ */
-const Input = ({ label, value, onChange }: any) => (
+type InputProps = {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+};
+
+const Input = ({ label, value, onChange }: InputProps) => (
   <View style={{ marginBottom: 12 }}>
     <Text style={styles.inputLabel}>{label}</Text>
     <TextInput
@@ -285,20 +311,35 @@ const Input = ({ label, value, onChange }: any) => (
   </View>
 );
 
-const Chip = ({ label, active }: any) => (
+type ChipProps = {
+  label: string;
+  active: boolean;
+};
+
+const Chip = ({ label, active }: ChipProps) => (
   <View style={[styles.chip, active && styles.chipActive]}>
     <Text style={styles.chipText}>{label}</Text>
   </View>
 );
 
-const Section = ({ title, children }: any) => (
+type SectionProps = {
+  title: string;
+  children: React.ReactNode;
+};
+
+const Section = ({ title, children }: SectionProps) => (
   <View style={styles.cardSection}>
     <Text style={styles.sectionTitle}>{title}</Text>
     <View style={styles.chipRow}>{children}</View>
   </View>
 );
 
-const StatCard = ({ label, value }: any) => (
+type StatCardProps = {
+  label: string;
+  value: string | number;
+};
+
+const StatCard = ({ label, value }: StatCardProps) => (
   <View style={styles.statCard}>
     <Text style={styles.statLabel}>{label}</Text>
     <Text style={styles.statValue}>{value}</Text>
