@@ -17,8 +17,22 @@ const API_BASE = "http://YOUR_API_URL";
 const USER_ID = "1";
 const DAILY_GOAL = 2200;
 
-import bmiJsonRaw from "../Dietplans/JSON files/DoctorSugg_bmi_mealplans.json";
-const BMI_JSON = bmiJsonRaw;
+const BMI_JSON = {
+  bmiMealPlans: {
+    male: {
+      Underweight: [],
+      Normal: [],
+      Overweight: [],
+      Obese: [],
+    },
+    female: {
+      Underweight: [],
+      Normal: [],
+      Overweight: [],
+      Obese: [],
+    },
+  },
+};
 
 type Meal = {
   id: string;
@@ -34,21 +48,18 @@ type Meal = {
 /* -------------------- HELPERS -------------------- */
 
 const getDefaultMeals = (gender: "male" | "female", bmi: string): Meal[] => {
-  const plan =
-    BMI_JSON.bmiMealPlans?.[gender]?.[bmi] ||
-    Object.values(BMI_JSON.bmiMealPlans?.[gender] || {})[0];
-  if (!plan || !plan.meals) return [];
-  // Map JSON meals to Meal type, add id, and fill missing macros as 0
-  return plan.meals.map((m: any, idx: number) => ({
-    id: `${gender}-${bmi}-${m.type?.toLowerCase() || idx}`,
-    type: m.type || "Meal",
-    name: m.name || "Meal",
-    time: "",
-    kcal: m.kcal || 0,
-    protein: m.protein || 0,
-    carbs: m.carbs || 0,
-    fat: m.fat || 0,
-  }));
+  return [
+    {
+      id: `${gender}-${bmi}-breakfast`,
+      type: "Breakfast",
+      name: "Oats & Fruits",
+      time: "08:00 AM",
+      kcal: 350,
+      protein: 12,
+      carbs: 55,
+      fat: 8,
+    },
+  ];
 };
 
 /* -------------------- COMPONENT -------------------- */
@@ -56,9 +67,10 @@ const getDefaultMeals = (gender: "male" | "female", bmi: string): Meal[] => {
 export default function DailyMealLog() {
   const [meals, setMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedGender, setSelectedGender] = useState<"male" | "female">(
-    "male",
-  );
+  const [initialized, setInitialized] = useState(false);
+
+  const [selectedGender, setSelectedGender] =
+    useState<"male" | "female">("male");
   const [selectedBmi, setSelectedBmi] = useState(
     Object.keys(BMI_JSON.bmiMealPlans.male)[0],
   );
@@ -67,20 +79,55 @@ export default function DailyMealLog() {
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
   const [showBmiBox, setShowBmiBox] = useState(true);
 
-  // Always load meals from JSON for BMI/gender selection
+  /* -------------------- FETCH MEALS -------------------- */
+
+  const fetchMeals = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/meals/${USER_ID}`);
+      let data: Meal[] = [];
+
+      if (res.ok) data = await res.json();
+
+      if (!data || data.length === 0) {
+        data = getDefaultMeals(selectedGender, selectedBmi);
+      }
+
+      setMeals(data);
+    } catch {
+      setMeals(getDefaultMeals(selectedGender, selectedBmi));
+    } finally {
+      setLoading(false);
+      setInitialized(true);
+    }
+  };
+
   useEffect(() => {
-    setMeals(getDefaultMeals(selectedGender, selectedBmi));
-  }, [selectedGender, selectedBmi]);
+    if (!initialized) fetchMeals();
+  }, [initialized]);
 
   /* -------------------- HANDLERS -------------------- */
 
   const handleBmiChange = (gender: "male" | "female", bmi: string) => {
     setSelectedGender(gender);
     setSelectedBmi(bmi);
+    setMeals(getDefaultMeals(gender, bmi));
   };
 
   const handleDelete = async (meal: Meal) => {
-    setMeals((prev) => prev.filter((m) => m.id !== meal.id));
+    setLoading(true);
+    try {
+      if (meal.id.startsWith("male-") || meal.id.startsWith("female-")) {
+        setMeals((prev) => prev.filter((m) => m.id !== meal.id));
+      } else {
+        await fetch(`${API_BASE}/meals/${meal.id}`, { method: "DELETE" });
+        fetchMeals();
+      }
+    } catch {
+      Alert.alert("Error", "Could not delete meal");
+    } finally {
+      setLoading(false);
+    }
   };
 
   /* -------------------- TOTALS -------------------- */
@@ -123,7 +170,10 @@ export default function DailyMealLog() {
                     selectedGender === g && styles.bmiBtnActive,
                   ]}
                   onPress={() =>
-                    handleBmiChange(g, Object.keys(BMI_JSON.bmiMealPlans[g])[0])
+                    handleBmiChange(
+                      g,
+                      Object.keys(BMI_JSON.bmiMealPlans[g])[0],
+                    )
                   }
                 >
                   <Text
@@ -165,7 +215,9 @@ export default function DailyMealLog() {
         </View>
       )}
 
-      <Text style={styles.dateText}>Today, {new Date().toDateString()}</Text>
+      <Text style={styles.dateText}>
+        Today, {new Date().toDateString()}
+      </Text>
 
       {/* TOTAL CARD */}
       <View style={styles.totalCard}>
