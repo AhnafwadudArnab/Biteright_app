@@ -14,7 +14,7 @@ import { router } from "expo-router";
 /* ============================
    MAIN COMPONENT
 ============================ */
-function UserProfile() {
+export default function UserProfile() {
   const [editMode, setEditMode] = useState(false);
   const [notification, setNotification] = useState(true);
 
@@ -53,26 +53,31 @@ function UserProfile() {
         <View style={styles.headerCard}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Image source={{ uri: profile.avatar }} style={styles.avatar} />
-            <View style={{ marginLeft: 16 }}>
+
+            <View style={{ marginLeft: 16, flex: 1 }}>
               {editMode ? (
-                <Input
-                  label="Name"
-                  value={profile.name}
-                  onChangeText={(t: string) => handleChange("name", t)}
-                />
+                <>
+                  <Input
+                    label="Name"
+                    value={profile.name}
+                    onChangeText={(t: string) => handleChange("name", t)}
+                  />
+                  <Input
+                    label="Age"
+                    value={String(profile.age)}
+                    keyboardType="numeric"
+                    onChangeText={(v: string) =>
+                      handleChange("age", v.replace(/\D/g, ""))
+                    }
+                  />
+                </>
               ) : (
-                <Text style={styles.name}>{profile.name}</Text>
-              )}
-              <Text style={styles.subtle}>{profile.gender}</Text>
-              {editMode && (
-                <Input
-                  label="Age"
-                  value={String(profile.age)}
-                  keyboardType="numeric"
-                  onChangeText={(v: string) =>
-                    handleChange("age", v.replace(/\D/g, ""))
-                  }
-                />
+                <>
+                  <Text style={styles.name}>{profile.name}</Text>
+                  <Text style={styles.subtle}>
+                    {profile.gender}, {profile.age}
+                  </Text>
+                </>
               )}
             </View>
           </View>
@@ -86,29 +91,76 @@ function UserProfile() {
           >
             <Ionicons
               name={editMode ? "checkmark" : "pencil"}
-              size={23}
+              size={22}
               color="#4CAF50"
             />
           </TouchableOpacity>
         </View>
 
-        {/* ================= STATS ================= */}
+        {/* ================= WEIGHT / BODY ================= */}
         <View style={styles.infoRowCompact}>
-          <Text style={styles.infoLabelSmall}>
-            Current: <Text style={styles.infoValueSmall}>{profile.currentWeight} lbs</Text>
-          </Text>
-          <Text style={styles.infoLabelSmall}>
-            Target: <Text style={styles.infoValueSmall}>{profile.targetWeight} lbs</Text>
-          </Text>
-          <Text style={styles.infoLabelSmall}>
-            Progress: <Text style={styles.infoValueSmall}>{profile.progress}%</Text>
-          </Text>
+          {editMode ? (
+            <>
+              <Input
+                label="Current"
+                value={String(profile.currentWeight)}
+                keyboardType="numeric"
+                onChangeText={(v: string) =>
+                  handleChange("currentWeight", v.replace(/\D/g, ""))
+                }
+              />
+              <Input
+                label="Target"
+                value={String(profile.targetWeight)}
+                keyboardType="numeric"
+                onChangeText={(v: string) =>
+                  handleChange("targetWeight", v.replace(/\D/g, ""))
+                }
+              />
+              <Input
+                label="Progress"
+                value={String(profile.progress)}
+                keyboardType="numeric"
+                onChangeText={(v: string) =>
+                  handleChange("progress", v.replace(/\D/g, ""))
+                }
+              />
+            </>
+          ) : (
+            <>
+              <Text style={styles.infoLabelSmall}>
+                Current:{" "}
+                <Text style={styles.infoValueSmall}>
+                  {profile.currentWeight} lbs
+                </Text>
+              </Text>
+              <Text style={styles.infoLabelSmall}>
+                Target:{" "}
+                <Text style={styles.infoValueSmall}>
+                  {profile.targetWeight} lbs
+                </Text>
+              </Text>
+              <Text style={styles.infoLabelSmall}>
+                Progress:{" "}
+                <Text style={styles.infoValueSmall}>{profile.progress}%</Text>
+              </Text>
+            </>
+          )}
         </View>
 
         <View style={styles.infoRowCompact}>
-          <Text style={styles.infoLabelSmall}>
-            Height: <Text style={styles.infoValueSmall}>{profile.height}</Text>
-          </Text>
+          {editMode ? (
+            <Input
+              label="Height"
+              value={profile.height}
+              onChangeText={(v: string) => handleChange("height", v)}
+            />
+          ) : (
+            <Text style={styles.infoLabelSmall}>
+              Height:{" "}
+              <Text style={styles.infoValueSmall}>{profile.height}</Text>
+            </Text>
+          )}
           <Text style={styles.infoLabelSmall}>
             BMI: <Text style={styles.infoValueSmall}>{profile.bmi}</Text>
           </Text>
@@ -139,8 +191,8 @@ function UserProfile() {
                         opt === "Weight Loss"
                           ? "weight-lifter"
                           : opt === "Weight Gain"
-                          ? "weight"
-                          : "scale-balance"
+                            ? "weight"
+                            : "scale-balance"
                       }
                       size={16}
                       color="#388E3C"
@@ -167,8 +219,8 @@ function UserProfile() {
                       opt === "Vegetarian"
                         ? "leaf"
                         : opt === "Non-Vegetarian"
-                        ? "food-drumstick"
-                        : "alert-circle-outline"
+                          ? "food-drumstick"
+                          : "alert-circle-outline"
                     }
                     size={14}
                     color="#388E3C"
@@ -239,12 +291,15 @@ function UserProfile() {
   );
 }
 
-export default UserProfile;
-
 /* ============================
    REUSABLE COMPONENTS
 ============================ */
-const Input = ({ label, value, onChangeText, keyboardType = "default" }: any) => (
+const Input = ({
+  label,
+  value,
+  onChangeText,
+  keyboardType = "default",
+}: any) => (
   <View style={{ marginBottom: 10 }}>
     <Text style={{ color: "#757575", fontSize: 13 }}>{label}</Text>
     <TextInput
@@ -262,10 +317,7 @@ const Dropdown = ({ options, value, onChange }: any) => (
       <TouchableOpacity
         key={opt}
         onPress={() => onChange(opt)}
-        style={[
-          styles.chip,
-          value === opt && styles.chipActive,
-        ]}
+        style={[styles.chip, value === opt && styles.chipActive]}
       >
         <Text style={styles.chipText}>{opt}</Text>
       </TouchableOpacity>
@@ -306,7 +358,7 @@ const styles = StyleSheet.create({
   },
   name: { fontSize: 20, fontWeight: "700", color: "#388E3C" },
   subtle: { color: "#757575" },
-  editIcon: { backgroundColor: "#fff", padding: 15, borderRadius: 11 },
+  editIcon: { backgroundColor: "#fff", padding: 10, borderRadius: 12 },
   infoRowCompact: {
     flexDirection: "row",
     backgroundColor: "#fff",
@@ -341,6 +393,7 @@ const styles = StyleSheet.create({
   chipText: { color: "#388E3C", fontWeight: "600" },
   chipTextActive: { color: "#1B5E20" },
   settingsRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  settingsLabel: { fontSize: 15 },
   toggle: {
     width: 40,
     height: 24,

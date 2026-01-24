@@ -3,13 +3,13 @@ import { router } from "expo-router";
 import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const SignupScreen: React.FC = () => {
@@ -50,11 +50,18 @@ const SignupScreen: React.FC = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
-        }
+        },
       );
       const data = await response.json();
       if (!response.ok) {
-        setError(data.message || "Registration failed");
+        if (
+          data.message &&
+          data.message.toLowerCase().includes("email already")
+        ) {
+          setError("Email already exists");
+        } else {
+          setError(data.message || "Registration failed");
+        }
       } else {
         // Registration successful, redirect to login
         router.replace("/login_signup/login");
