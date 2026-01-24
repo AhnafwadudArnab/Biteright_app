@@ -90,7 +90,7 @@ export default function LandingPage({
               },
             ]}
             onPress={() => {
-              router.push("/login_signup/signup");
+              router.push("/login_signup/login");
             }}
             activeOpacity={0.85}
           >
@@ -185,13 +185,11 @@ export default function LandingPage({
           Join thousands achieving their goals
         </Text>
 
-        <TouchableOpacity
-          style={styles.finalBtn}
-          onPress={() => {
-            router.push("/login_signup/signup");
-          }}
-        >
-          <Text style={styles.finalBtnText}>Start Your Journey</Text>
+        <TouchableOpacity style={styles.finalBtn} onPress={onGetStarted}>
+          <Text style={styles.finalBtnText}  onPress={() => {
+              router.push("/login_signup/signup");
+            }}>Start Your Journey</Text>
+          
         </TouchableOpacity>
       </View>
 
