@@ -227,7 +227,12 @@ export default function MainHomePage() {
             >
               <Text style={styles.mealBtnTextFilled}>+ Add Meal</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.mealBtnOutline}>
+            <TouchableOpacity
+              onPress={() => {
+                router.push("../Meal_trackers/ViewLogs");
+              }}
+              style={styles.mealBtnOutline}
+            >
               <Text style={styles.mealBtnText}>View Logs</Text>
             </TouchableOpacity>
           </View>
