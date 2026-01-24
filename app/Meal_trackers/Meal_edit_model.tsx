@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import type { Meal } from "./Gen_meals.ts";
 
 type MealEditModalProps = {
@@ -20,18 +21,18 @@ export default function MealEditModal({
   onSave,
   onCancel,
 }: MealEditModalProps) {
-  const [type, setType] = useState(meal?.type || "");
+  const [type, setType] = useState(meal?.type || "Breakfast");
   const [name, setName] = useState(meal?.name || "");
-  const [time, setTime] = useState(meal?.time || "");
+  const [time, setTime] = useState(meal?.time || "8:00 AM");
   const [kcal, setKcal] = useState(meal?.kcal?.toString() || "");
   const [protein, setProtein] = useState(meal?.protein?.toString() || "");
   const [carbs, setCarbs] = useState(meal?.carbs?.toString() || "");
   const [fat, setFat] = useState(meal?.fat?.toString() || "");
 
   useEffect(() => {
-    setType(meal?.type || "");
+    setType(meal?.type || "Breakfast");
     setName(meal?.name || "");
-    setTime(meal?.time || "");
+    setTime(meal?.time || "8:00 AM");
     setKcal(meal?.kcal?.toString() || "");
     setProtein(meal?.protein?.toString() || "");
     setCarbs(meal?.carbs?.toString() || "");
@@ -60,24 +61,37 @@ export default function MealEditModal({
       <View style={styles.overlay}>
         <View style={styles.modal}>
           <Text style={styles.title}>{meal ? "Edit Meal" : "Add Meal"}</Text>
-          <TextInput
+          <Picker
+            selectedValue={type}
             style={styles.input}
-            placeholder="Type (e.g. Breakfast)"
-            value={type}
-            onChangeText={setType}
-          />
+            onValueChange={setType}
+          >
+            <Picker.Item label="Breakfast" value="Breakfast" />
+            <Picker.Item label="Lunch" value="Lunch" />
+            <Picker.Item label="Snack" value="Snack" />
+            <Picker.Item label="Dinner" value="Dinner" />
+          </Picker>
           <TextInput
             style={styles.input}
             placeholder="Meal Name"
             value={name}
             onChangeText={setName}
           />
-          <TextInput
+          <Picker
+            selectedValue={time}
             style={styles.input}
-            placeholder="Time (e.g. 8:30 AM)"
-            value={time}
-            onChangeText={setTime}
-          />
+            onValueChange={setTime}
+          >
+            <Picker.Item label="6:00 AM" value="6:00 AM" />
+            <Picker.Item label="7:00 AM" value="7:00 AM" />
+            <Picker.Item label="8:00 AM" value="8:00 AM" />
+            <Picker.Item label="9:00 AM" value="9:00 AM" />
+            <Picker.Item label="12:00 PM" value="12:00 PM" />
+            <Picker.Item label="1:00 PM" value="1:00 PM" />
+            <Picker.Item label="3:00 PM" value="3:00 PM" />
+            <Picker.Item label="6:00 PM" value="6:00 PM" />
+            <Picker.Item label="8:00 PM" value="8:00 PM" />
+          </Picker>
           <TextInput
             style={styles.input}
             placeholder="Calories"
