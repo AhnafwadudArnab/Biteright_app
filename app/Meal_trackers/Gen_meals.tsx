@@ -1,11 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import MealEditModal from "../Meal_trackers/Meal_edit_model";
 import { router } from "expo-router";
@@ -23,73 +25,154 @@ export type Meal = {
   fat: number;
 };
 
-export default function GenMeals() {
-  const [meals, setMeals] = React.useState<Meal[]>([
-    {
-      id: "1",
-      type: "Breakfast",
-      name: "Avocado Toast",
-      time: "8:30 AM",
-      kcal: 380,
-      protein: 12,
-      carbs: 45,
-      fat: 18,
-    },
-    {
-      id: "2",
-      type: "Lunch",
-      name: "Chicken Wrap",
-      time: "1:15 PM",
-      kcal: 520,
-      protein: 32,
-      carbs: 48,
-      fat: 22,
-    },
-    {
-      id: "3",
-      type: "Snack",
-      name: "Protein Bar",
-      time: "4:00 PM",
-      kcal: 220,
-      protein: 20,
-      carbs: 24,
-      fat: 8,
-    },
-  ]);
+// TODO: Replace with actual user id from auth context or props
+const USER_ID = "demo-user-id";
+const API_BASE = "http://localhost:3000/api";
 
+// BMI JSON path (adjust if needed)
+const BMI_JSON = require("../Dietplans/JSON files/DoctorSugg_bmi_mealplans.json");
+
+// Helper: get default meals for a user (mock: male, 22-22.9)
+function getDefaultMeals(gender = "male", bmiRange = "22-22.9") {
+  const plan = BMI_JSON?.bmiMealPlans?.[gender]?.[bmiRange]?.meals || [];
+  // Add id, time, and macros as 0 (can be edited by user)
+  return plan.map((m, idx) => ({
+    id: `${gender}-${bmiRange}-${idx}`,
+    type: m.type,
+    name: m.name,
+    time: "", // let user edit
+    kcal: m.kcal,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+  }));
+}
+
+export default function GenMeals() {
+  const [meals, setMeals] = React.useState<Meal[]>([]);
   const [editingMeal, setEditingMeal] = React.useState<Meal | null>(null);
   const [showMealModal, setShowMealModal] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const [initialized, setInitialized] = React.useState(false);
+  // BMI selection state
+  const [selectedGender, setSelectedGender] = React.useState<'male' | 'female'>('male');
+  const [selectedBmi, setSelectedBmi] = React.useState<string>('22-22.9');
 
-  const totalKcal = meals.reduce((s, m) => s + m.kcal, 0);
-  const totalProtein = meals.reduce((s, m) => s + m.protein, 0);
-  const totalCarbs = meals.reduce((s, m) => s + m.carbs, 0);
-  const totalFat = meals.reduce((s, m) => s + m.fat, 0);
+  // Get all BMI ranges for gender
+  const bmiRanges = Object.keys(BMI_JSON.bmiMealPlans[selectedGender]);
 
-  const progressPercent = Math.min((totalKcal / DAILY_GOAL) * 100, 100);
+  // Fetch meals from backend, or load default from BMI JSON if none
+  const fetchMeals = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/meals/${USER_ID}`);
+      let data = [];
+      if (res.ok) {
+        data = await res.json();
+      }
+      if (!data || data.length === 0) {
+        // Load default meals from BMI JSON (using selected gender and bmi)
+        data = getDefaultMeals(selectedGender, selectedBmi);
+      }
+      setMeals(data);
+    } catch (err) {
+      setMeals(getDefaultMeals(selectedGender, selectedBmi));
+    } finally {
+      setLoading(false);
+      setInitialized(true);
+    }
+  };
+
+  useEffect(() => {
+    if (!initialized) fetchMeals();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialized]);
+
+  // When BMI/gender changes, regenerate meals from JSON
+  const handleBmiChange = (gender: 'male' | 'female', bmi: string) => {
+    setSelectedGender(gender);
+    setSelectedBmi(bmi);
+    setMeals(getDefaultMeals(gender, bmi));
+  };
+
+  // Add or update meal
+  const handleSaveMeal = async (meal: Meal) => {
+    setLoading(true);
+    try {
+      if (
+        editingMeal &&
+        editingMeal.id &&
+        !editingMeal.id.startsWith("male-")
+      ) {
+        // Update (delete old, add new for simplicity)
+        await fetch(`${API_BASE}/meals/${editingMeal.id}`, {
+          method: "DELETE",
+        });
+      }
+      // Add new meal
+      const res = await fetch(`${API_BASE}/meals`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: USER_ID,
+          meal_type: meal.type,
+          eaten_at: new Date().toISOString(),
+          items: [
+            {
+              food_id: meal.id || Math.random().toString(),
+              quantity: 1,
+              calories: meal.kcal,
+            },
+          ],
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to save meal");
+      fetchMeals();
+    } catch (err) {
+      Alert.alert("Error", "Could not save meal.");
+    } finally {
+      setShowMealModal(false);
+      setEditingMeal(null);
+      setLoading(false);
+    }
+  };
+
+  // Delete meal
+  const handleDelete = async (meal: Meal) => {
+    setLoading(true);
+    try {
+      if (meal.id.startsWith("male-")) {
+        // Just remove from local state (not in backend yet)
+        setMeals((prev) => prev.filter((m) => m.id !== meal.id));
+      } else {
+        const res = await fetch(`${API_BASE}/meals/${meal.id}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) throw new Error("Failed to delete meal");
+        fetchMeals();
+      }
+    } catch (err) {
+      Alert.alert("Error", "Could not delete meal.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEdit = (meal: Meal) => {
     setEditingMeal(meal);
     setShowMealModal(true);
   };
 
-  const handleDelete = (meal: Meal) => {
-    setMeals((prev) => prev.filter((m) => m.id !== meal.id));
-  };
-
-  const handleSaveMeal = (meal: Meal) => {
-    if (editingMeal) {
-      setMeals((prev) => prev.map((m) => (m.id === editingMeal.id ? meal : m)));
-    } else {
-      setMeals((prev) => [...prev, { ...meal, id: Date.now().toString() }]);
-    }
-    setShowMealModal(false);
-    setEditingMeal(null);
-  };
-
   const handleAddMeal = () => {
     setEditingMeal(null);
     setShowMealModal(true);
   };
+
+  const totalKcal = meals.reduce((s, m) => s + (m.kcal || 0), 0);
+  const totalProtein = meals.reduce((s, m) => s + (m.protein || 0), 0);
+  const totalCarbs = meals.reduce((s, m) => s + (m.carbs || 0), 0);
+  const totalFat = meals.reduce((s, m) => s + (m.fat || 0), 0);
+  const progressPercent = Math.min((totalKcal / DAILY_GOAL) * 100, 100);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -105,6 +188,51 @@ export default function GenMeals() {
         />
         <Text style={styles.headerTitle}>Daily Meal Log</Text>
         <Text style={styles.weeklyText}>Weekly</Text>
+      </View>
+
+      {/* BMI Selection */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 20, marginBottom: 10 }}>
+        <Text style={{ fontWeight: 'bold', marginRight: 8 }}>Gender:</Text>
+        <TouchableOpacity
+          style={{
+            backgroundColor: selectedGender === 'male' ? '#38B36A' : '#eee',
+            padding: 8,
+            borderRadius: 8,
+            marginRight: 8,
+          }}
+          onPress={() => handleBmiChange('male', bmiRanges[0])}
+        >
+          <Text style={{ color: selectedGender === 'male' ? '#fff' : '#222' }}>Male</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            backgroundColor: selectedGender === 'female' ? '#38B36A' : '#eee',
+            padding: 8,
+            borderRadius: 8,
+            marginRight: 8,
+          }}
+          onPress={() => handleBmiChange('female', Object.keys(BMI_JSON.bmiMealPlans['female'])[0])}
+        >
+          <Text style={{ color: selectedGender === 'female' ? '#fff' : '#222' }}>Female</Text>
+        </TouchableOpacity>
+
+        <Text style={{ fontWeight: 'bold', marginRight: 8, marginLeft: 8 }}>BMI:</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}>
+          {Object.keys(BMI_JSON.bmiMealPlans[selectedGender]).map((bmi) => (
+            <TouchableOpacity
+              key={bmi}
+              style={{
+                backgroundColor: selectedBmi === bmi ? '#38B36A' : '#eee',
+                padding: 8,
+                borderRadius: 8,
+                marginRight: 6,
+              }}
+              onPress={() => handleBmiChange(selectedGender, bmi)}
+            >
+              <Text style={{ color: selectedBmi === bmi ? '#fff' : '#222' }}>{bmi}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       <Text style={styles.dateText}>Today, {new Date().toDateString()}</Text>
@@ -140,40 +268,49 @@ export default function GenMeals() {
         </TouchableOpacity>
       </View>
 
+      {loading && (
+        <ActivityIndicator
+          size="large"
+          color="#38B36A"
+          style={{ marginTop: 20 }}
+        />
+      )}
+
       {/* Empty State */}
-      {meals.length === 0 && (
+      {!loading && meals.length === 0 && (
         <Text style={styles.emptyText}>No meals added today</Text>
       )}
 
       {/* Meal Cards */}
-      {meals.map((meal) => (
-        <View key={meal.id} style={styles.mealCard}>
-          <View style={styles.mealHeader}>
-            <Text style={styles.mealType}>{meal.type}</Text>
-            <View style={styles.mealActions}>
-              <TouchableOpacity onPress={() => handleEdit(meal)}>
-                <Ionicons name="create-outline" size={20} color="#38B36A" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => handleDelete(meal)}
-                style={{ marginLeft: 12 }}
-              >
-                <Ionicons name="trash-outline" size={20} color="#E57373" />
-              </TouchableOpacity>
+      {!loading &&
+        meals.map((meal) => (
+          <View key={meal.id} style={styles.mealCard}>
+            <View style={styles.mealHeader}>
+              <Text style={styles.mealType}>{meal.type}</Text>
+              <View style={styles.mealActions}>
+                <TouchableOpacity onPress={() => handleEdit(meal)}>
+                  <Ionicons name="create-outline" size={20} color="#38B36A" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => handleDelete(meal)}
+                  style={{ marginLeft: 12 }}
+                >
+                  <Ionicons name="trash-outline" size={20} color="#E57373" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <Text style={styles.mealName}>{meal.name}</Text>
+            <Text style={styles.mealTime}>{meal.time}</Text>
+
+            <View style={styles.nutritionRow}>
+              <Text style={styles.kcalText}>{meal.kcal} kcal</Text>
+              <Text style={styles.nutritionText}>P {meal.protein}g</Text>
+              <Text style={styles.nutritionText}>C {meal.carbs}g</Text>
+              <Text style={styles.nutritionText}>F {meal.fat}g</Text>
             </View>
           </View>
-
-          <Text style={styles.mealName}>{meal.name}</Text>
-          <Text style={styles.mealTime}>{meal.time}</Text>
-
-          <View style={styles.nutritionRow}>
-            <Text style={styles.kcalText}>{meal.kcal} kcal</Text>
-            <Text style={styles.nutritionText}>P {meal.protein}g</Text>
-            <Text style={styles.nutritionText}>C {meal.carbs}g</Text>
-            <Text style={styles.nutritionText}>F {meal.fat}g</Text>
-          </View>
-        </View>
-      ))}
+        ))}
 
       {showMealModal && (
         <MealEditModal
