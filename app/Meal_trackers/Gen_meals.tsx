@@ -1,18 +1,26 @@
-import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
+  View,
+  Text,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
-  View,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
-import MealEditModal from "../Meal_trackers/Meal_edit_model";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
-const DAILY_GOAL = 2000;
+/* -------------------- MOCK / CONSTANTS -------------------- */
 
-export type Meal = {
+const API_BASE = "http://YOUR_API_URL";
+const USER_ID = "1";
+const DAILY_GOAL = 2200;
+
+import bmiJsonRaw from "../Dietplans/JSON files/DoctorSugg_bmi_mealplans.json";
+const BMI_JSON = bmiJsonRaw;
+
+type Meal = {
   id: string;
   type: string;
   name: string;
@@ -23,42 +31,59 @@ export type Meal = {
   fat: number;
 };
 
-export default function GenMeals() {
-  const [meals, setMeals] = React.useState<Meal[]>([
-    {
-      id: "1",
-      type: "Breakfast",
-      name: "Avocado Toast",
-      time: "8:30 AM",
-      kcal: 380,
-      protein: 12,
-      carbs: 45,
-      fat: 18,
-    },
-    {
-      id: "2",
-      type: "Lunch",
-      name: "Chicken Wrap",
-      time: "1:15 PM",
-      kcal: 520,
-      protein: 32,
-      carbs: 48,
-      fat: 22,
-    },
-    {
-      id: "3",
-      type: "Snack",
-      name: "Protein Bar",
-      time: "4:00 PM",
-      kcal: 220,
-      protein: 20,
-      carbs: 24,
-      fat: 8,
-    },
-  ]);
+/* -------------------- HELPERS -------------------- */
 
-  const [editingMeal, setEditingMeal] = React.useState<Meal | null>(null);
-  const [showMealModal, setShowMealModal] = React.useState(false);
+const getDefaultMeals = (gender: "male" | "female", bmi: string): Meal[] => {
+  const plan =
+    BMI_JSON.bmiMealPlans?.[gender]?.[bmi] ||
+    Object.values(BMI_JSON.bmiMealPlans?.[gender] || {})[0];
+  if (!plan || !plan.meals) return [];
+  // Map JSON meals to Meal type, add id, and fill missing macros as 0
+  return plan.meals.map((m: any, idx: number) => ({
+    id: `${gender}-${bmi}-${m.type?.toLowerCase() || idx}`,
+    type: m.type || "Meal",
+    name: m.name || "Meal",
+    time: "",
+    kcal: m.kcal || 0,
+    protein: m.protein || 0,
+    carbs: m.carbs || 0,
+    fat: m.fat || 0,
+  }));
+};
+
+/* -------------------- COMPONENT -------------------- */
+
+export default function DailyMealLog() {
+  const [meals, setMeals] = useState<Meal[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedGender, setSelectedGender] = useState<"male" | "female">(
+    "male",
+  );
+  const [selectedBmi, setSelectedBmi] = useState(
+    Object.keys(BMI_JSON.bmiMealPlans.male)[0],
+  );
+
+  const [showMealModal, setShowMealModal] = useState(false);
+  const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
+  const [showBmiBox, setShowBmiBox] = useState(true);
+
+  // Always load meals from JSON for BMI/gender selection
+  useEffect(() => {
+    setMeals(getDefaultMeals(selectedGender, selectedBmi));
+  }, [selectedGender, selectedBmi]);
+
+  /* -------------------- HANDLERS -------------------- */
+
+  const handleBmiChange = (gender: "male" | "female", bmi: string) => {
+    setSelectedGender(gender);
+    setSelectedBmi(bmi);
+  };
+
+  const handleDelete = async (meal: Meal) => {
+    setMeals((prev) => prev.filter((m) => m.id !== meal.id));
+  };
+
+  /* -------------------- TOTALS -------------------- */
 
   const totalKcal = meals.reduce((s, m) => s + m.kcal, 0);
   const totalProtein = meals.reduce((s, m) => s + m.protein, 0);
@@ -67,29 +92,7 @@ export default function GenMeals() {
 
   const progressPercent = Math.min((totalKcal / DAILY_GOAL) * 100, 100);
 
-  const handleEdit = (meal: Meal) => {
-    setEditingMeal(meal);
-    setShowMealModal(true);
-  };
-
-  const handleDelete = (meal: Meal) => {
-    setMeals((prev) => prev.filter((m) => m.id !== meal.id));
-  };
-
-  const handleSaveMeal = (meal: Meal) => {
-    if (editingMeal) {
-      setMeals((prev) => prev.map((m) => (m.id === editingMeal.id ? meal : m)));
-    } else {
-      setMeals((prev) => [...prev, { ...meal, id: Date.now().toString() }]);
-    }
-    setShowMealModal(false);
-    setEditingMeal(null);
-  };
-
-  const handleAddMeal = () => {
-    setEditingMeal(null);
-    setShowMealModal(true);
-  };
+  /* -------------------- RENDER -------------------- */
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -99,25 +102,75 @@ export default function GenMeals() {
           name="arrow-back"
           size={24}
           color="#222"
-          onPress={() => {
-            router.push("/(tabs)/MainHomePage");
-          }}
+          onPress={() => router.push("/(tabs)/MainHomePage")}
         />
         <Text style={styles.headerTitle}>Daily Meal Log</Text>
         <Text style={styles.weeklyText}>Weekly</Text>
       </View>
 
+      {/* BMI BOX */}
+      {showBmiBox && (
+        <View style={{ marginHorizontal: 20, marginBottom: 12 }}>
+          <View style={styles.bmiCard}>
+            {/* Gender */}
+            <View style={styles.row}>
+              <Text style={styles.label}>Gender:</Text>
+              {(["male", "female"] as const).map((g) => (
+                <TouchableOpacity
+                  key={g}
+                  style={[
+                    styles.bmiBtn,
+                    selectedGender === g && styles.bmiBtnActive,
+                  ]}
+                  onPress={() =>
+                    handleBmiChange(g, Object.keys(BMI_JSON.bmiMealPlans[g])[0])
+                  }
+                >
+                  <Text
+                    style={[
+                      styles.bmiText,
+                      selectedGender === g && styles.bmiTextActive,
+                    ]}
+                  >
+                    {g.toUpperCase()}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* BMI */}
+            <View style={styles.rowWrap}>
+              <Text style={styles.label}>BMI:</Text>
+              {Object.keys(BMI_JSON.bmiMealPlans[selectedGender]).map((bmi) => (
+                <TouchableOpacity
+                  key={bmi}
+                  style={[
+                    styles.bmiBtnSmall,
+                    selectedBmi === bmi && styles.bmiBtnActive,
+                  ]}
+                  onPress={() => handleBmiChange(selectedGender, bmi)}
+                >
+                  <Text
+                    style={[
+                      styles.bmiText,
+                      selectedBmi === bmi && styles.bmiTextActive,
+                    ]}
+                  >
+                    {bmi}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+      )}
+
       <Text style={styles.dateText}>Today, {new Date().toDateString()}</Text>
 
-      {/* Total Card */}
+      {/* TOTAL CARD */}
       <View style={styles.totalCard}>
         <Text style={styles.totalLabel}>Calories Consumed</Text>
-        <Text
-          style={[
-            styles.totalKcal,
-            { color: totalKcal > DAILY_GOAL ? "#FEE2E2" : "#FFFFFF" },
-          ]}
-        >
+        <Text style={styles.totalKcal}>
           {totalKcal} / {DAILY_GOAL} kcal
         </Text>
 
@@ -132,107 +185,78 @@ export default function GenMeals() {
         </Text>
       </View>
 
-      {/* Meals Header */}
-      <View style={styles.mealHeaderRow}>
-        <Text style={styles.sectionTitle}>Today's Meals</Text>
-        <TouchableOpacity style={styles.addBtn} onPress={handleAddMeal}>
-          <Ionicons name="add" size={26} color="#fff" />
-        </TouchableOpacity>
-      </View>
+      {/* MEALS */}
+      {loading && <ActivityIndicator size="large" color="#38B36A" />}
 
-      {/* Empty State */}
-      {meals.length === 0 && (
-        <Text style={styles.emptyText}>No meals added today</Text>
-      )}
-
-      {/* Meal Cards */}
-      {meals.map((meal) => (
-        <View key={meal.id} style={styles.mealCard}>
-          <View style={styles.mealHeader}>
-            <Text style={styles.mealType}>{meal.type}</Text>
-            <View style={styles.mealActions}>
-              <TouchableOpacity onPress={() => handleEdit(meal)}>
-                <Ionicons name="create-outline" size={20} color="#38B36A" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => handleDelete(meal)}
-                style={{ marginLeft: 12 }}
-              >
+      {!loading &&
+        meals.map((meal) => (
+          <View key={meal.id} style={styles.mealCard}>
+            <View style={styles.mealHeader}>
+              <Text style={styles.mealType}>{meal.type}</Text>
+              <TouchableOpacity onPress={() => handleDelete(meal)}>
                 <Ionicons name="trash-outline" size={20} color="#E57373" />
               </TouchableOpacity>
             </View>
+
+            <Text style={styles.mealName}>{meal.name}</Text>
+            <Text style={styles.mealTime}>{meal.time}</Text>
+
+            <View style={styles.nutritionRow}>
+              <Text style={styles.kcalText}>{meal.kcal} kcal</Text>
+              <Text>P {meal.protein}g</Text>
+              <Text>C {meal.carbs}g</Text>
+              <Text>F {meal.fat}g</Text>
+            </View>
           </View>
-
-          <Text style={styles.mealName}>{meal.name}</Text>
-          <Text style={styles.mealTime}>{meal.time}</Text>
-
-          <View style={styles.nutritionRow}>
-            <Text style={styles.kcalText}>{meal.kcal} kcal</Text>
-            <Text style={styles.nutritionText}>P {meal.protein}g</Text>
-            <Text style={styles.nutritionText}>C {meal.carbs}g</Text>
-            <Text style={styles.nutritionText}>F {meal.fat}g</Text>
-          </View>
-        </View>
-      ))}
-
-      {showMealModal && (
-        <MealEditModal
-          meal={
-            editingMeal || {
-              id: "",
-              type: "",
-              name: "",
-              time: "",
-              kcal: 0,
-              protein: 0,
-              carbs: 0,
-              fat: 0,
-            }
-          }
-          onSave={handleSaveMeal}
-          onCancel={() => {
-            setShowMealModal(false);
-            setEditingMeal(null);
-          }}
-        />
-      )}
+        ))}
     </ScrollView>
   );
 }
 
+/* -------------------- STYLES -------------------- */
+
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    backgroundColor: "#F4F6F8",
-    paddingBottom: 24,
-  },
+  container: { flexGrow: 1, backgroundColor: "#F4F6F8" },
 
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingTop: 80,
-    paddingBottom: 8,
+    paddingTop: 70,
   },
-  headerTitle: {
-    flex: 1,
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#1C1C1E",
-    marginLeft: 12,
-  },
-  weeklyText: {
-    color: "#38B36A",
-    fontWeight: "600",
-    fontSize: 15,
-  },
+  headerTitle: { flex: 1, fontSize: 22, fontWeight: "700", marginLeft: 12 },
+  weeklyText: { color: "#38B36A", fontWeight: "600" },
 
-  dateText: {
-    fontSize: 14,
-    color: "#6B7280",
-    marginLeft: 20,
-    marginBottom: 12,
+  dateText: { marginLeft: 20, color: "#6B7280", marginBottom: 12 },
+
+  bmiCard: {
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    padding: 16,
+    elevation: 3,
   },
+  row: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
+  rowWrap: { flexDirection: "row", flexWrap: "wrap", alignItems: "center" },
+  label: { fontWeight: "700", marginRight: 8 },
+
+  bmiBtn: {
+    borderWidth: 1.5,
+    borderColor: "#38B36A",
+    padding: 10,
+    borderRadius: 12,
+    marginRight: 8,
+  },
+  bmiBtnSmall: {
+    borderWidth: 1.5,
+    borderColor: "#38B36A",
+    padding: 8,
+    borderRadius: 10,
+    marginRight: 6,
+    marginBottom: 6,
+  },
+  bmiBtnActive: { backgroundColor: "#38B36A" },
+  bmiText: { color: "#38B36A", fontWeight: "700" },
+  bmiTextActive: { color: "#fff" },
 
   totalCard: {
     backgroundColor: "#38B36A",
@@ -241,105 +265,28 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 20,
   },
-  totalLabel: {
-    color: "#E8F5EC",
-    fontSize: 14,
-    marginBottom: 6,
-  },
-  totalKcal: {
-    fontSize: 28,
-    fontWeight: "800",
-    marginBottom: 10,
-  },
-
+  totalLabel: { color: "#E8F5EC" },
+  totalKcal: { fontSize: 28, fontWeight: "800", color: "#fff" },
   progressBg: {
     height: 10,
     backgroundColor: "rgba(255,255,255,0.3)",
     borderRadius: 10,
-    overflow: "hidden",
-    marginBottom: 10,
+    marginVertical: 10,
   },
-  progressFill: {
-    height: "100%",
-    backgroundColor: "#FFFFFF",
-  },
-
-  totalMacros: {
-    color: "#F0FFF5",
-    fontSize: 14,
-  },
-
-  mealHeaderRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 17,
-    fontWeight: "700",
-  },
-
-  addBtn: {
-    backgroundColor: "#38B36A",
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  emptyText: {
-    textAlign: "center",
-    color: "#9CA3AF",
-    marginTop: 20,
-  },
+  progressFill: { height: "100%", backgroundColor: "#fff" },
+  totalMacros: { color: "#F0FFF5" },
 
   mealCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    padding: 16,
+    backgroundColor: "#fff",
     marginHorizontal: 20,
-    marginBottom: 14,
-    elevation: 3,
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 12,
   },
-
-  mealHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  mealType: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  mealActions: {
-    flexDirection: "row",
-  },
-
-  mealName: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#374151",
-    marginTop: 4,
-  },
-
-  mealTime: {
-    fontSize: 13,
-    color: "#9CA3AF",
-    marginVertical: 6,
-  },
-
-  nutritionRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-  kcalText: {
-    color: "#38B36A",
-    fontWeight: "700",
-    marginRight: 12,
-  },
-  nutritionText: {
-    marginRight: 12,
-    color: "#6B7280",
-  },
+  mealHeader: { flexDirection: "row", justifyContent: "space-between" },
+  mealType: { fontWeight: "700" },
+  mealName: { fontWeight: "600", marginTop: 4 },
+  mealTime: { color: "#9CA3AF", fontSize: 13 },
+  nutritionRow: { flexDirection: "row", gap: 12, marginTop: 6 },
+  kcalText: { color: "#38B36A", fontWeight: "700" },
 });
