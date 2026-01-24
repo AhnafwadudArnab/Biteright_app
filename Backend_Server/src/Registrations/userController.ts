@@ -54,15 +54,16 @@ export const signupUser = async (req: Request, res: Response) => {
       return res.status(409).json({ message: "Email already registered" });
     }
 
-    // Hash the password before saving
-    const saltRounds: number = 10;
-    const passwordStr: string = String(password);
-    const hashedPassword: string = await bcrypt.hash(passwordStr, saltRounds);
+    // Find the current max id and increment by 1
+    const lastUser = await User.findOne({ order: [["id", "DESC"]] });
+    const nextId = lastUser && lastUser.id ? lastUser.id + 1 : 1;
 
+    // Store password as plain text (not recommended for production)
     const newUser: User = await User.create({
+      id: nextId,
       name,
       email,
-      password: hashedPassword, // Store hashed password
+      password, // Store plain password
       gender,
       age: parsedAge,
       height_cm: parsedHeight,
@@ -95,9 +96,8 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const passwordStr: string = String(password);
-    const isMatch: boolean = await bcrypt.compare(passwordStr, user.password);
-    if (!isMatch) {
+    // Compare plain text passwords
+    if (user.password !== password) {
       return res.status(401).json({ message: "Invalid password" });
     }
 
