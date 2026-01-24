@@ -12,7 +12,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
 /* ============================
-   MAIN SCREEN
+   MAIN COMPONENT
 ============================ */
 function UserProfile() {
   const [editMode, setEditMode] = useState(false);
@@ -43,8 +43,7 @@ function UserProfile() {
   };
 
   const saveProfile = async () => {
-    // TODO: save to backend / storage
-    console.log("Profile saved", profile);
+    console.log("Saved profile:", profile);
   };
 
   return (
@@ -59,7 +58,7 @@ function UserProfile() {
                 <Input
                   label="Name"
                   value={profile.name}
-                  onChangeText={(t) => handleChange("name", t)}
+                  onChangeText={(t: string) => handleChange("name", t)}
                 />
               ) : (
                 <Text style={styles.name}>{profile.name}</Text>
@@ -70,7 +69,7 @@ function UserProfile() {
                   label="Age"
                   value={String(profile.age)}
                   keyboardType="numeric"
-                  onChangeText={(v) =>
+                  onChangeText={(v: string) =>
                     handleChange("age", v.replace(/\D/g, ""))
                   }
                 />
@@ -87,13 +86,13 @@ function UserProfile() {
           >
             <Ionicons
               name={editMode ? "checkmark" : "pencil"}
-              size={20}
+              size={23}
               color="#4CAF50"
             />
           </TouchableOpacity>
         </View>
 
-        {/* ================= QUICK INFO ================= */}
+        {/* ================= STATS ================= */}
         <View style={styles.infoRowCompact}>
           <Text style={styles.infoLabelSmall}>
             Current: <Text style={styles.infoValueSmall}>{profile.currentWeight} lbs</Text>
@@ -121,28 +120,36 @@ function UserProfile() {
         {/* ================= GOAL ================= */}
         <View style={styles.cardSection}>
           <Text style={styles.sectionTitle}>My Goal</Text>
-          <View style={styles.chipRow}>
-            {goalOptions.map((opt) => (
-              <Chip
-                key={opt}
-                label={opt}
-                active={profile.goal === opt}
-                icon={
-                  <MaterialCommunityIcons
-                    name={
-                      opt === "Weight Loss"
-                        ? "weight-lifter"
-                        : opt === "Weight Gain"
-                        ? "weight"
-                        : "scale-balance"
-                    }
-                    size={16}
-                    color="#388E3C"
-                  />
-                }
-              />
-            ))}
-          </View>
+          {editMode ? (
+            <Dropdown
+              options={goalOptions}
+              value={profile.goal}
+              onChange={(v: string) => handleChange("goal", v)}
+            />
+          ) : (
+            <View style={styles.chipRow}>
+              {goalOptions.map((opt) => (
+                <Chip
+                  key={opt}
+                  label={opt}
+                  active={profile.goal === opt}
+                  icon={
+                    <MaterialCommunityIcons
+                      name={
+                        opt === "Weight Loss"
+                          ? "weight-lifter"
+                          : opt === "Weight Gain"
+                          ? "weight"
+                          : "scale-balance"
+                      }
+                      size={16}
+                      color="#388E3C"
+                    />
+                  }
+                />
+              ))}
+            </View>
+          )}
         </View>
 
         {/* ================= DIET ================= */}
@@ -249,6 +256,23 @@ const Input = ({ label, value, onChangeText, keyboardType = "default" }: any) =>
   </View>
 );
 
+const Dropdown = ({ options, value, onChange }: any) => (
+  <View style={{ gap: 8 }}>
+    {options.map((opt: string) => (
+      <TouchableOpacity
+        key={opt}
+        onPress={() => onChange(opt)}
+        style={[
+          styles.chip,
+          value === opt && styles.chipActive,
+        ]}
+      >
+        <Text style={styles.chipText}>{opt}</Text>
+      </TouchableOpacity>
+    ))}
+  </View>
+);
+
 const Chip = ({ icon, label, active }: any) => (
   <View style={[styles.chip, active && styles.chipActive]}>
     <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
@@ -265,7 +289,6 @@ const Chip = ({ icon, label, active }: any) => (
 ============================ */
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F4FAF6" },
-
   headerCard: {
     backgroundColor: "#fff",
     margin: 16,
@@ -274,7 +297,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-
   avatar: {
     width: 70,
     height: 70,
@@ -282,16 +304,9 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#43A047",
   },
-
   name: { fontSize: 20, fontWeight: "700", color: "#388E3C" },
   subtle: { color: "#757575" },
-
-  editIcon: {
-    backgroundColor: "#E8F5E9",
-    padding: 6,
-    borderRadius: 16,
-  },
-
+  editIcon: { backgroundColor: "#fff", padding: 15, borderRadius: 11 },
   infoRowCompact: {
     flexDirection: "row",
     backgroundColor: "#fff",
@@ -301,39 +316,31 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: "space-between",
   },
-
   infoLabelSmall: { fontSize: 12, color: "#757575" },
   infoValueSmall: { fontWeight: "700", color: "#388E3C" },
-
   cardSection: {
     backgroundColor: "#fff",
     margin: 16,
     padding: 16,
     borderRadius: 16,
   },
-
   sectionTitle: {
     fontSize: 16,
     fontWeight: "700",
     color: "#388E3C",
     marginBottom: 8,
   },
-
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-
   chip: {
     paddingVertical: 8,
     paddingHorizontal: 16,
     backgroundColor: "#E8F5E9",
     borderRadius: 20,
   },
-
   chipActive: { backgroundColor: "#C8E6C9" },
   chipText: { color: "#388E3C", fontWeight: "600" },
   chipTextActive: { color: "#1B5E20" },
-
   settingsRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-
   toggle: {
     width: 40,
     height: 24,
@@ -342,13 +349,7 @@ const styles = StyleSheet.create({
     padding: 2,
     justifyContent: "center",
   },
-
-  toggleKnob: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-  },
-
+  toggleKnob: { width: 20, height: 20, borderRadius: 10 },
   logoutBtn: {
     margin: 24,
     padding: 16,
@@ -358,9 +359,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 10,
   },
-
   logoutText: { color: "#fff", fontWeight: "700" },
-
   input: {
     borderWidth: 1,
     borderColor: "#C8E6C9",
