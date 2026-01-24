@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,275 +8,151 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import ProgressBar from "./Settings_page files/ProgressBar";
 
 /* ============================
    MAIN COMPONENT
 ============================ */
 export default function UserProfile() {
   const [editMode, setEditMode] = useState(false);
-  const [notification, setNotification] = useState(true);
 
   const [profile, setProfile] = useState({
     name: "John Doe",
     gender: "Male",
     age: 25,
     avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-    currentWeight: 160,
-    targetWeight: 150,
-    progress: 20,
-    height: "5'9\"",
-    bmi: 23.6,
-    bmr: 1600,
+
+    // 🔴 Editable (DB)
+    heightCm: 175,
+    currentWeight: 160, // lbs
+    targetWeight: 150,  // lbs
+
+    // 🟢 Derived (charts)
+    bmi: 0,
+    bmr: 0,
+    progress: 0,
+
     goal: "Weight Loss",
     diet: ["Vegetarian"],
     activity: ["Moderate Exercise"],
   });
 
-  const goalOptions = ["Weight Loss", "Weight Gain", "Maintain Weight"];
-  const dietOptions = ["Vegetarian", "Non-Vegetarian", "Other"];
-  const activityOptions = ["Moderate Exercise", "Sedentary"];
+  /* ============================
+     DERIVED CALCULATIONS
+  ============================ */
+  useEffect(() => {
+    const weightKg = profile.currentWeight * 0.453592;
+    const heightM = profile.heightCm / 100;
 
-  const handleChange = (key: string, value: any) => {
+    const bmi = +(weightKg / (heightM * heightM)).toFixed(1);
+
+    const bmr =
+      10 * weightKg +
+      6.25 * profile.heightCm -
+      5 * profile.age +
+      5;
+
+    const progress =
+      profile.currentWeight <= profile.targetWeight
+        ? 100
+        : Math.min(
+            100,
+            Math.max(
+              0,
+              Math.round(
+                ((profile.currentWeight - profile.targetWeight) /
+                  profile.currentWeight) *
+                  100
+              )
+            )
+          );
+
+    setProfile((p) => ({
+      ...p,
+      bmi,
+      bmr: Math.round(bmr),
+      progress,
+    }));
+  }, [
+    profile.currentWeight,
+    profile.targetWeight,
+    profile.heightCm,
+    profile.age,
+  ]);
+
+  const handleChange = (key: string, value: number) => {
     setProfile((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const saveProfile = async () => {
-    console.log("Saved profile:", profile);
   };
 
   return (
     <View style={{ flex: 1 }}>
       <ScrollView style={styles.container}>
+
         {/* ================= HEADER ================= */}
         <View style={styles.headerCard}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Image source={{ uri: profile.avatar }} style={styles.avatar} />
-
-            <View style={{ marginLeft: 16, flex: 1 }}>
-              {editMode ? (
-                <>
-                  <Input
-                    label="Name"
-                    value={profile.name}
-                    onChangeText={(t: string) => handleChange("name", t)}
-                  />
-                  <Input
-                    label="Age"
-                    value={String(profile.age)}
-                    keyboardType="numeric"
-                    onChangeText={(v: string) =>
-                      handleChange("age", v.replace(/\D/g, ""))
-                    }
-                  />
-                </>
-              ) : (
-                <>
-                  <Text style={styles.name}>{profile.name}</Text>
-                  <Text style={styles.subtle}>
-                    {profile.gender}, {profile.age}
-                  </Text>
-                </>
-              )}
+            <View style={{ marginLeft: 16 }}>
+              <Text style={styles.name}>{profile.name}</Text>
+              <Text style={styles.subtle}>
+                {profile.gender}, {profile.age}
+              </Text>
             </View>
           </View>
 
-          <TouchableOpacity
-            style={styles.editIcon}
-            onPress={async () => {
-              if (editMode) await saveProfile();
-              setEditMode(!editMode);
-            }}
-          >
+          <TouchableOpacity onPress={() => setEditMode(!editMode)}>
             <Ionicons
               name={editMode ? "checkmark" : "pencil"}
               size={22}
-              color="#4CAF50"
+              color="#43A047"
             />
           </TouchableOpacity>
         </View>
 
-        {/* ================= WEIGHT / BODY ================= */}
-        <View style={styles.infoRowCompact}>
-          {editMode ? (
-            <>
-              <Input
-                label="Current"
-                value={String(profile.currentWeight)}
-                keyboardType="numeric"
-                onChangeText={(v: string) =>
-                  handleChange("currentWeight", v.replace(/\D/g, ""))
-                }
-              />
-              <Input
-                label="Target"
-                value={String(profile.targetWeight)}
-                keyboardType="numeric"
-                onChangeText={(v: string) =>
-                  handleChange("targetWeight", v.replace(/\D/g, ""))
-                }
-              />
-              <Input
-                label="Progress"
-                value={String(profile.progress)}
-                keyboardType="numeric"
-                onChangeText={(v: string) =>
-                  handleChange("progress", v.replace(/\D/g, ""))
-                }
-              />
-            </>
-          ) : (
-            <>
-              <Text style={styles.infoLabelSmall}>
-                Current:{" "}
-                <Text style={styles.infoValueSmall}>
-                  {profile.currentWeight} lbs
-                </Text>
-              </Text>
-              <Text style={styles.infoLabelSmall}>
-                Target:{" "}
-                <Text style={styles.infoValueSmall}>
-                  {profile.targetWeight} lbs
-                </Text>
-              </Text>
-              <Text style={styles.infoLabelSmall}>
-                Progress:{" "}
-                <Text style={styles.infoValueSmall}>{profile.progress}%</Text>
-              </Text>
-            </>
-          )}
+        {/* ================= RED INPUTS ================= */}
+        {editMode && (
+          <View style={styles.cardSection}>
+            <Input label="Age" value={profile.age} onChange={(v) => handleChange("age", v)} />
+            <Input label="Height (cm)" value={profile.heightCm} onChange={(v) => handleChange("heightCm", v)} />
+            <Input label="Current Weight (lbs)" value={profile.currentWeight} onChange={(v) => handleChange("currentWeight", v)} />
+            <Input label="Target Weight (lbs)" value={profile.targetWeight} onChange={(v) => handleChange("targetWeight", v)} />
+          </View>
+        )}
+
+        {/* ================= GREEN STATS ================= */}
+        <View style={styles.cardSection}>
+          <Text style={styles.sectionTitle}>Progress</Text>
+          <Text style={styles.statText}>{profile.progress}%</Text>
+          <ProgressBar progress={profile.progress} />
         </View>
 
-        <View style={styles.infoRowCompact}>
-          {editMode ? (
-            <Input
-              label="Height"
-              value={profile.height}
-              onChangeText={(v: string) => handleChange("height", v)}
-            />
-          ) : (
-            <Text style={styles.infoLabelSmall}>
-              Height:{" "}
-              <Text style={styles.infoValueSmall}>{profile.height}</Text>
-            </Text>
-          )}
-          <Text style={styles.infoLabelSmall}>
-            BMI: <Text style={styles.infoValueSmall}>{profile.bmi}</Text>
-          </Text>
-          <Text style={styles.infoLabelSmall}>
-            BMR: <Text style={styles.infoValueSmall}>{profile.bmr} kcal</Text>
-          </Text>
+        <View style={styles.statsRow}>
+          <StatCard label="BMI" value={profile.bmi} />
+          <StatCard label="BMR" value={`${profile.bmr} kcal`} />
         </View>
 
         {/* ================= GOAL ================= */}
-        <View style={styles.cardSection}>
-          <Text style={styles.sectionTitle}>My Goal</Text>
-          {editMode ? (
-            <Dropdown
-              options={goalOptions}
-              value={profile.goal}
-              onChange={(v: string) => handleChange("goal", v)}
-            />
-          ) : (
-            <View style={styles.chipRow}>
-              {goalOptions.map((opt) => (
-                <Chip
-                  key={opt}
-                  label={opt}
-                  active={profile.goal === opt}
-                  icon={
-                    <MaterialCommunityIcons
-                      name={
-                        opt === "Weight Loss"
-                          ? "weight-lifter"
-                          : opt === "Weight Gain"
-                            ? "weight"
-                            : "scale-balance"
-                      }
-                      size={16}
-                      color="#388E3C"
-                    />
-                  }
-                />
-              ))}
-            </View>
-          )}
-        </View>
+        <Section title="My Goal">
+          {["Weight Loss", "Weight Gain", "Maintain Weight"].map((opt) => (
+            <Chip key={opt} label={opt} active={profile.goal === opt} />
+          ))}
+        </Section>
 
         {/* ================= DIET ================= */}
-        <View style={styles.cardSection}>
-          <Text style={styles.sectionTitle}>Diet Preferences</Text>
-          <View style={styles.chipRow}>
-            {dietOptions.map((opt) => (
-              <Chip
-                key={opt}
-                label={opt}
-                active={profile.diet.includes(opt)}
-                icon={
-                  <MaterialCommunityIcons
-                    name={
-                      opt === "Vegetarian"
-                        ? "leaf"
-                        : opt === "Non-Vegetarian"
-                          ? "food-drumstick"
-                          : "alert-circle-outline"
-                    }
-                    size={14}
-                    color="#388E3C"
-                  />
-                }
-              />
-            ))}
-          </View>
-        </View>
+        <Section title="Diet Preferences">
+          {["Vegetarian", "Non-Vegetarian", "Other"].map((opt) => (
+            <Chip key={opt} label={opt} active={profile.diet.includes(opt)} />
+          ))}
+        </Section>
 
         {/* ================= ACTIVITY ================= */}
-        <View style={styles.cardSection}>
-          <Text style={styles.sectionTitle}>Lifestyle & Activity</Text>
-          <View style={styles.chipRow}>
-            {activityOptions.map((opt) => (
-              <Chip
-                key={opt}
-                label={opt}
-                active={profile.activity.includes(opt)}
-                icon={
-                  <MaterialCommunityIcons
-                    name={opt === "Moderate Exercise" ? "run" : "sofa-single"}
-                    size={16}
-                    color="#388E3C"
-                  />
-                }
-              />
-            ))}
-          </View>
-        </View>
-
-        {/* ================= NOTIFICATIONS ================= */}
-        <View style={styles.cardSection}>
-          <View style={styles.settingsRow}>
-            <Ionicons name="notifications-outline" size={18} color="#388E3C" />
-            <Text style={styles.settingsLabel}>Notifications</Text>
-
-            <TouchableOpacity
-              onPress={() => setNotification(!notification)}
-              style={[
-                styles.toggle,
-                { backgroundColor: notification ? "#C8E6C9" : "#E0E0E0" },
-              ]}
-            >
-              <View
-                style={[
-                  styles.toggleKnob,
-                  {
-                    alignSelf: notification ? "flex-end" : "flex-start",
-                    backgroundColor: notification ? "#43A047" : "#BDBDBD",
-                  },
-                ]}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
+        <Section title="Lifestyle & Activity">
+          {["Moderate Exercise", "Sedentary"].map((opt) => (
+            <Chip key={opt} label={opt} active={profile.activity.includes(opt)} />
+          ))}
+        </Section>
 
         {/* ================= LOGOUT ================= */}
         <TouchableOpacity
@@ -286,6 +162,7 @@ export default function UserProfile() {
           <Ionicons name="log-out-outline" size={20} color="#fff" />
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
+
       </ScrollView>
     </View>
   );
@@ -294,45 +171,35 @@ export default function UserProfile() {
 /* ============================
    REUSABLE COMPONENTS
 ============================ */
-const Input = ({
-  label,
-  value,
-  onChangeText,
-  keyboardType = "default",
-}: any) => (
-  <View style={{ marginBottom: 10 }}>
-    <Text style={{ color: "#757575", fontSize: 13 }}>{label}</Text>
+const Input = ({ label, value, onChange }: any) => (
+  <View style={{ marginBottom: 12 }}>
+    <Text style={styles.inputLabel}>{label}</Text>
     <TextInput
-      value={value}
-      onChangeText={onChangeText}
-      keyboardType={keyboardType}
+      value={String(value)}
+      keyboardType="numeric"
+      onChangeText={(v) => onChange(Number(v.replace(/\D/g, "")))}
       style={styles.input}
     />
   </View>
 );
 
-const Dropdown = ({ options, value, onChange }: any) => (
-  <View style={{ gap: 8 }}>
-    {options.map((opt: string) => (
-      <TouchableOpacity
-        key={opt}
-        onPress={() => onChange(opt)}
-        style={[styles.chip, value === opt && styles.chipActive]}
-      >
-        <Text style={styles.chipText}>{opt}</Text>
-      </TouchableOpacity>
-    ))}
+const Chip = ({ label, active }: any) => (
+  <View style={[styles.chip, active && styles.chipActive]}>
+    <Text style={styles.chipText}>{label}</Text>
   </View>
 );
 
-const Chip = ({ icon, label, active }: any) => (
-  <View style={[styles.chip, active && styles.chipActive]}>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-      {icon}
-      <Text style={[styles.chipText, active && styles.chipTextActive]}>
-        {label}
-      </Text>
-    </View>
+const Section = ({ title, children }: any) => (
+  <View style={styles.cardSection}>
+    <Text style={styles.sectionTitle}>{title}</Text>
+    <View style={styles.chipRow}>{children}</View>
+  </View>
+);
+
+const StatCard = ({ label, value }: any) => (
+  <View style={styles.statCard}>
+    <Text style={styles.statLabel}>{label}</Text>
+    <Text style={styles.statValue}>{value}</Text>
   </View>
 );
 
@@ -340,7 +207,7 @@ const Chip = ({ icon, label, active }: any) => (
    STYLES
 ============================ */
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F4FAF6" },
+  container: { backgroundColor: "#F4FAF6" },
   headerCard: {
     backgroundColor: "#fff",
     margin: 16,
@@ -350,26 +217,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   avatar: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     borderWidth: 2,
     borderColor: "#43A047",
   },
-  name: { fontSize: 20, fontWeight: "700", color: "#388E3C" },
+  name: { fontSize: 18, fontWeight: "700", color: "#2E7D32" },
   subtle: { color: "#757575" },
-  editIcon: { backgroundColor: "#fff", padding: 10, borderRadius: 12 },
-  infoRowCompact: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    marginHorizontal: 12,
-    marginBottom: 8,
-    padding: 8,
-    borderRadius: 10,
-    justifyContent: "space-between",
-  },
-  infoLabelSmall: { fontSize: 12, color: "#757575" },
-  infoValueSmall: { fontWeight: "700", color: "#388E3C" },
   cardSection: {
     backgroundColor: "#fff",
     margin: 16,
@@ -379,8 +234,28 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#388E3C",
+    color: "#2E7D32",
     marginBottom: 8,
+  },
+  statsRow: {
+    flexDirection: "row",
+    marginHorizontal: 16,
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: "#E8F5E9",
+    padding: 14,
+    borderRadius: 14,
+    alignItems: "center",
+  },
+  statLabel: { color: "#388E3C" },
+  statValue: { fontSize: 18, fontWeight: "700", color: "#1B5E20" },
+  statText: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1B5E20",
+    marginBottom: 4,
   },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   chip: {
@@ -390,19 +265,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   chipActive: { backgroundColor: "#C8E6C9" },
-  chipText: { color: "#388E3C", fontWeight: "600" },
-  chipTextActive: { color: "#1B5E20" },
-  settingsRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  settingsLabel: { fontSize: 15 },
-  toggle: {
-    width: 40,
-    height: 24,
-    borderRadius: 12,
-    marginLeft: "auto",
-    padding: 2,
-    justifyContent: "center",
+  chipText: { color: "#2E7D32", fontWeight: "600" },
+  inputLabel: { color: "#757575", marginBottom: 4 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#C8E6C9",
+    borderRadius: 8,
+    padding: 10,
+    backgroundColor: "#fff",
   },
-  toggleKnob: { width: 20, height: 20, borderRadius: 10 },
   logoutBtn: {
     margin: 24,
     padding: 16,
@@ -413,11 +284,4 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   logoutText: { color: "#fff", fontWeight: "700" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#C8E6C9",
-    borderRadius: 8,
-    padding: 8,
-    backgroundColor: "#fff",
-  },
 });
