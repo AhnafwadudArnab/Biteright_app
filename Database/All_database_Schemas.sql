@@ -145,6 +145,8 @@ CREATE TABLE `doctor_bmi_mealplans` (
 
 -- Doctor suggested BMI meal plans (seed data)
 
+
+
 -- MALE BMI PLANS
 INSERT INTO
     diet_plans (
