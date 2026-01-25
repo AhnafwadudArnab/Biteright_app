@@ -132,7 +132,7 @@ const Login = () => {
           <TouchableOpacity onPress={() => router.push("/login_signup/signup")}>
             <Text style={styles.signupLink}>Sign Up</Text>
           </TouchableOpacity>
-        </View>{" "}
+        </View>
         <View style={styles.signupContainer}>
           <Text style={styles.signupText}>MainHomePage </Text>
           <TouchableOpacity onPress={() => router.push("../MainHomePage")}>

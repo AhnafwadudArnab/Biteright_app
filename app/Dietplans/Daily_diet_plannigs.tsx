@@ -34,6 +34,23 @@ type BmiMealPlans = {
 // No longer needed: getBmiRangeKey
 
 export default function DietPlannerItem() {
+  // Save plan to DB
+  const savePlanToDb = async (planData: any) => {
+    try {
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) return;
+      await fetch("http://localhost:3000/api/users/mealplan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          plan: planData,
+        }),
+      });
+    } catch (err) {
+      console.log("Failed to save plan to DB", err);
+    }
+  };
   const params = useLocalSearchParams();
   const gender =
     typeof params.gender === "string" &&
@@ -44,19 +61,34 @@ export default function DietPlannerItem() {
     typeof params.weight === "string" ? parseFloat(params.weight) : undefined;
   const height =
     typeof params.height === "string" ? parseFloat(params.height) : undefined;
-  const bmi = typeof params.bmi === "string" ? parseFloat(params.bmi) : (weight && height && height > 0 ? weight / ((height / 100) * (height / 100)) : 0);
+  const bmi =
+    typeof params.bmi === "string"
+      ? parseFloat(params.bmi)
+      : weight && height && height > 0
+        ? weight / ((height / 100) * (height / 100))
+        : 0;
   const [plan, setPlan] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [meals, setMeals] = useState<any[]>([]);
   const [totalKcal, setTotalKcal] = useState<number>(0);
 
   useEffect(() => {
-    console.log('Params:', params);
-    console.log('gender:', gender, 'weight:', weight, 'height:', height, 'bmi:', bmi);
+    console.log("Params:", params);
+    console.log(
+      "gender:",
+      gender,
+      "weight:",
+      weight,
+      "height:",
+      height,
+      "bmi:",
+      bmi,
+    );
     setLoading(true);
     fetchMealPlan(gender, Number(bmi))
       .then((data) => {
         setPlan(data);
+        savePlanToDb(data); // Save to DB after fetching
         const mealsPerDay =
           typeof params.meals === "string"
             ? Number(params.meals)
@@ -68,8 +100,8 @@ export default function DietPlannerItem() {
         setTotalKcal(
           initialMeals.reduce(
             (sum: any, m: { kcal: any }) => sum + (m.kcal || 0),
-            0
-          )
+            0,
+          ),
         );
       })
       .catch((err) => {
@@ -87,7 +119,7 @@ export default function DietPlannerItem() {
   // Calories for completed meals
   const completedKcal = meals.reduce(
     (acc, meal) => acc + (meal.done ? meal.kcal || 0 : 0),
-    0
+    0,
   );
 
   // Date
@@ -101,7 +133,7 @@ export default function DietPlannerItem() {
       if (!meal.done) acc.kcal += meal.kcal || 0;
       return acc;
     },
-    { kcal: 0 }
+    { kcal: 0 },
   );
 
   if (loading) {
@@ -130,7 +162,7 @@ export default function DietPlannerItem() {
 
       {/* Header */}
       <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => router.push("../MainHomePage")}> 
+        <TouchableOpacity onPress={() => router.push("../MainHomePage")}>
           <Ionicons name="arrow-back" size={24} color="#222" />
         </TouchableOpacity>
 
@@ -194,14 +226,14 @@ export default function DietPlannerItem() {
             <TouchableOpacity
               onPress={() => {
                 const updatedMeals = meals.map((m, i) =>
-                  i === idx ? { ...m, done: !m.done } : m
+                  i === idx ? { ...m, done: !m.done } : m,
                 );
                 setMeals(updatedMeals);
                 setTotalKcal(
                   updatedMeals.reduce(
                     (sum, m) => sum + (m.done ? 0 : m.kcal || 0),
-                    0
-                  )
+                    0,
+                  ),
                 );
               }}
             >

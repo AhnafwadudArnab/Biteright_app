@@ -8,11 +8,18 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ProgressBar from "./Settings_page files/ProgressBar";
+
+/* ============================
+   CONFIG
+============================ */
+// ⚠️ Use your LAN IP when testing on phone/emulator
+const API_BASE = "http://localhost:3000/api";
 
 /* ============================
    DEFAULT PROFILE
@@ -40,57 +47,87 @@ const defaultProfile = {
 };
 
 export default function UserProfile() {
+  const [profile, setProfile] = useState(defaultProfile);
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState(defaultProfile);
+  const [saving, setSaving] = useState(false);
 
   /* ============================
      FETCH PROFILE
   ============================ */
-  const fetchUserProfile = async () => {
+  const fetchProfile = async () => {
     try {
       const userId = await AsyncStorage.getItem("userId");
-      if (!userId) {
-        setLoading(false);
-        return;
-      }
+      if (!userId) return;
 
-      const res = await fetch(`http://YOUR_IP:PORT/api/users/${userId}`);
-      const data = await res.json();
+      const res = await fetch(`${API_BASE}/profile?user_id=${userId}`);
       if (!res.ok) return;
 
-      setProfile((prev) => ({
-        ...prev,
-        name: data.name,
-        gender: data.gender,
-        age: data.age,
-        heightCm: data.height_cm,
-        startWeightKg: data.start_weight_kg ?? data.weight_kg,
-        currentWeightKg: data.weight_kg,
-        targetWeightKg: data.target_weight_kg,
+      const data = await res.json();
+
+      setProfile((p) => ({
+        ...p,
+        name: data.name ?? "",
+        gender: data.gender ?? "",
+        age: data.age ?? 0,
+        heightCm: data.height_cm ?? 0,
+        startWeightKg: data.start_weight_kg ?? data.weight_kg ?? 0,
+        currentWeightKg: data.weight_kg ?? 0,
+        targetWeightKg: data.target_weight_kg ?? 0,
         goal: data.goal ?? "Maintain Weight",
-        diet: data.diet ? JSON.parse(data.diet) : [],
-        activity: data.activity ? JSON.parse(data.activity) : [],
+        diet: data.diet ?? [],
+        activity: data.activity ?? [],
       }));
-    } catch (err) {
-      console.log("Profile fetch failed", err);
+    } catch (e) {
+      console.log("Profile fetch error", e);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUserProfile();
+    fetchProfile();
   }, []);
 
   /* ============================
-     DERIVED CALCULATIONS
+     SAVE PROFILE
+  ============================ */
+  const saveProfile = async () => {
+    try {
+      setSaving(true);
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) return;
+
+      await fetch(`${API_BASE}/profile`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          age: profile.age,
+          height_cm: profile.heightCm,
+          start_weight_kg: profile.startWeightKg,
+          target_weight_kg: profile.targetWeightKg,
+          goal: profile.goal,
+          diet: profile.diet,
+          activity: profile.activity,
+        }),
+      });
+
+      Alert.alert("Saved", "Profile updated successfully");
+    } catch {
+      Alert.alert("Error", "Failed to save profile");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /* ============================
+     DERIVED METRICS
   ============================ */
   useEffect(() => {
     if (!profile.heightCm || !profile.currentWeightKg) return;
 
     const heightM = profile.heightCm / 100;
-
     const bmi = +(profile.currentWeightKg / (heightM * heightM)).toFixed(1);
 
     const bmr =
@@ -101,54 +138,50 @@ export default function UserProfile() {
 
     let progress = 0;
 
-    /* ===== TARGET LOGIC FIX ===== */
     if (profile.goal === "Weight Loss") {
-      const totalToLose = profile.startWeightKg - profile.targetWeightKg;
-      const lostSoFar = profile.startWeightKg - profile.currentWeightKg;
-
+      const total = profile.startWeightKg - profile.targetWeightKg;
+      const done = profile.startWeightKg - profile.currentWeightKg;
       progress =
-        profile.currentWeightKg <= profile.targetWeightKg
-          ? 100
-          : totalToLose > 0
-            ? Math.round((lostSoFar / totalToLose) * 100)
-            : 0;
-    } else if (profile.goal === "Weight Gain") {
-      const totalToGain = profile.targetWeightKg - profile.startWeightKg;
-      const gainedSoFar = profile.currentWeightKg - profile.startWeightKg;
+        total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
+    }
 
+    if (profile.goal === "Weight Gain") {
+      const total = profile.targetWeightKg - profile.startWeightKg;
+      const done = profile.currentWeightKg - profile.startWeightKg;
       progress =
-        profile.currentWeightKg >= profile.targetWeightKg
-          ? 100
-          : totalToGain > 0
-            ? Math.round((gainedSoFar / totalToGain) * 100)
-            : 0;
-    } else if (profile.goal === "Maintain Weight") {
+        total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
+    }
+
+    if (profile.goal === "Maintain Weight") {
       const diff = Math.abs(profile.currentWeightKg - profile.startWeightKg);
       progress = diff <= 1 ? 100 : Math.max(0, 100 - diff * 10);
     }
-
-    const dailyExpectedPercent = +(100 / (8 * 7)).toFixed(2);
 
     setProfile((p) => ({
       ...p,
       bmi,
       bmr: Math.round(bmr),
       progress,
-      dailyExpectedPercent,
-      dailyStatus: "On Track",
+      dailyExpectedPercent: +(100 / 56).toFixed(2),
     }));
   }, [
     profile.currentWeightKg,
     profile.targetWeightKg,
-    profile.startWeightKg,
     profile.heightCm,
     profile.age,
     profile.goal,
   ]);
 
-  const handleChange = (key: string, value: number) => {
-    setProfile((prev) => ({ ...prev, [key]: value }));
-  };
+  const updateNumber = (key: string, value: number) =>
+    setProfile((p) => ({ ...p, [key]: value }));
+
+  const toggleArray = (key: "diet" | "activity", value: string) =>
+    setProfile((p) => ({
+      ...p,
+      [key]: p[key].includes(value)
+        ? p[key].filter((v) => v !== value)
+        : [...p[key], value],
+    }));
 
   if (loading) {
     return (
@@ -159,21 +192,26 @@ export default function UserProfile() {
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView style={styles.container}>
-        {/* ================= HEADER ================= */}
+    <View style={{ flex: 1, backgroundColor: "#F4FAF6" }}>
+      <ScrollView>
+        {/* HEADER */}
         <View style={styles.headerCard}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Image source={{ uri: profile.avatar }} style={styles.avatar} />
             <View style={{ marginLeft: 16 }}>
               <Text style={styles.name}>{profile.name || "User"}</Text>
               <Text style={styles.subtle}>
-                {profile.gender} {profile.age ? `• ${profile.age} yrs` : ""}
+                {profile.gender} • {profile.age} yrs
               </Text>
             </View>
           </View>
 
-          <TouchableOpacity onPress={() => setEditMode(!editMode)}>
+          <TouchableOpacity
+            onPress={async () => {
+              if (editMode) await saveProfile();
+              setEditMode(!editMode);
+            }}
+          >
             <Ionicons
               name={editMode ? "checkmark" : "pencil"}
               size={22}
@@ -182,84 +220,80 @@ export default function UserProfile() {
           </TouchableOpacity>
         </View>
 
-        {/* ================= EDIT INPUTS ================= */}
         {editMode && (
           <View style={styles.cardSection}>
             <Input
               label="Age"
               value={profile.age}
-              onChange={(v) => handleChange("age", v)}
+              onChange={(v) => updateNumber("age", v)}
             />
             <Input
               label="Height (cm)"
               value={profile.heightCm}
-              onChange={(v) => handleChange("heightCm", v)}
+              onChange={(v) => updateNumber("heightCm", v)}
             />
             <Input
               label="Current Weight (kg)"
               value={profile.currentWeightKg}
-              onChange={(v) => handleChange("currentWeightKg", v)}
+              onChange={(v) => updateNumber("currentWeightKg", v)}
             />
             <Input
               label="Target Weight (kg)"
               value={profile.targetWeightKg}
-              onChange={(v) => handleChange("targetWeightKg", v)}
+              onChange={(v) => updateNumber("targetWeightKg", v)}
             />
           </View>
         )}
 
-        {/* ================= PROGRESS ================= */}
         <View style={styles.cardSection}>
           <Text style={styles.sectionTitle}>Overall Progress</Text>
           <Text style={styles.statText}>{profile.progress}%</Text>
           <ProgressBar progress={profile.progress} />
         </View>
 
-        {/* ================= DAILY ================= */}
-        <View style={styles.cardSection}>
-          <Text style={styles.sectionTitle}>Daily Target</Text>
-          <Text style={styles.dailyText}>
-            {profile.dailyExpectedPercent}% per day
-          </Text>
-        </View>
-
-        {/* ================= STATS ================= */}
         <View style={styles.statsRow}>
           <StatCard label="BMI" value={profile.bmi} />
           <StatCard label="BMR" value={`${profile.bmr} kcal`} />
         </View>
 
-        {/* ================= GOAL ================= */}
         <Section title="My Goal">
-          {["Weight Loss", "Weight Gain", "Maintain Weight"].map((opt) => (
-            <Chip key={opt} label={opt} active={profile.goal === opt} />
-          ))}
-        </Section>
-
-        {/* ================= DIET ================= */}
-        <Section title="Diet Preferences">
-          {["Vegetarian", "Non-Vegetarian", "Other"].map((opt) => (
-            <Chip key={opt} label={opt} active={profile.diet.includes(opt)} />
-          ))}
-        </Section>
-
-        {/* ================= ACTIVITY ================= */}
-        <Section title="Lifestyle & Activity">
-          {["Moderate Exercise", "Sedentary"].map((opt) => (
+          {["Weight Loss", "Weight Gain", "Maintain Weight"].map((g) => (
             <Chip
-              key={opt}
-              label={opt}
-              active={profile.activity.includes(opt)}
+              key={g}
+              label={g}
+              active={profile.goal === g}
+              onPress={() => setProfile((p) => ({ ...p, goal: g }))}
             />
           ))}
         </Section>
 
-        {/* ================= LOGOUT ================= */}
+        <Section title="Diet Preferences">
+          {["Vegetarian", "Non-Vegetarian", "Other"].map((d) => (
+            <Chip
+              key={d}
+              label={d}
+              active={profile.diet.includes(d)}
+              onPress={() => toggleArray("diet", d)}
+            />
+          ))}
+        </Section>
+
+        <Section title="Lifestyle & Activity">
+          {["Moderate Exercise", "Sedentary"].map((a) => (
+            <Chip
+              key={a}
+              label={a}
+              active={profile.activity.includes(a)}
+              onPress={() => toggleArray("activity", a)}
+            />
+          ))}
+        </Section>
+
         <TouchableOpacity
           style={styles.logoutBtn}
           onPress={async () => {
             await AsyncStorage.removeItem("userId");
-            router.push("../(tabs)/landingPage");
+            router.replace("../(tabs)/landingPage");
           }}
         >
           <Ionicons name="log-out-outline" size={20} color="#fff" />
@@ -271,7 +305,7 @@ export default function UserProfile() {
 }
 
 /* ============================
-   REUSABLE COMPONENTS
+   REUSABLES
 ============================ */
 const Input = ({ label, value, onChange }: any) => (
   <View style={{ marginBottom: 12 }}>
@@ -279,16 +313,19 @@ const Input = ({ label, value, onChange }: any) => (
     <TextInput
       value={String(value)}
       keyboardType="numeric"
-      onChangeText={(v) => onChange(Number(v.replace(/\D/g, "")))}
+      onChangeText={(v) => onChange(Number(v) || 0)}
       style={styles.input}
     />
   </View>
 );
 
-const Chip = ({ label, active }: any) => (
-  <View style={[styles.chip, active && styles.chipActive]}>
+const Chip = ({ label, active, onPress }: any) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={[styles.chip, active && styles.chipActive]}
+  >
     <Text style={styles.chipText}>{label}</Text>
-  </View>
+  </TouchableOpacity>
 );
 
 const Section = ({ title, children }: any) => (
@@ -309,9 +346,7 @@ const StatCard = ({ label, value }: any) => (
    STYLES
 ============================ */
 const styles = StyleSheet.create({
-  container: { backgroundColor: "#F4FAF6" },
   loader: { flex: 1, justifyContent: "center", alignItems: "center" },
-
   headerCard: {
     backgroundColor: "#fff",
     margin: 16,
@@ -329,7 +364,6 @@ const styles = StyleSheet.create({
   },
   name: { fontSize: 18, fontWeight: "700", color: "#2E7D32" },
   subtle: { color: "#757575" },
-
   cardSection: {
     backgroundColor: "#fff",
     margin: 16,
@@ -342,19 +376,8 @@ const styles = StyleSheet.create({
     color: "#2E7D32",
     marginBottom: 8,
   },
-  statText: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#1B5E20",
-    marginBottom: 6,
-  },
-  dailyText: { color: "#388E3C" },
-
-  statsRow: {
-    flexDirection: "row",
-    marginHorizontal: 16,
-    gap: 12,
-  },
+  statText: { fontSize: 22, fontWeight: "700", color: "#1B5E20" },
+  statsRow: { flexDirection: "row", marginHorizontal: 16, gap: 12 },
   statCard: {
     flex: 1,
     backgroundColor: "#E8F5E9",
@@ -364,7 +387,6 @@ const styles = StyleSheet.create({
   },
   statLabel: { color: "#388E3C" },
   statValue: { fontSize: 18, fontWeight: "700", color: "#1B5E20" },
-
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   chip: {
     paddingVertical: 8,
@@ -374,16 +396,13 @@ const styles = StyleSheet.create({
   },
   chipActive: { backgroundColor: "#C8E6C9" },
   chipText: { color: "#2E7D32", fontWeight: "600" },
-
   inputLabel: { color: "#757575", marginBottom: 4 },
   input: {
     borderWidth: 1,
     borderColor: "#C8E6C9",
     borderRadius: 8,
     padding: 10,
-    backgroundColor: "#fff",
   },
-
   logoutBtn: {
     margin: 24,
     padding: 16,
