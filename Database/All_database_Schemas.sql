@@ -985,19 +985,44 @@ MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,
 AUTO_INCREMENT = 56;
 DROP TABLE IF EXISTS profileUser;
 
+-- CREATE TABLE profileUser (
+--     user_id CHAR(36) PRIMARY KEY,
+
+--     age INT DEFAULT 0,
+--     avatar VARCHAR(255),
+
+--     height_cm INT DEFAULT 0,
+
+--     start_weight_kg DECIMAL(5,2) DEFAULT 0.00,
+--     current_weight_kg DECIMAL(5,2) DEFAULT 0.00,
+--     target_weight_kg DECIMAL(5,2) DEFAULT 0.00,
+
+--     goal VARCHAR(30) DEFAULT 'Maintain Weight',
+
+--     diet TEXT DEFAULT NULL,
+--     activity TEXT DEFAULT NULL,
+
+--     CONSTRAINT fk_profile_user
+--       FOREIGN KEY (user_id)
+--       REFERENCES users(id)
+--       ON DELETE CASCADE
+-- );
+
 CREATE TABLE profileUser (
     user_id CHAR(36) PRIMARY KEY,
 
-    age INT DEFAULT 0,
+    gender ENUM('male','female','other') DEFAULT NULL,
+    age INT NULL,
     avatar VARCHAR(255),
 
-    height_cm INT DEFAULT 0,
+    height_cm DECIMAL(5,2) DEFAULT 0.00,
 
     start_weight_kg DECIMAL(5,2) DEFAULT 0.00,
     current_weight_kg DECIMAL(5,2) DEFAULT 0.00,
     target_weight_kg DECIMAL(5,2) DEFAULT 0.00,
 
-    goal VARCHAR(30) DEFAULT 'Maintain Weight',
+    goal ENUM('Weight Loss','Weight Gain','Maintain Weight')
+         DEFAULT 'Maintain Weight',
 
     diet TEXT DEFAULT NULL,
     activity TEXT DEFAULT NULL,
@@ -1007,4 +1032,6 @@ CREATE TABLE profileUser (
       REFERENCES users(id)
       ON DELETE CASCADE
 );
+
+
 DESCRIBE profileUser;

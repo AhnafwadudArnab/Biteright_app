@@ -3,6 +3,8 @@ import express from "express";
 import userRoutes from "./Registrations/userRoutes";
 import profileRoutes from "./Controllers/ProfileRoutes";
 import mealTrackerRoutes from "./Controllers/MealTrackerRoutes";
+import profileRoutes from "./routes/profile.routes";
+
 
 const app = express();
 
