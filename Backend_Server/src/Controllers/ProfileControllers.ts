@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import ProfileUser from "../models/ProfileUser";
+// Type-only import for Request augmentation; no runtime import needed
+import ProfileUser from "../models/Profileuser";
 
 // GET profile (real user)
 export const getProfile = async (req: Request, res: Response) => {

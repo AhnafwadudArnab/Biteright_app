@@ -37,7 +37,7 @@ ProfileUser.init(
     sequelize,
     tableName: "profile_users",
     timestamps: true,
-  }
+  },
 );
 
 export default ProfileUser;

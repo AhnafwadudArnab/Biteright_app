@@ -1,13 +1,14 @@
 import cors from "cors";
 import express from "express";
+import dotenv from "dotenv";
 import userRoutes from "./Registrations/userRoutes";
 import profileRoutes from "./Controllers/ProfileRoutes";
 import mealTrackerRoutes from "./Controllers/MealTrackerRoutes";
-import profileRoutes from "./routes/profile.routes";
-
 
 const app = express();
+dotenv.config();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use("/users", userRoutes);
