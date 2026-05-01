@@ -12,5 +12,5 @@
     "app/**/*",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ]
+, "fullNo/app/(tabs)/index.tsx"  ]
 }

@@ -1,29 +1,33 @@
-import { Request, Response } from "express";
-import { QueryTypes } from "sequelize";
-import db from "../models/db";
+import { NextFunction, Request, Response } from "express";
+import { supabase } from "../lib/supabase";
 
 // Fetch meal plan by gender and BMI
-export const getMealPlanByBmi = async (req: Request, res: Response) => {
+export const getMealPlanByBmi = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { gender, bmi } = req.query;
   if (!gender || !bmi) {
     return res.status(400).json({ message: "Gender and BMI are required" });
   }
   try {
     // Find the closest matching BMI range for the gender
-    const rows = (await db.query(
-      `SELECT bmi_range, category, daily_calories, doctor_focus, meal_type, meal_name, meal_kcal
-       FROM doctor_bmi_mealplans
-       WHERE gender = :gender`,
-      {
-        replacements: { gender },
-        type: QueryTypes.SELECT,
-      }
-    )) as any[];
-    if (!rows.length) {
+    const { data: rows, error } = await supabase
+      .from("doctor_bmi_mealplans")
+      .select("*")
+      .eq("gender", gender);
+
+    if (error) {
+      return next(error);
+    }
+
+    if (!rows || !rows.length) {
       return res
         .status(404)
         .json({ message: "No meal plans available for this gender." });
     }
+
     const bmiVal = parseFloat(bmi as string);
     let bestRange: string | null = null;
     let bestDiff = Infinity;
@@ -33,19 +37,21 @@ export const getMealPlanByBmi = async (req: Request, res: Response) => {
         bestRange = row.bmi_range;
         break;
       }
-      // fallback: closest
+      // fallback: closest midpoint
       const diff = Math.abs((min + max) / 2 - bmiVal);
       if (diff < bestDiff) {
         bestDiff = diff;
         bestRange = row.bmi_range;
       }
     }
+
     // If BMI is out of all defined ranges, do not return a plan
     if (!bestRange) {
       return res
         .status(404)
         .json({ message: "No plan found for this BMI value." });
     }
+
     // Filter all rows for the best range
     const planRows = rows.filter((r: any) => r.bmi_range === bestRange);
     if (!planRows.length) {
@@ -53,6 +59,7 @@ export const getMealPlanByBmi = async (req: Request, res: Response) => {
         .status(404)
         .json({ message: "No plan found for this BMI range." });
     }
+
     // Format response
     const { category, daily_calories, doctor_focus } = planRows[0];
     const meals = planRows.map((r: any) => ({
@@ -68,11 +75,6 @@ export const getMealPlanByBmi = async (req: Request, res: Response) => {
       meals,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Server error fetching meal plan.",
-        error: error instanceof Error ? error.message : error,
-      });
+    next(error);
   }
 };

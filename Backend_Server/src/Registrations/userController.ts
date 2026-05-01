@@ -1,10 +1,14 @@
-import { Request, Response } from "express";
-import User from "../models/userModel";
-import ProfileUser from "../models/Profileuser";
-import { v4 as uuidv4 } from "uuid";
+import bcrypt from "bcrypt";
+import { NextFunction, Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import { supabase } from "../lib/supabase";
 
 // Register new user
-export const registerUser = async (req: Request, res: Response) => {
+export const registerUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const {
     name,
     email,
@@ -51,54 +55,76 @@ export const registerUser = async (req: Request, res: Response) => {
   }
 
   try {
-    const existingUser = await User.findOne({ where: { email } });
+    // Check for existing email
+    const { data: existingUser, error: lookupError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (lookupError) return next(lookupError);
+
     if (existingUser) {
       return res.status(409).json({ message: "Email already registered" });
     }
 
-    // Generate UUID for user id
-    const userId = uuidv4();
+    // Hash password before storing
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Store password as plain text (not recommended for production)
-    const newUser: User = await User.create({
-      id: userId,
-      name,
-      email,
-      password, // Store plain password
-      gender,
-      age: parsedAge,
-      height_cm: parsedHeight,
-      weight_kg: parsedWeight,
-      activity_level,
-    });
+    // Insert new user
+    const { data: newUser, error: insertError } = await supabase
+      .from("users")
+      .insert({
+        name,
+        email,
+        password: hashedPassword,
+        gender,
+        age: parsedAge,
+        height_cm: parsedHeight,
+        weight_kg: parsedWeight,
+        activity_level,
+      })
+      .select()
+      .single();
+
+    if (insertError) return next(insertError);
 
     // Create profileUser row for this user
-    await ProfileUser.create({
-      user_id: userId,
-      age: parsedAge || 0,
-      avatar: null,
-      height_cm: parsedHeight || 0,
-      start_weight_kg: parsedWeight || 0,
-      current_weight_kg: parsedWeight || 0,
-      target_weight_kg: 0,
-      goal: "Maintain Weight",
-      diet: null,
-      activity: null,
-    });
+    const { error: profileError } = await supabase
+      .from("profileUser")
+      .insert({
+        user_id: newUser.id,
+        age: parsedAge ?? 0,
+        avatar: null,
+        height_cm: parsedHeight ?? 0,
+        start_weight_kg: parsedWeight ?? 0,
+        current_weight_kg: parsedWeight ?? 0,
+        target_weight_kg: 0,
+        goal: "Maintain Weight",
+        diet: null,
+        activity: null,
+      });
 
-    const { password: _pw, ...safeUser } = newUser.toJSON();
+    if (profileError) return next(profileError);
 
-    res.status(201).json({
+    // Return user without password
+    const { password: _pw, ...safeUser } = newUser;
+
+    return res.status(201).json({
       message: "User registered successfully",
       user: safeUser,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error registering user" });
+    return next(error);
   }
 };
 
 // Login user
-export const loginUser = async (req: Request, res: Response) => {
+export const loginUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -106,23 +132,42 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 
   try {
-    const user = await User.findOne({ where: { email } });
+    // Fetch user by email
+    const { data: user, error: lookupError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (lookupError) return next(lookupError);
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Compare plain text passwords
-    if (user.password !== password) {
-      return res.status(401).json({ message: "Invalid password" });
+    // Compare password with stored hash
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const { password: _pw, ...safeUser } = user.toJSON();
+    // Sign JWT
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET!,
+      { expiresIn: "7d" }
+    );
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Login successful",
-      user: safeUser,
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
     });
   } catch (error) {
-    res.status(500).json({ message: "Error logging in" });
+    return next(error);
   }
 };

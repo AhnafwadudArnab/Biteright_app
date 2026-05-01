@@ -3,16 +3,19 @@ import { router } from "expo-router";
 import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
+import { useAuth } from "../AuthContext";
+import { SERVER_URL } from "../serverhost";
 
 const SignupScreen: React.FC = () => {
+  const { login } = useAuth();
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -43,7 +46,7 @@ const SignupScreen: React.FC = () => {
     console.log("Signup payload:", payload);
     try {
       const response = await fetch(
-        require("../serverhost").SERVER_URL + "/users/register",
+        SERVER_URL + "/users/register",
         {
           method: "POST",
           headers: {
@@ -63,8 +66,9 @@ const SignupScreen: React.FC = () => {
           setError(data.message || "Registration failed");
         }
       } else {
-        // Registration successful, redirect to login
-        router.replace("/login_signup/login");
+        // Registration successful, auto-login and navigate to main app
+        await login(email, password);
+        router.replace("/(tabs)/MainHomePage");
       }
     } catch (err) {
       setError("Network error. Please try again.");

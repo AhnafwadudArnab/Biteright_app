@@ -519,40 +519,6 @@ const styles = StyleSheet.create({
 
 
 
-// // server.js
-// const express = require('express');
-// const mysql = require('mysql');
-// const cors = require('cors');
-
-// const app = express();
-// app.use(cors());
-// app.use(express.json());
-
-// const db = mysql.createConnection({
-//   host: 'sql12.freesqldatabase.com', // your host
-//   user: 'sql12815086',
-//   password: 'your_password',
-//   database: 'sql12815086',
-// });
-
-// // Connect
-// db.connect((err) => {
-//   if (err) console.log(err);
-//   else console.log('MySQL connected');
-// });
-
-// // GET all foods
-// app.get('/api/foods', (req, res) => {
-//   db.query('SELECT * FROM foods LIMIT 100', (err, results) => {
-//     if (err) return res.status(500).json(err);
-//     res.json(results);
-//   });
-// });
-
-// app.listen(3000, () => console.log('Server running on port 3000'));
-
-
-
 
 
 // import { useState, useEffect } from 'react';

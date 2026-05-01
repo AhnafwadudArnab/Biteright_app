@@ -1,12 +1,16 @@
 import cors from "cors";
-import express from "express";
 import dotenv from "dotenv";
-import userRoutes from "./Registrations/userRoutes";
-import profileRoutes from "./Controllers/ProfileRoutes";
+import express from "express";
+import path from "path";
 import mealTrackerRoutes from "./Controllers/MealTrackerRoutes";
+import profileRoutes from "./Controllers/ProfileRoutes";
+import userRoutes from "./Registrations/userRoutes";
 
 const app = express();
-dotenv.config();
+// Load .env — works for both ts-node (src/) and compiled (dist/)
+dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+dotenv.config(); // fallback: Backend_Server/.env
 
 // Middleware
 app.use(cors());

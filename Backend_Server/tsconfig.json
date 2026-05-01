@@ -12,7 +12,7 @@
   },
   "include": [
     "src/**/*" 
-  ],
+, "../fullNo/Backend_Server/src/lib/supabase.js", "../fullNo/Backend_Server/src/app.js"  ],
   "ts-node": {
     "files": true
   }

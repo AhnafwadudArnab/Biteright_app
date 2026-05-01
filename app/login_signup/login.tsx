@@ -1,16 +1,18 @@
 import { router } from "expo-router";
 import { Eye, EyeOff, Leaf, Lock, Mail } from "lucide-react-native";
 import React from "react";
+import { useAuth } from "../AuthContext";
 
 import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 const Login = () => {
+  const { login } = useAuth();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [loading, setLoading] = React.useState(false);
@@ -21,29 +23,13 @@ const Login = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(
-        require("../serverhost").SERVER_URL + "/users/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        },
-      );
-      const data = await response.json();
-      if (!response.ok) {
-        setError(data.message || "Login failed");
-      } else {
-        // Login successful, redirect to main page
-        router.push("/(tabs)/MainHomePage");
-      }
-    } catch (err) {
-      setError("Network error. Please try again.");
+      await login(email, password);
+      router.push("/(tabs)/MainHomePage");
+    } catch (err: any) {
+      setError(err?.message ?? "Login failed");
     } finally {
       setLoading(false);
     }
-    
   };
 
   return (

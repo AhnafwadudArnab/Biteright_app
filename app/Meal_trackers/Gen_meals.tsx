@@ -1,16 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useEffect } from "react";
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Alert,
-  ActivityIndicator,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
+import { useAuth } from "../AuthContext";
 import MealEditModal from "../Meal_trackers/Meal_edit_model";
-import { router } from "expo-router";
+import { SERVER_URL } from "../serverhost";
 
 const DAILY_GOAL = 2000;
 
@@ -25,9 +27,7 @@ export type Meal = {
   fat: number;
 };
 
-// TODO: Replace with actual user id from auth context or props
-const USER_ID = "demo-user-id";
-const API_BASE = "http://localhost:3000/api";
+
 
 // BMI JSON path (adjust if needed)
 const BMI_JSON = require("../Dietplans/JSON files/DoctorSugg_bmi_mealplans.json");
@@ -49,6 +49,10 @@ function getDefaultMeals(gender = "male", bmiRange = "22-22.9") {
 }
 
 export default function GenMeals() {
+  const { user, token } = useAuth();
+  const userId = user?.id;
+  const API_BASE = `${SERVER_URL}/api`;
+
   const [meals, setMeals] = React.useState<Meal[]>([]);
   const [editingMeal, setEditingMeal] = React.useState<Meal | null>(null);
   const [showMealModal, setShowMealModal] = React.useState(false);
@@ -57,9 +61,21 @@ export default function GenMeals() {
   // Fetch meals from backend, or load default from BMI JSON if none
   const [initialized, setInitialized] = React.useState(false);
   const fetchMeals = async () => {
+    if (!userId) {
+      // Not authenticated — load default meals without fetching
+      setMeals(getDefaultMeals("male", "22-22.9"));
+      setLoading(false);
+      setInitialized(true);
+      return;
+    }
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/meals/${USER_ID}`);
+      const res = await fetch(`${API_BASE}/meals/${userId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
       let data = [];
       if (res.ok) {
         data = await res.json();
@@ -84,6 +100,10 @@ export default function GenMeals() {
 
   // Add or update meal
   const handleSaveMeal = async (meal: Meal) => {
+    if (!userId) {
+      Alert.alert("Not logged in", "Please log in to save meals.");
+      return;
+    }
     setLoading(true);
     try {
       if (
@@ -94,14 +114,20 @@ export default function GenMeals() {
         // Update (delete old, add new for simplicity)
         await fetch(`${API_BASE}/meals/${editingMeal.id}`, {
           method: "DELETE",
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
         });
       }
       // Add new meal
       const res = await fetch(`${API_BASE}/meals`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
-          user_id: USER_ID,
+          user_id: userId,
           meal_type: meal.type,
           eaten_at: new Date().toISOString(),
           items: [
@@ -134,6 +160,9 @@ export default function GenMeals() {
       } else {
         const res = await fetch(`${API_BASE}/meals/${meal.id}`, {
           method: "DELETE",
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
         });
         if (!res.ok) throw new Error("Failed to delete meal");
         fetchMeals();
