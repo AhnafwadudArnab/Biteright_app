@@ -1,8 +1,10 @@
-// import app from "@/Backend_Server/src/app";
 import { router } from "expo-router";
 import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+    Animated,
+    KeyboardAvoidingView,
+    Platform,
     Pressable,
     ScrollView,
     StyleSheet,
@@ -14,20 +16,33 @@ import {
 import { useAuth } from "../AuthContext";
 import { SERVER_URL } from "../serverhost";
 
-const SignupScreen: React.FC = () => {
+const GREEN = "#3BB273";
+const DARK = "#111827";
+
+export default function SignupScreen() {
   const { login } = useAuth();
-  const [name, setName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [gender, setGender] = useState<string>("male"); // Default to 'male'
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [gender, setGender] = useState<"male" | "female">("male");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.spring(slideAnim, { toValue: 0, tension: 60, friction: 8, useNativeDriver: true }),
+    ]).start();
+  }, []);
 
   const handleSubmit = async () => {
-    if (!name || !email || !password || !confirmPassword || !gender) {
+    if (!name || !email || !password || !confirmPassword) {
       setError("All fields are required");
       return;
     }
@@ -37,40 +52,22 @@ const SignupScreen: React.FC = () => {
     }
     setLoading(true);
     setError(null);
-    const payload = {
-      name,
-      email,
-      password,
-      gender, // Always 'male' or 'female'
-    };
-    console.log("Signup payload:", payload);
     try {
-      const response = await fetch(
-        SERVER_URL + "/users/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        },
-      );
+      const response = await fetch(SERVER_URL + "/users/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password, gender }),
+      });
       const data = await response.json();
       if (!response.ok) {
-        if (
-          data.message &&
-          data.message.toLowerCase().includes("email already")
-        ) {
-          setError("Email already exists");
-        } else {
-          setError(data.message || "Registration failed");
-        }
+        setError(data.message?.toLowerCase().includes("email already")
+          ? "Email already exists"
+          : data.message || "Registration failed");
       } else {
-        // Registration successful, auto-login and navigate to main app
         await login(email, password);
         router.replace("/(tabs)/MainHomePage");
       }
-    } catch (err) {
+    } catch {
       setError("Network error. Please try again.");
     } finally {
       setLoading(false);
@@ -78,297 +75,223 @@ const SignupScreen: React.FC = () => {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ flexGrow: 1 }}
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: "#F8FAF9" }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      {/* Back Button */}
-      <Pressable onPress={() => router.back()} style={styles.backBtn}>
-        <ArrowLeft size={24} color="#374151" />
-      </Pressable>
+      {/* Background blobs */}
+      <View style={styles.blobTop} />
+      <View style={styles.blobBottom} />
 
-      {/* Heading */}
-      <Text style={styles.heading}>Create Account</Text>
-      <Text style={styles.subheading}>
-        Sign up to start your healthy journey
-      </Text>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+          {/* Back */}
+          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+            <View style={styles.backCircle}>
+              <ArrowLeft size={20} color={DARK} />
+            </View>
+          </Pressable>
 
-      {/* Form */}
-      <View style={styles.form}>
-        {/* Full Name */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Full Name</Text>
-          <View style={styles.inputWrapper}>
-            <User size={20} color="#9CA3AF" style={styles.icon} />
-            <TextInput
+          <Text style={styles.heading}>Create Account ✨</Text>
+          <Text style={styles.subheading}>Start your healthy journey today</Text>
+
+          <View style={styles.card}>
+            {/* Name */}
+            <InputField
+              label="Full Name"
+              icon={<User size={18} color="#9CA3AF" />}
               value={name}
               onChangeText={setName}
               placeholder="Your Name"
-              style={styles.input}
             />
-          </View>
-        </View>
 
-        {/* Email */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Email</Text>
-          <View style={styles.inputWrapper}>
-            <Mail size={20} color="#9CA3AF" style={styles.icon} />
-            <TextInput
+            {/* Email */}
+            <InputField
+              label="Email"
+              icon={<Mail size={18} color="#9CA3AF" />}
               value={email}
               onChangeText={setEmail}
-              placeholder="your_email@example.com"
+              placeholder="your@email.com"
               keyboardType="email-address"
-              style={styles.input}
             />
-          </View>
-        </View>
 
-        {/* Password */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Password</Text>
-          <View
-            style={[
-              styles.inputWrapper,
-              { flexDirection: "row", alignItems: "center" },
-            ]}
-          >
-            <Lock size={20} color="#9CA3AF" style={styles.icon} />
-            <TextInput
+            {/* Password */}
+            <InputField
+              label="Password"
+              icon={<Lock size={18} color="#9CA3AF" />}
               value={password}
               onChangeText={setPassword}
               placeholder="Create a password"
               secureTextEntry={!showPassword}
-              style={[styles.input, { paddingLeft: 40, flex: 1 }]}
+              rightIcon={
+                <TouchableOpacity onPress={() => setShowPassword((p) => !p)}>
+                  {showPassword ? <Eye size={18} color="#9CA3AF" /> : <EyeOff size={18} color="#9CA3AF" />}
+                </TouchableOpacity>
+              }
             />
-            <TouchableOpacity
-              onPress={() => setShowPassword((prev) => !prev)}
-              style={{ position: "absolute", right: 16 }}
-            >
-              {showPassword ? (
-                <Eye size={20} color="#9CA3AF" />
-              ) : (
-                <EyeOff size={20} color="#9CA3AF" />
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
 
-        {/* Confirm Password */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Confirm Password</Text>
-          <View
-            style={[
-              styles.inputWrapper,
-              { flexDirection: "row", alignItems: "center" },
-            ]}
-          >
-            <Lock size={20} color="#9CA3AF" style={styles.icon} />
-            <TextInput
+            {/* Confirm Password */}
+            <InputField
+              label="Confirm Password"
+              icon={<Lock size={18} color="#9CA3AF" />}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               placeholder="Confirm your password"
-              secureTextEntry={!showConfirmPassword}
-              style={[styles.input, { paddingLeft: 40, flex: 1 }]}
+              secureTextEntry={!showConfirm}
+              rightIcon={
+                <TouchableOpacity onPress={() => setShowConfirm((p) => !p)}>
+                  {showConfirm ? <Eye size={18} color="#9CA3AF" /> : <EyeOff size={18} color="#9CA3AF" />}
+                </TouchableOpacity>
+              }
             />
+
+            {/* Gender */}
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Gender</Text>
+              <View style={styles.genderRow}>
+                {(["male", "female"] as const).map((g) => (
+                  <TouchableOpacity
+                    key={g}
+                    style={[styles.genderBtn, gender === g && styles.genderBtnActive]}
+                    onPress={() => setGender(g)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.genderText, gender === g && styles.genderTextActive]}>
+                      {g === "male" ? "♂ Male" : "♀ Female"}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {error ? (
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
+
             <TouchableOpacity
-              onPress={() => setShowConfirmPassword((prev) => !prev)}
-              style={{ position: "absolute", right: 16 }}
+              style={[styles.submitBtn, loading && { opacity: 0.7 }]}
+              onPress={handleSubmit}
+              disabled={loading}
+              activeOpacity={0.85}
             >
-              {showConfirmPassword ? (
-                <Eye size={20} color="#9CA3AF" />
-              ) : (
-                <EyeOff size={20} color="#9CA3AF" />
-              )}
+              <Text style={styles.submitBtnText}>
+                {loading ? "Creating account…" : "Create Account"}
+              </Text>
             </TouchableOpacity>
+
+            <View style={styles.loginRow}>
+              <Text style={styles.loginText}>Already have an account? </Text>
+              <Pressable onPress={() => router.replace("/login_signup/login")}>
+                <Text style={styles.loginLink}>Login</Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
-
-        {/* Gender */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Gender</Text>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 8,
-            }}
-          >
-            <TouchableOpacity
-              style={[
-                styles.radioBtn,
-                gender === "male" && styles.radioBtnSelected,
-              ]}
-              onPress={() => setGender("male")}
-            >
-              <View
-                style={[
-                  styles.radioCircle,
-                  gender === "male" && styles.radioCircleSelected,
-                ]}
-              />
-              <Text style={styles.radioLabel}>Male</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.radioBtn,
-                gender === "female" && styles.radioBtnSelected,
-              ]}
-              onPress={() => setGender("female")}
-            >
-              <View
-                style={[
-                  styles.radioCircle,
-                  gender === "female" && styles.radioCircleSelected,
-                ]}
-              />
-              <Text style={styles.radioLabel}>Female</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Error Message */}
-        {error && (
-          <Text style={{ color: "red", marginBottom: 8 }}>{error}</Text>
-        )}
-
-        {/* Sign Up Button */}
-        <TouchableOpacity
-          style={styles.signupBtn}
-          onPress={handleSubmit}
-          disabled={loading}
-        >
-          <Text style={styles.signupText}>
-            {loading ? "Signing Up..." : "SignUp"}
-          </Text>
-        </TouchableOpacity>
-
-        {/* Login Redirect */}
-        <View style={styles.loginRow}>
-          <Text style={styles.loginText}>Already have an account? </Text>
-          <Pressable onPress={() => router.replace("/login_signup/login")}>
-            <Text style={styles.loginLink}>Login</Text>
-          </Pressable>
-        </View>
-      </View>
-    </ScrollView>
+        </Animated.View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
-};
+}
 
-export default SignupScreen;
+/* ── Reusable input field ── */
+function InputField({
+  label, icon, rightIcon, value, onChangeText, placeholder,
+  secureTextEntry, keyboardType,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  value: string;
+  onChangeText: (t: string) => void;
+  placeholder: string;
+  secureTextEntry?: boolean;
+  keyboardType?: any;
+}) {
+  return (
+    <View style={styles.fieldGroup}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={styles.inputWrapper}>
+        <View style={styles.inputIcon}>{icon}</View>
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor="#C4C4C4"
+          secureTextEntry={secureTextEntry}
+          keyboardType={keyboardType}
+          autoCapitalize="none"
+          style={[styles.input, rightIcon ? { paddingRight: 44 } : null]}
+        />
+        {rightIcon ? <View style={styles.rightIcon}>{rightIcon}</View> : null}
+      </View>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "white",
-    padding: 32,
+  scroll: { paddingHorizontal: 24, paddingTop: 56, paddingBottom: 40 },
+  blobTop: {
+    position: "absolute", top: -50, right: -50,
+    width: 180, height: 180, borderRadius: 90,
+    backgroundColor: "#D1FAE5", opacity: 0.5,
   },
-
-  backBtn: {
-    marginTop: 16,
-    marginBottom: 24,
-    alignSelf: "flex-start",
+  blobBottom: {
+    position: "absolute", bottom: -60, left: -60,
+    width: 200, height: 200, borderRadius: 100,
+    backgroundColor: "#BBF7D0", opacity: 0.35,
   },
-
-  heading: {
-    fontSize: 30,
-    color: "#111827",
-    marginBottom: 8,
+  backBtn: { marginBottom: 24 },
+  backCircle: {
+    width: 40, height: 40, borderRadius: 12,
+    backgroundColor: "#fff", alignItems: "center", justifyContent: "center",
+    shadowColor: "#000", shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08, shadowRadius: 6, elevation: 3,
   },
-
-  subheading: {
-    fontSize: 16,
-    color: "#6B7280",
-    marginBottom: 32,
+  heading: { fontSize: 28, fontWeight: "800", color: DARK, marginBottom: 6 },
+  subheading: { fontSize: 14, color: "#6B7280", marginBottom: 24 },
+  card: {
+    backgroundColor: "#fff", borderRadius: 24, padding: 24,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.07, shadowRadius: 16, elevation: 4,
   },
-
-  form: {
-    flex: 1,
-    padding: 18,
-  },
-
-  field: {
-    marginBottom: 16,
-  },
-
-  label: {
-    fontSize: 14,
-    color: "#374151",
-    marginBottom: 8,
-  },
-
+  fieldGroup: { marginBottom: 16 },
+  label: { fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 8 },
   inputWrapper: {
-    justifyContent: "center",
+    flexDirection: "row", alignItems: "center",
+    backgroundColor: "#F9FAFB", borderWidth: 1.5,
+    borderColor: "#E5E7EB", borderRadius: 14, paddingHorizontal: 14,
   },
-
-  icon: {
-    position: "absolute",
-    left: 16,
-    zIndex: 1,
+  inputIcon: { marginRight: 10 },
+  input: { flex: 1, paddingVertical: 14, fontSize: 15, color: DARK },
+  rightIcon: { position: "absolute", right: 14 },
+  genderRow: { flexDirection: "row", gap: 12 },
+  genderBtn: {
+    flex: 1, paddingVertical: 12, borderRadius: 12,
+    borderWidth: 1.5, borderColor: "#E5E7EB",
+    alignItems: "center", backgroundColor: "#F9FAFB",
   },
-
-  input: {
-    paddingLeft: 48,
-    paddingRight: 16,
-    paddingVertical: 16,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 16,
-    fontSize: 16,
+  genderBtnActive: { borderColor: GREEN, backgroundColor: "#ECFDF5" },
+  genderText: { fontSize: 14, color: "#6B7280", fontWeight: "600" },
+  genderTextActive: { color: GREEN },
+  errorBox: {
+    backgroundColor: "#FEE2E2", borderRadius: 10,
+    padding: 12, marginBottom: 16,
   },
-
-  signupBtn: {
-    backgroundColor: "#3BB273",
-    paddingVertical: 16,
-    borderRadius: 16,
-    alignItems: "center",
-    marginBottom: 16,
-    marginTop: 8,
+  errorText: { color: "#DC2626", fontSize: 13, textAlign: "center" },
+  submitBtn: {
+    backgroundColor: GREEN, borderRadius: 14,
+    paddingVertical: 16, alignItems: "center",
+    shadowColor: GREEN, shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35, shadowRadius: 10, elevation: 5,
+    marginTop: 4,
   },
-
-  signupText: {
-    color: "white",
-    fontSize: 16,
-  },
-
-  loginRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-
-  loginText: {
-    color: "#6B7280",
-  },
-
-  loginLink: {
-    color: "#3BB273",
-  },
-
-  // Radio button styles
-  radioBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 24,
-  },
-  radioBtnSelected: {},
-  radioCircle: {
-    height: 20,
-    width: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: "#3BB273",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 8,
-    backgroundColor: "white",
-  },
-  radioCircleSelected: {
-    backgroundColor: "#3BB273",
-    borderColor: "#3BB273",
-  },
-  radioLabel: {
-    fontSize: 16,
-    color: "#374151",
-    marginRight: 8,
-  },
+  submitBtnText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  loginRow: { flexDirection: "row", justifyContent: "center", marginTop: 20 },
+  loginText: { color: "#6B7280", fontSize: 14 },
+  loginLink: { color: GREEN, fontSize: 14, fontWeight: "700" },
 });

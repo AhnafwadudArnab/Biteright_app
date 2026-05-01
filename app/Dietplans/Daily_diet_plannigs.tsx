@@ -1,13 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
+import { useAuth } from "../AuthContext";
+import { useCalories } from "../CaloriesContext";
+import { SERVER_URL } from "../serverhost";
 import { fetchMealPlan } from "./api.native";
 
 type Meal = {
@@ -34,18 +37,20 @@ type BmiMealPlans = {
 // No longer needed: getBmiRangeKey
 
 export default function DietPlannerItem() {
+  const { user, token } = useAuth();
+  const { setGoal } = useCalories();
+
   // Save plan to DB
   const savePlanToDb = async (planData: any) => {
     try {
-      const userId = await AsyncStorage.getItem("userId");
-      if (!userId) return;
-      await fetch("http://localhost:3000/api/users/mealplan", {
+      if (!user?.id) return;
+      await fetch(`${SERVER_URL}/api/users/mealplan`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: userId,
-          plan: planData,
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ user_id: user.id, plan: planData }),
       });
     } catch (err) {
       console.log("Failed to save plan to DB", err);
@@ -88,7 +93,11 @@ export default function DietPlannerItem() {
     fetchMealPlan(gender, Number(bmi))
       .then((data) => {
         setPlan(data);
-        savePlanToDb(data); // Save to DB after fetching
+        savePlanToDb(data);
+        // ── Update the user's daily calorie goal globally ──
+        if (data.dailyCalories) {
+          setGoal(data.dailyCalories, user?.id);
+        }
         const mealsPerDay =
           typeof params.meals === "string"
             ? Number(params.meals)

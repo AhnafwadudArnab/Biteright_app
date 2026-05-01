@@ -6,7 +6,33 @@ import {
     useEffect,
     useState,
 } from "react";
+import { Platform } from "react-native";
 import { SERVER_URL } from "./serverhost";
+
+// ── Platform-safe storage (SecureStore on native, localStorage on web) ─────────
+
+const storage = {
+  async getItem(key: string): Promise<string | null> {
+    if (Platform.OS === "web") {
+      try { return localStorage.getItem(key); } catch { return null; }
+    }
+    return SecureStore.getItemAsync(key);
+  },
+  async setItem(key: string, value: string): Promise<void> {
+    if (Platform.OS === "web") {
+      try { localStorage.setItem(key, value); } catch {}
+      return;
+    }
+    return SecureStore.setItemAsync(key, value);
+  },
+  async removeItem(key: string): Promise<void> {
+    if (Platform.OS === "web") {
+      try { localStorage.removeItem(key); } catch {}
+      return;
+    }
+    return SecureStore.deleteItemAsync(key);
+  },
+};
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -60,16 +86,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function restoreSession() {
       try {
-        const token = await SecureStore.getItemAsync(TOKEN_KEY);
-        const userJson = await SecureStore.getItemAsync(USER_KEY);
+        const token = await storage.getItem(TOKEN_KEY);
+        const userJson = await storage.getItem(USER_KEY);
 
         if (token && userJson && !isTokenExpired(token)) {
           const user: AuthUser = JSON.parse(userJson);
           setState({ user, token, isLoading: false });
         } else {
-          // Token absent or expired — clear any stale data
-          await SecureStore.deleteItemAsync(TOKEN_KEY);
-          await SecureStore.deleteItemAsync(USER_KEY);
+          await storage.removeItem(TOKEN_KEY);
+          await storage.removeItem(USER_KEY);
           setState({ user: null, token: null, isLoading: false });
         }
       } catch {
@@ -97,8 +122,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { token, user } = data as { token: string; user: AuthUser };
 
-    await SecureStore.setItemAsync(TOKEN_KEY, token);
-    await SecureStore.setItemAsync(USER_KEY, JSON.stringify(user));
+    await storage.setItem(TOKEN_KEY, token);
+    await storage.setItem(USER_KEY, JSON.stringify(user));
 
     setState({ user, token, isLoading: false });
   }
@@ -106,8 +131,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ── logout ─────────────────────────────────────────────────────────────────
 
   async function logout(): Promise<void> {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
-    await SecureStore.deleteItemAsync(USER_KEY);
+    await storage.removeItem(TOKEN_KEY);
+    await storage.removeItem(USER_KEY);
     setState({ user: null, token: null, isLoading: false });
   }
 
