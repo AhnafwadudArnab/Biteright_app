@@ -13,6 +13,7 @@ import {
     View,
 } from "react-native";
 import { useAuth } from "../AuthContext";
+import { useCalories } from "../CaloriesContext";
 import MealEditModal from "../Meal_trackers/Meal_edit_model";
 import { SERVER_URL } from "../serverhost";
 
@@ -358,38 +359,38 @@ export default function GenMeals() {
     }
     setLoading(true);
     try {
-      if (
-        editingMeal &&
-        editingMeal.id &&
-        !editingMeal.id.startsWith("male-")
-      ) {
+      if (editingMeal && editingMeal.id && !editingMeal.id.startsWith("male-")) {
+        // UPDATE existing meal via PUT
         await fetch(`${API_BASE}/meals/${editingMeal.id}`, {
-          method: "DELETE",
+          method: "PUT",
           headers: {
+            "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
+          body: JSON.stringify({
+            user_id: userId,
+            meal_type: meal.type,
+            eaten_at: new Date().toISOString(),
+            items: [{ food_id: meal.id || Math.random().toString(), quantity: 1, calories: meal.kcal }],
+          }),
         });
+      } else {
+        // ADD new meal via POST
+        const res = await fetch(`${API_BASE}/meals`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            meal_type: meal.type,
+            eaten_at: new Date().toISOString(),
+            items: [{ food_id: meal.id || Math.random().toString(), quantity: 1, calories: meal.kcal }],
+          }),
+        });
+        if (!res.ok) throw new Error("Failed to save meal");
       }
-      const res = await fetch(`${API_BASE}/meals`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          meal_type: meal.type,
-          eaten_at: new Date().toISOString(),
-          items: [
-            {
-              food_id: meal.id || Math.random().toString(),
-              quantity: 1,
-              calories: meal.kcal,
-            },
-          ],
-        }),
-      });
-      if (!res.ok) throw new Error("Failed to save meal");
       fetchMeals();
     } catch {
       Alert.alert("Error", "Could not save meal.");

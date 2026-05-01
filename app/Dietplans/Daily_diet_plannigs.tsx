@@ -40,17 +40,22 @@ export default function DietPlannerItem() {
   const { user, token } = useAuth();
   const { setGoal } = useCalories();
 
-  // Save plan to DB
+  // Save plan to DB (meal_plans + meal_plan_days tables)
   const savePlanToDb = async (planData: any) => {
     try {
-      if (!user?.id) return;
-      await fetch(`${SERVER_URL}/api/users/mealplan`, {
+      if (!user?.id || !token) return;
+      await fetch(`${SERVER_URL}/api/mealplan/save`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ user_id: user.id, plan: planData }),
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          bmi: Number(bmi.toFixed ? bmi.toFixed(1) : bmi),
+          gender,
+          category: planData.category,
+          daily_calories: planData.dailyCalories,
+          doctor_focus: planData.doctorFocus,
+          meals: planData.meals,
+          source: planData.source || "ai",
+        }),
       });
     } catch (err) {
       console.log("Failed to save plan to DB", err);

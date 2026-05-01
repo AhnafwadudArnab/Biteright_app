@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
+    ActivityIndicator,
     Animated,
     Dimensions,
     Easing,
@@ -12,10 +13,11 @@ import {
     Switch,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from "react-native";
 import { useAuth } from "../AuthContext";
 import { useCalories } from "../CaloriesContext";
+import { SERVER_URL } from "../serverhost";
 
 const GREEN = "#3BB273";
 const DARK = "#0F172A";
@@ -24,8 +26,8 @@ const { width: W } = Dimensions.get("window");
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Report {
   id: string;
-  dateRange: string;
-  calories: number;
+  date_range: string;
+  avg_calories: number;
   status: string;
 }
 
@@ -170,15 +172,12 @@ function WeightTrend({ data }: { data: { day: string; weight: number }[] }) {
 
 // ── Main screen ───────────────────────────────────────────────────────────────
 export default function HealthInsightScreen() {
-  const { user } = useAuth();
+  const { token } = useAuth();
   const { goal, consumed } = useCalories();
 
   const [view, setView] = useState<"dashboard" | "generate" | "history">("dashboard");
-  const [reports, setReports] = useState<Report[]>([
-    { id: "1", dateRange: "Apr 21 - Apr 27", calories: 1950, status: "On Track" },
-    { id: "2", dateRange: "Apr 14 - Apr 20", calories: 2100, status: "Above Target" },
-    { id: "3", dateRange: "Apr 7 - Apr 13",  calories: 1880, status: "On Track" },
-  ]);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [loadingReports, setLoadingReports] = useState(true);
   const [reportToggles, setReportToggles] = useState({
     calories: true,
     macros: true,
@@ -187,9 +186,25 @@ export default function HealthInsightScreen() {
     water: true,
   });
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [savingReport, setSavingReport] = useState(false);
 
-  // Macro data (from context or mock)
-  const macroData   = [48, 28, 24]; // carbs, protein, fat %
+  const authHeaders = useCallback(() => ({
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }), [token]);
+
+  // Load reports from DB
+  const fetchReports = useCallback(async () => {
+    try {
+      const res = await fetch(`${SERVER_URL}/api/reports`, { headers: authHeaders() });
+      if (res.ok) setReports(await res.json());
+    } catch {} finally { setLoadingReports(false); }
+  }, [authHeaders]);
+
+  useEffect(() => { fetchReports(); }, [fetchReports]);
+
+  // Macro data (from context or defaults)
+  const macroData   = [48, 28, 24];
   const macroColors = [GREEN, "#3B82F6", "#F97316"];
   const macroLabels = ["Carbs", "Protein", "Fat"];
 
@@ -201,35 +216,44 @@ export default function HealthInsightScreen() {
     { day: "Fri", weight: 71.4 },
   ];
 
-  const avgCalories = Math.round(
-    reports.reduce((s, r) => s + r.calories, 0) / (reports.length || 1)
-  );
+  const avgCalories = reports.length
+    ? Math.round(reports.reduce((s, r) => s + r.avg_calories, 0) / reports.length)
+    : consumed || 0;
 
-  // ── Generate report ──
-  const handleGenerate = () => {
-    const now = new Date();
-    const end = now.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    const start = new Date(now.setDate(now.getDate() - 6)).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-    const newReport: Report = {
-      id: String(Date.now()),
-      dateRange: `${start} - ${end}`,
-      calories: Math.round(consumed > 0 ? consumed * (0.9 + Math.random() * 0.2) : 1900),
-      status: consumed <= goal ? "On Track" : "Above Target",
-    };
-    setReports((prev) => [newReport, ...prev]);
-    setView("dashboard");
+  // ── Generate report (save to DB) ──
+  const handleGenerate = async () => {
+    setSavingReport(true);
+    try {
+      const now = new Date();
+      const end = now.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      const startD = new Date(now);
+      startD.setDate(startD.getDate() - 6);
+      const start = startD.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+      const avgCal = consumed > 0 ? consumed : 1900;
+      const status = consumed <= goal ? "On Track" : "Above Target";
+
+      const res = await fetch(`${SERVER_URL}/api/reports`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ date_range: `${start} - ${end}`, avg_calories: avgCal, status }),
+      });
+      if (res.ok) {
+        await fetchReports();
+        setView("dashboard");
+      }
+    } catch {} finally { setSavingReport(false); }
   };
 
   // ── Delete report ──
   const confirmDelete = (id: string) => setDeleteTarget(id);
-  const doDelete = () => {
-    if (deleteTarget) {
+  const doDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await fetch(`${SERVER_URL}/api/reports/${deleteTarget}`, { method: "DELETE", headers: authHeaders() });
       setReports((prev) => prev.filter((r) => r.id !== deleteTarget));
       setDeleteTarget(null);
-    }
+    } catch {}
   };
 
   // ── GENERATE VIEW ──
@@ -263,9 +287,15 @@ export default function HealthInsightScreen() {
             ))}
           </View>
 
-          <TouchableOpacity style={styles.primaryBtn} onPress={handleGenerate}>
-            <Ionicons name="refresh" size={18} color="#fff" />
-            <Text style={styles.primaryBtnText}>Generate Report</Text>
+          <TouchableOpacity style={styles.primaryBtn} onPress={handleGenerate} disabled={savingReport}>
+            {savingReport ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <>
+                <Ionicons name="refresh" size={18} color="#fff" />
+                <Text style={styles.primaryBtnText}>Generate Report</Text>
+              </>
+            )}
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -295,8 +325,8 @@ export default function HealthInsightScreen() {
           {reports.map((report) => (
             <View key={report.id} style={styles.reportCard}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.reportDate}>{report.dateRange}</Text>
-                <Text style={styles.reportCal}>{report.calories} kcal/day avg</Text>
+                <Text style={styles.reportDate}>{report.date_range}</Text>
+                <Text style={styles.reportCal}>{report.avg_calories} kcal/day avg</Text>
                 <View
                   style={[
                     styles.statusBadge,
@@ -445,6 +475,16 @@ export default function HealthInsightScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Ingredient Suggestion shortcut */}
+        <TouchableOpacity
+          style={styles.ingredientBtn}
+          onPress={() => router.push("../HealthInsights/IngredientSuggession")}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="leaf-outline" size={20} color={GREEN} />
+          <Text style={styles.ingredientBtnText}>Cook with What You Have →</Text>
+        </TouchableOpacity>
+
         <View style={{ height: 32 }} />
       </ScrollView>
     </View>
@@ -572,6 +612,13 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: GREEN,
   },
   actionBtnText: { color: "#fff", fontSize: 14, fontWeight: "700" },
+
+  ingredientBtn: {
+    flexDirection: "row", alignItems: "center", gap: 10,
+    backgroundColor: "#ECFDF5", borderRadius: 16, padding: 16,
+    marginTop: 4, borderWidth: 1.5, borderColor: GREEN + "40",
+  },
+  ingredientBtnText: { fontSize: 14, color: GREEN, fontWeight: "700", flex: 1 },
 
   // Modal
   modalOverlay: {

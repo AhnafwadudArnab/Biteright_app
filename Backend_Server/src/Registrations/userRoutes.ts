@@ -1,27 +1,37 @@
 import express from "express";
+import { authMiddleware } from "../middleware/auth";
 import { addDietMeal, updateDietMeal } from "./dietMealController";
 import { addMealItem, updateMealItem } from "./mealItemController";
 import { getMealPlanByBmi } from "./mealPlanController";
-import { loginUser, registerUser } from "./userController";
+import {
+    forgotPassword,
+    getAvatarUploadUrl,
+    loginUser,
+    registerUser,
+    resetPassword,
+    saveAvatarUrl,
+} from "./userController";
 
 const router = express.Router();
 
-// Route for user registration
-router.post("/register", registerUser);
+router.post("/register",        registerUser);
+router.post("/login",           loginUser);
+router.get("/mealplan",         getMealPlanByBmi);
 
-// Route for user login
-router.post("/login", loginUser);
-// Route for fetching meal plan by BMI
-router.get("/mealplan", getMealPlanByBmi);
+// Password reset
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password",  resetPassword);
 
-// Route to update a diet meal
-router.put("/dietmeal/:id", updateDietMeal);
-// Route to add a new diet meal
-router.post("/dietmeal", addDietMeal);
+// Avatar
+router.post("/avatar/upload-url", authMiddleware, getAvatarUploadUrl);
+router.put("/avatar",             authMiddleware, saveAvatarUrl);
 
-// Route to add a food item to a meal
-router.post("/mealitem", addMealItem);
-// Route to update a food item in a meal
-router.put("/mealitem/:id", updateMealItem);
+// Diet meal
+router.post("/dietmeal",        addDietMeal);
+router.put("/dietmeal/:id",     updateDietMeal);
+
+// Meal item
+router.post("/mealitem",        addMealItem);
+router.put("/mealitem/:id",     updateMealItem);
 
 export default router;

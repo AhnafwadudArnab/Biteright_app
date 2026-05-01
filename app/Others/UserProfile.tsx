@@ -11,9 +11,10 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from "react-native";
 import { useAuth } from "../AuthContext";
+import { cachedFetch, invalidateCache } from "../lib/apiCache";
 import { SERVER_URL } from "../serverhost";
 
 const { width: W } = Dimensions.get("window");
@@ -45,6 +46,7 @@ export default function UserProfile() {
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   /* ── Animations ── */
   const headerAnim = useRef(new Animated.Value(0)).current;
@@ -97,6 +99,65 @@ export default function UserProfile() {
     }).start();
   }, [editMode]);
 
+  /* ── Avatar upload ── */
+  const handleAvatarPress = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission needed", "Please allow access to your photo library.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (result.canceled || !result.assets?.[0]) return;
+
+    const asset = result.assets[0];
+    const ext   = asset.uri.split(".").pop() ?? "jpg";
+
+    setUploadingAvatar(true);
+    try {
+      const userId = user?.id ?? (await AsyncStorage.getItem("userId"));
+      if (!userId || !token) throw new Error("Not logged in");
+
+      // 1. Get signed upload URL from backend
+      const urlRes = await fetch(`${SERVER_URL}/users/avatar/upload-url`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ fileExt: ext }),
+      });
+      if (!urlRes.ok) throw new Error("Could not get upload URL");
+      const { uploadUrl, publicUrl } = await urlRes.json();
+
+      // 2. Upload image directly to Supabase Storage
+      const blob = await fetch(asset.uri).then((r) => r.blob());
+      const uploadRes = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": `image/${ext}` },
+        body: blob,
+      });
+      if (!uploadRes.ok) throw new Error("Upload failed");
+
+      // 3. Save public URL to profileUser
+      await fetch(`${SERVER_URL}/users/avatar`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ avatar_url: publicUrl }),
+      });
+
+      // 4. Update local state + bust cache
+      setProfile((p) => ({ ...p, avatar: publicUrl }));
+      invalidateCache(`profile_${userId}`);
+      Alert.alert("Success", "Profile photo updated!");
+    } catch (e: any) {
+      Alert.alert("Error", e?.message ?? "Could not upload photo.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   /* ── Fetch ── */
   useEffect(() => {
     fetchProfile();
@@ -104,22 +165,25 @@ export default function UserProfile() {
 
   const fetchProfile = async () => {
     try {
-      // Always pre-fill from AuthContext so something shows even if backend is down
-      setProfile((p) => ({
-        ...p,
-        name: user?.name ?? "",
-      }));
+      setProfile((p) => ({ ...p, name: user?.name ?? "" }));
 
       const userId = user?.id ?? (await AsyncStorage.getItem("userId"));
-      if (!userId) return; // still shows AuthContext name from pre-fill above
+      if (!userId) return;
 
       const headers: any = { "Content-Type": "application/json" };
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      const res = await fetch(`${SERVER_URL}/api/profile?user_id=${userId}`, { headers });
-      if (!res.ok) return; // backend down — still show AuthContext data
+      // Cache profile for 60s — avoids re-fetch on every navigation
+      const data = await cachedFetch(
+        `profile_${userId}`,
+        async () => {
+          const res = await fetch(`${SERVER_URL}/api/profile?user_id=${userId}`, { headers });
+          if (!res.ok) throw new Error("profile fetch failed");
+          return res.json();
+        },
+        60_000
+      );
 
-      const data = await res.json();
       setProfile((p) => ({
         ...p,
         name: data.name ?? user?.name ?? "",
@@ -133,14 +197,14 @@ export default function UserProfile() {
         diet: Array.isArray(data.diet) ? data.diet : [],
         activity: Array.isArray(data.activity) ? data.activity : [],
       }));
-    } catch (e) {
-      console.log("Profile fetch error", e);
+    } catch {
+      // silent — show whatever we have from AuthContext
     } finally {
       setLoading(false);
     }
   };
 
-  /* ── Save ── */
+  /* ── Save — invalidate cache after save ── */
   const saveProfile = async () => {
     Animated.sequence([
       Animated.timing(saveScale, { toValue: 0.9, duration: 80, useNativeDriver: true }),
@@ -167,6 +231,8 @@ export default function UserProfile() {
           activity: profile.activity,
         }),
       });
+      // Bust cache so next visit re-fetches fresh data
+      invalidateCache(`profile_${userId}`);
     } catch {
       // silent
     } finally {
@@ -246,13 +312,17 @@ export default function UserProfile() {
             <Ionicons name="arrow-back" size={20} color={DARK} />
           </TouchableOpacity>
 
-          {/* Avatar */}
-          <Animated.View style={[styles.avatarRing, { transform: [{ scale: Animated.multiply(avatarScale, avatarPulse) }] }]}>
-            <Image source={{ uri: profile.avatar }} style={styles.avatar} />
-            <View style={styles.avatarBadge}>
-              <Ionicons name="checkmark" size={12} color="#fff" />
-            </View>
-          </Animated.View>
+          {/* Avatar — tappable for upload */}
+          <TouchableOpacity onPress={handleAvatarPress} activeOpacity={0.85} disabled={uploadingAvatar}>
+            <Animated.View style={[styles.avatarRing, { transform: [{ scale: Animated.multiply(avatarScale, avatarPulse) }] }]}>
+              <Image source={{ uri: profile.avatar }} style={styles.avatar} />
+              <View style={styles.avatarBadge}>
+                {uploadingAvatar
+                  ? <ActivityIndicator size="small" color="#fff" />
+                  : <Ionicons name="camera" size={12} color="#fff" />}
+              </View>
+            </Animated.View>
+          </TouchableOpacity>
 
           <Text style={styles.heroName}>{profile.name || user?.name || "User"}</Text>
           <Text style={styles.heroSub}>

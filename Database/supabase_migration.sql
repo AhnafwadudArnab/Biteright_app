@@ -170,67 +170,67 @@ CREATE TABLE doctor_bmi_mealplans (
   meal_kcal      INT
 );
 
--- ============================================================
--- SEED DATA: doctor_bmi_mealplans
--- ============================================================
-INSERT INTO doctor_bmi_mealplans
-  (gender, bmi_range, category, daily_calories, doctor_focus, meal_type, meal_name, meal_kcal)
-VALUES
-  ('male',   '10-10.9',    'Severely Underweight', 3200, '["Rapid weight gain","Muscle recovery"]',       'Breakfast', 'Oats with milk, banana & peanut butter', 700),
-  ('male',   '10-10.9',    'Severely Underweight', 3200, '["Rapid weight gain","Muscle recovery"]',       'Lunch',     'Rice, chicken curry & lentils',          900),
-  ('male',   '10-10.9',    'Severely Underweight', 3200, '["Rapid weight gain","Muscle recovery"]',       'Snack',     'Protein shake & nuts',                   500),
-  ('male',   '10-10.9',    'Severely Underweight', 3200, '["Rapid weight gain","Muscle recovery"]',       'Dinner',    'Fish, potatoes & vegetables',            800),
-  ('male',   '10-10.9',    'Severely Underweight', 3200, '["Rapid weight gain","Muscle recovery"]',       'Snack',     'Yogurt & honey',                         300),
-  ('male',   '11-11.9',    'Severely Underweight', 3100, '["Weight gain","High protein"]',                'Breakfast', 'Egg omelette & toast',                   650),
-  ('male',   '11-11.9',    'Severely Underweight', 3100, '["Weight gain","High protein"]',                'Lunch',     'Chicken rice bowl',                      850),
-  ('male',   '11-11.9',    'Severely Underweight', 3100, '["Weight gain","High protein"]',                'Snack',     'Milk & dates',                           450),
-  ('male',   '11-11.9',    'Severely Underweight', 3100, '["Weight gain","High protein"]',                'Dinner',    'Salmon & quinoa',                        750),
-  ('male',   '11-11.9',    'Severely Underweight', 3100, '["Weight gain","High protein"]',                'Snack',     'Banana smoothie',                        400),
-  ('male',   '18-18.9',    'Underweight',          2800, '["Healthy weight gain"]',                       'Breakfast', 'Oatmeal with fruits',                    550),
-  ('male',   '18-18.9',    'Underweight',          2800, '["Healthy weight gain"]',                       'Lunch',     'Grilled chicken & rice',                 750),
-  ('male',   '18-18.9',    'Underweight',          2800, '["Healthy weight gain"]',                       'Snack',     'Nuts & yogurt',                          400),
-  ('male',   '18-18.9',    'Underweight',          2800, '["Healthy weight gain"]',                       'Dinner',    'Fish & vegetables',                      700),
-  ('male',   '18-18.9',    'Underweight',          2800, '["Healthy weight gain"]',                       'Snack',     'Milk',                                   400),
-  ('male',   '22-22.9',    'Normal',               2400, '["Maintenance"]',                               'Breakfast', 'Egg toast & fruit',                      450),
-  ('male',   '22-22.9',    'Normal',               2400, '["Maintenance"]',                               'Lunch',     'Chicken salad',                          600),
-  ('male',   '22-22.9',    'Normal',               2400, '["Maintenance"]',                               'Snack',     'Apple & almonds',                        300),
-  ('male',   '22-22.9',    'Normal',               2400, '["Maintenance"]',                               'Dinner',    'Fish, rice & veggies',                   650),
-  ('male',   '22-22.9',    'Normal',               2400, '["Maintenance"]',                               'Snack',     'Milk',                                   400),
-  ('male',   '27-27.9',    'Overweight',           2000, '["Fat loss","Portion control"]',                'Breakfast', 'Omelette & vegetables',                  350),
-  ('male',   '27-27.9',    'Overweight',           2000, '["Fat loss","Portion control"]',                'Lunch',     'Grilled chicken & quinoa',               500),
-  ('male',   '27-27.9',    'Overweight',           2000, '["Fat loss","Portion control"]',                'Snack',     'Fruit bowl',                             250),
-  ('male',   '27-27.9',    'Overweight',           2000, '["Fat loss","Portion control"]',                'Dinner',    'Steamed fish & salad',                   500),
-  ('male',   '27-27.9',    'Overweight',           2000, '["Fat loss","Portion control"]',                'Snack',     'Green tea',                              150),
-  ('male',   '35-35.9',    'Obese Class II',       1700, '["Medical weight loss"]',                       'Breakfast', 'Oats & berries',                         300),
-  ('male',   '35-35.9',    'Obese Class II',       1700, '["Medical weight loss"]',                       'Lunch',     'Vegetable soup & chicken',               450),
-  ('male',   '35-35.9',    'Obese Class II',       1700, '["Medical weight loss"]',                       'Snack',     'Cucumber yogurt',                        200),
-  ('male',   '35-35.9',    'Obese Class II',       1700, '["Medical weight loss"]',                       'Dinner',    'Grilled fish & greens',                  450),
-  ('male',   '35-35.9',    'Obese Class II',       1700, '["Medical weight loss"]',                       'Snack',     'Herbal tea',                             100),
-  ('male',   '23.0-29.9',  'Slightly Overweight',  2200, '["Weight management","Balanced nutrition"]',    'Breakfast', 'Whole grain toast & eggs',               400),
-  ('male',   '23.0-29.9',  'Slightly Overweight',  2200, '["Weight management","Balanced nutrition"]',    'Lunch',     'Grilled chicken & brown rice',           600),
-  ('male',   '23.0-29.9',  'Slightly Overweight',  2200, '["Weight management","Balanced nutrition"]',    'Snack',     'Greek yogurt & berries',                 250),
-  ('male',   '23.0-29.9',  'Slightly Overweight',  2200, '["Weight management","Balanced nutrition"]',    'Dinner',    'Baked fish & vegetables',                650),
-  ('male',   '23.0-29.9',  'Slightly Overweight',  2200, '["Weight management","Balanced nutrition"]',    'Snack',     'Apple',                                  300),
-  ('female', '10-10.9',    'Severely Underweight', 2800, '["Hormonal balance","Healthy weight gain"]',    'Breakfast', 'Smoothie bowl & granola',                600),
-  ('female', '10-10.9',    'Severely Underweight', 2800, '["Hormonal balance","Healthy weight gain"]',    'Lunch',     'Rice, lentils & egg',                    750),
-  ('female', '10-10.9',    'Severely Underweight', 2800, '["Hormonal balance","Healthy weight gain"]',    'Snack',     'Nuts & dates',                           450),
-  ('female', '10-10.9',    'Severely Underweight', 2800, '["Hormonal balance","Healthy weight gain"]',    'Dinner',    'Chicken pasta',                          700),
-  ('female', '10-10.9',    'Severely Underweight', 2800, '["Hormonal balance","Healthy weight gain"]',    'Snack',     'Milk',                                   300),
-  ('female', '22-22.9',    'Normal',               2000, '["Maintenance"]',                               'Breakfast', 'Avocado toast & egg',                    400),
-  ('female', '22-22.9',    'Normal',               2000, '["Maintenance"]',                               'Lunch',     'Fish salad',                             500),
-  ('female', '22-22.9',    'Normal',               2000, '["Maintenance"]',                               'Snack',     'Fruit bowl',                             250),
-  ('female', '22-22.9',    'Normal',               2000, '["Maintenance"]',                               'Dinner',    'Rice, veggies & chicken',                550),
-  ('female', '22-22.9',    'Normal',               2000, '["Maintenance"]',                               'Snack',     'Yogurt',                                 300),
-  ('female', '30-30.9',    'Obese Class I',        1500, '["Fat loss","Blood sugar control"]',            'Breakfast', 'Boiled eggs & fruit',                    250),
-  ('female', '30-30.9',    'Obese Class I',        1500, '["Fat loss","Blood sugar control"]',            'Lunch',     'Vegetable stir fry',                     400),
-  ('female', '30-30.9',    'Obese Class I',        1500, '["Fat loss","Blood sugar control"]',            'Snack',     'Apple',                                  200),
-  ('female', '30-30.9',    'Obese Class I',        1500, '["Fat loss","Blood sugar control"]',            'Dinner',    'Steamed fish & salad',                   450),
-  ('female', '30-30.9',    'Obese Class I',        1500, '["Fat loss","Blood sugar control"]',            'Snack',     'Green tea',                              100),
-  ('female', '23.0-29.9',  'Slightly Overweight',  1800, '["Weight management","Balanced nutrition"]',    'Breakfast', 'Oatmeal & banana',                       350),
-  ('female', '23.0-29.9',  'Slightly Overweight',  1800, '["Weight management","Balanced nutrition"]',    'Lunch',     'Grilled chicken salad',                  500),
-  ('female', '23.0-29.9',  'Slightly Overweight',  1800, '["Weight management","Balanced nutrition"]',    'Snack',     'Yogurt & nuts',                          250),
-  ('female', '23.0-29.9',  'Slightly Overweight',  1800, '["Weight management","Balanced nutrition"]',    'Dinner',    'Baked salmon & veggies',                 500),
-  ('female', '23.0-29.9',  'Slightly Overweight',  1800, '["Weight management","Balanced nutrition"]',    'Snack',     'Orange',                                 200);
+-- -- ============================================================
+-- -- SEED DATA: doctor_bmi_mealplans
+-- -- ============================================================
+-- INSERT INTO doctor_bmi_mealplans
+--   (gender, bmi_range, category, daily_calories, doctor_focus, meal_type, meal_name, meal_kcal)
+-- VALUES
+--   ('male',   '10-10.9',    'Severely Underweight', 3200, '["Rapid weight gain","Muscle recovery"]',       'Breakfast', 'Oats with milk, banana & peanut butter', 700),
+--   ('male',   '10-10.9',    'Severely Underweight', 3200, '["Rapid weight gain","Muscle recovery"]',       'Lunch',     'Rice, chicken curry & lentils',          900),
+--   ('male',   '10-10.9',    'Severely Underweight', 3200, '["Rapid weight gain","Muscle recovery"]',       'Snack',     'Protein shake & nuts',                   500),
+--   ('male',   '10-10.9',    'Severely Underweight', 3200, '["Rapid weight gain","Muscle recovery"]',       'Dinner',    'Fish, potatoes & vegetables',            800),
+--   ('male',   '10-10.9',    'Severely Underweight', 3200, '["Rapid weight gain","Muscle recovery"]',       'Snack',     'Yogurt & honey',                         300),
+--   ('male',   '11-11.9',    'Severely Underweight', 3100, '["Weight gain","High protein"]',                'Breakfast', 'Egg omelette & toast',                   650),
+--   ('male',   '11-11.9',    'Severely Underweight', 3100, '["Weight gain","High protein"]',                'Lunch',     'Chicken rice bowl',                      850),
+--   ('male',   '11-11.9',    'Severely Underweight', 3100, '["Weight gain","High protein"]',                'Snack',     'Milk & dates',                           450),
+--   ('male',   '11-11.9',    'Severely Underweight', 3100, '["Weight gain","High protein"]',                'Dinner',    'Salmon & quinoa',                        750),
+--   ('male',   '11-11.9',    'Severely Underweight', 3100, '["Weight gain","High protein"]',                'Snack',     'Banana smoothie',                        400),
+--   ('male',   '18-18.9',    'Underweight',          2800, '["Healthy weight gain"]',                       'Breakfast', 'Oatmeal with fruits',                    550),
+--   ('male',   '18-18.9',    'Underweight',          2800, '["Healthy weight gain"]',                       'Lunch',     'Grilled chicken & rice',                 750),
+--   ('male',   '18-18.9',    'Underweight',          2800, '["Healthy weight gain"]',                       'Snack',     'Nuts & yogurt',                          400),
+--   ('male',   '18-18.9',    'Underweight',          2800, '["Healthy weight gain"]',                       'Dinner',    'Fish & vegetables',                      700),
+--   ('male',   '18-18.9',    'Underweight',          2800, '["Healthy weight gain"]',                       'Snack',     'Milk',                                   400),
+--   ('male',   '22-22.9',    'Normal',               2400, '["Maintenance"]',                               'Breakfast', 'Egg toast & fruit',                      450),
+--   ('male',   '22-22.9',    'Normal',               2400, '["Maintenance"]',                               'Lunch',     'Chicken salad',                          600),
+--   ('male',   '22-22.9',    'Normal',               2400, '["Maintenance"]',                               'Snack',     'Apple & almonds',                        300),
+--   ('male',   '22-22.9',    'Normal',               2400, '["Maintenance"]',                               'Dinner',    'Fish, rice & veggies',                   650),
+--   ('male',   '22-22.9',    'Normal',               2400, '["Maintenance"]',                               'Snack',     'Milk',                                   400),
+--   ('male',   '27-27.9',    'Overweight',           2000, '["Fat loss","Portion control"]',                'Breakfast', 'Omelette & vegetables',                  350),
+--   ('male',   '27-27.9',    'Overweight',           2000, '["Fat loss","Portion control"]',                'Lunch',     'Grilled chicken & quinoa',               500),
+--   ('male',   '27-27.9',    'Overweight',           2000, '["Fat loss","Portion control"]',                'Snack',     'Fruit bowl',                             250),
+--   ('male',   '27-27.9',    'Overweight',           2000, '["Fat loss","Portion control"]',                'Dinner',    'Steamed fish & salad',                   500),
+--   ('male',   '27-27.9',    'Overweight',           2000, '["Fat loss","Portion control"]',                'Snack',     'Green tea',                              150),
+--   ('male',   '35-35.9',    'Obese Class II',       1700, '["Medical weight loss"]',                       'Breakfast', 'Oats & berries',                         300),
+--   ('male',   '35-35.9',    'Obese Class II',       1700, '["Medical weight loss"]',                       'Lunch',     'Vegetable soup & chicken',               450),
+--   ('male',   '35-35.9',    'Obese Class II',       1700, '["Medical weight loss"]',                       'Snack',     'Cucumber yogurt',                        200),
+--   ('male',   '35-35.9',    'Obese Class II',       1700, '["Medical weight loss"]',                       'Dinner',    'Grilled fish & greens',                  450),
+--   ('male',   '35-35.9',    'Obese Class II',       1700, '["Medical weight loss"]',                       'Snack',     'Herbal tea',                             100),
+--   ('male',   '23.0-29.9',  'Slightly Overweight',  2200, '["Weight management","Balanced nutrition"]',    'Breakfast', 'Whole grain toast & eggs',               400),
+--   ('male',   '23.0-29.9',  'Slightly Overweight',  2200, '["Weight management","Balanced nutrition"]',    'Lunch',     'Grilled chicken & brown rice',           600),
+--   ('male',   '23.0-29.9',  'Slightly Overweight',  2200, '["Weight management","Balanced nutrition"]',    'Snack',     'Greek yogurt & berries',                 250),
+--   ('male',   '23.0-29.9',  'Slightly Overweight',  2200, '["Weight management","Balanced nutrition"]',    'Dinner',    'Baked fish & vegetables',                650),
+--   ('male',   '23.0-29.9',  'Slightly Overweight',  2200, '["Weight management","Balanced nutrition"]',    'Snack',     'Apple',                                  300),
+--   ('female', '10-10.9',    'Severely Underweight', 2800, '["Hormonal balance","Healthy weight gain"]',    'Breakfast', 'Smoothie bowl & granola',                600),
+--   ('female', '10-10.9',    'Severely Underweight', 2800, '["Hormonal balance","Healthy weight gain"]',    'Lunch',     'Rice, lentils & egg',                    750),
+--   ('female', '10-10.9',    'Severely Underweight', 2800, '["Hormonal balance","Healthy weight gain"]',    'Snack',     'Nuts & dates',                           450),
+--   ('female', '10-10.9',    'Severely Underweight', 2800, '["Hormonal balance","Healthy weight gain"]',    'Dinner',    'Chicken pasta',                          700),
+--   ('female', '10-10.9',    'Severely Underweight', 2800, '["Hormonal balance","Healthy weight gain"]',    'Snack',     'Milk',                                   300),
+--   ('female', '22-22.9',    'Normal',               2000, '["Maintenance"]',                               'Breakfast', 'Avocado toast & egg',                    400),
+--   ('female', '22-22.9',    'Normal',               2000, '["Maintenance"]',                               'Lunch',     'Fish salad',                             500),
+--   ('female', '22-22.9',    'Normal',               2000, '["Maintenance"]',                               'Snack',     'Fruit bowl',                             250),
+--   ('female', '22-22.9',    'Normal',               2000, '["Maintenance"]',                               'Dinner',    'Rice, veggies & chicken',                550),
+--   ('female', '22-22.9',    'Normal',               2000, '["Maintenance"]',                               'Snack',     'Yogurt',                                 300),
+--   ('female', '30-30.9',    'Obese Class I',        1500, '["Fat loss","Blood sugar control"]',            'Breakfast', 'Boiled eggs & fruit',                    250),
+--   ('female', '30-30.9',    'Obese Class I',        1500, '["Fat loss","Blood sugar control"]',            'Lunch',     'Vegetable stir fry',                     400),
+--   ('female', '30-30.9',    'Obese Class I',        1500, '["Fat loss","Blood sugar control"]',            'Snack',     'Apple',                                  200),
+--   ('female', '30-30.9',    'Obese Class I',        1500, '["Fat loss","Blood sugar control"]',            'Dinner',    'Steamed fish & salad',                   450),
+--   ('female', '30-30.9',    'Obese Class I',        1500, '["Fat loss","Blood sugar control"]',            'Snack',     'Green tea',                              100),
+--   ('female', '23.0-29.9',  'Slightly Overweight',  1800, '["Weight management","Balanced nutrition"]',    'Breakfast', 'Oatmeal & banana',                       350),
+--   ('female', '23.0-29.9',  'Slightly Overweight',  1800, '["Weight management","Balanced nutrition"]',    'Lunch',     'Grilled chicken salad',                  500),
+--   ('female', '23.0-29.9',  'Slightly Overweight',  1800, '["Weight management","Balanced nutrition"]',    'Snack',     'Yogurt & nuts',                          250),
+--   ('female', '23.0-29.9',  'Slightly Overweight',  1800, '["Weight management","Balanced nutrition"]',    'Dinner',    'Baked salmon & veggies',                 500),
+--   ('female', '23.0-29.9',  'Slightly Overweight',  1800, '["Weight management","Balanced nutrition"]',    'Snack',     'Orange',                                 200);
 
 -- =============================================================================
 -- ROW LEVEL SECURITY (RLS)
@@ -429,3 +429,50 @@ CREATE POLICY "Users manage own weight_history"
 
 CREATE POLICY "Users manage own health_reports"
   ON health_reports FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+-- =============================================================================
+-- MEAL PLANS (AI-generated / user-saved plans)
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS meal_plans (
+  id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id        uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  bmi            DECIMAL(4,2),
+  gender         VARCHAR(10),
+  category       VARCHAR(50),
+  daily_calories INT,
+  doctor_focus   TEXT,          -- JSON array string
+  source         VARCHAR(10) DEFAULT 'ai',  -- 'ai' or 'static'
+  created_at     TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS meal_plan_days (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  plan_id      uuid NOT NULL REFERENCES meal_plans(id) ON DELETE CASCADE,
+  day_index    INT NOT NULL,    -- 0=Mon … 6=Sun
+  meal_type    VARCHAR(20),
+  meal_name    VARCHAR(255),
+  meal_kcal    INT
+);
+
+-- Water goal per user
+CREATE TABLE IF NOT EXISTS water_goals (
+  user_id    uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  glasses    INT NOT NULL DEFAULT 8,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- RLS
+ALTER TABLE meal_plans      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE meal_plan_days  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE water_goals     ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users manage own meal_plans"
+  ON meal_plans FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users manage own meal_plan_days via plan"
+  ON meal_plan_days FOR ALL
+  USING (auth.uid() = (SELECT user_id FROM meal_plans WHERE id = meal_plan_days.plan_id))
+  WITH CHECK (auth.uid() = (SELECT user_id FROM meal_plans WHERE id = meal_plan_days.plan_id));
+
+CREATE POLICY "Users manage own water_goals"
+  ON water_goals FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);

@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { ArrowLeft, Clock, Flame, Plus, Search, X } from 'lucide-react-native';
-import { useState } from 'react';
+import { ArrowLeft, Clock, Flame, Plus, Search, X } from "lucide-react-native";
+import { useState } from "react";
 import {
     FlatList,
     Image,
@@ -11,12 +11,25 @@ import {
     TextInput,
     TouchableOpacity,
     View,
-} from 'react-native';
+} from "react-native";
 
-
-interface IngredientSearchScreenProps {
-  onNavigate: (screen: Screen) => void;
-}
+// ── Types ─────────────────────────────────────────────────────────────────────
+type Meal = {
+  id: number;
+  name: string;
+  image: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  time: string;
+  tags: string[];
+  compatible: boolean;
+  difficulty: string;
+  servings: number;
+  ingredients: string[];
+  instructions: string[];
+};
 
 const suggestedMeals = [
   {
@@ -227,18 +240,18 @@ const popularIngredients = [
   'Salmon', 'Quinoa', 'Spinach', 'Rice', 'Pasta'
 ];
 
-export function IngredientSearchScreen({ onNavigate }: IngredientSearchScreenProps) {
-  const [view, setView] = useState<'search' | 'results' | 'details'>('search');
-  const [selectedMeal, setSelectedMeal] = useState(suggestedMeals[0]);
+export default function IngredientSearchScreen() {
+  const [view, setView] = useState<"search" | "results" | "details">("search");
+  const [selectedMeal, setSelectedMeal] = useState<Meal>(suggestedMeals[0]);
   const [ingredients, setIngredients] = useState<string[]>([]);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [favorited, setFavorited] = useState<number[]>([]);
 
   const addIngredient = (ingredient?: string) => {
     const value = ingredient || inputValue.trim();
     if (value && !ingredients.includes(value)) {
       setIngredients([...ingredients, value]);
-      setInputValue('');
+      setInputValue("");
     }
   };
 
@@ -247,13 +260,13 @@ export function IngredientSearchScreen({ onNavigate }: IngredientSearchScreenPro
   };
 
   const toggleFavorite = (id: number) => {
-    setFavorited(prev =>
-      prev.includes(id) ? prev.filter(fav => fav !== id) : [...prev, id]
+    setFavorited((prev) =>
+      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
     );
   };
 
   const handleSearchRecipes = () => {
-    if (ingredients.length > 0) setView('results');
+    if (ingredients.length > 0) setView("results");
   };
 
   // ----- RENDERING VIEWS -----
@@ -325,7 +338,7 @@ export function IngredientSearchScreen({ onNavigate }: IngredientSearchScreenPro
           {/* Add to Meal Log */}
           <TouchableOpacity
             style={styles.addButton}
-            onPress={() => onNavigate('/Meal-trackers/ViewLogs')}
+            onPress={() => router.push("../Meal_trackers/Gen_meals")}
           >
             <Text style={styles.addButtonText}>Add to Meal Log</Text>
           </TouchableOpacity>
@@ -394,7 +407,7 @@ export function IngredientSearchScreen({ onNavigate }: IngredientSearchScreenPro
     <View style={styles.container}>
       <ScrollView style={{ flex: 1, padding: 16 }}>
         {/* Header */}
-        <TouchableOpacity onPress={() => onNavigate('home')}>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 8 }}>
           <ArrowLeft size={24} color="#3BB273" />
         </TouchableOpacity>
         <Text style={styles.searchTitle}>Cook with What You Have</Text>

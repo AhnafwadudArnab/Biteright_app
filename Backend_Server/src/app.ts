@@ -4,6 +4,7 @@ import express from "express";
 import path from "path";
 
 import healthInsightRoutes from "./Controllers/HealthInsightRoutes";
+import mealPlanRoutes from "./Controllers/MealPlanRoutes";
 import mealTrackerRoutes from "./Controllers/MealTrackerRoutes";
 import profileRoutes from "./Controllers/ProfileRoutes";
 import progressRoutes from "./Controllers/ProgressRoutes";
@@ -13,28 +14,27 @@ import userRoutes from "./Registrations/userRoutes";
 
 const app = express();
 
-// Load .env — works for both ts-node (src/) and compiled (dist/)
 dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 dotenv.config();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use("/users", userRoutes);          // /users/register, /users/login, /users/mealplan
-app.use("/api", profileRoutes);         // /api/profile
-app.use("/api", mealTrackerRoutes);     // /api/meals
-app.use("/api", waterRoutes);           // /api/water
-app.use("/api", streakRoutes);          // /api/streak
-app.use("/api", progressRoutes);        // /api/progress/weight, /api/progress/nutrition/today
-app.use("/api", healthInsightRoutes);   // /api/reports
+// ── Routes ────────────────────────────────────────────────────────────────────
+app.use("/users", userRoutes);          // POST /users/register  POST /users/login  GET /users/mealplan
+app.use("/api", profileRoutes);         // GET/PUT /api/profile
+app.use("/api", mealTrackerRoutes);     // GET/POST/PUT/DELETE /api/meals
+app.use("/api", mealPlanRoutes);        // POST /api/mealplan/save  GET /api/mealplan/latest
+app.use("/api", waterRoutes);           // POST /api/water  GET /api/water/today  DELETE /api/water/reset  GET|PUT /api/water/goal
+app.use("/api", streakRoutes);          // GET/PUT /api/streak  POST /api/streak/reset
+app.use("/api", progressRoutes);        // GET/POST /api/progress/weight  GET/POST /api/progress/nutrition/today
+app.use("/api", healthInsightRoutes);   // GET/POST /api/reports  DELETE /api/reports/:id
 
 app.get("/", (_req, res) => res.send("BiteRight API running ✅"));
 
 // Global error handler
-app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err);
   res.status(500).json({ error: err?.message || "Something went wrong" });
 });

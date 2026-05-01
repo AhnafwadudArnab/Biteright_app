@@ -62,3 +62,38 @@ export const resetTodayWater = async (req: Request, res: Response, next: NextFun
   if (error) return next(error);
   res.json({ message: "Water intake reset for today" });
 };
+
+// Get water goal
+export const getWaterGoal = async (req: Request, res: Response, next: NextFunction) => {
+  const user_id = req.user?.id;
+  if (!user_id) return res.status(401).json({ message: "Unauthorized" });
+
+  const { data, error } = await supabase
+    .from("water_goals")
+    .select("glasses")
+    .eq("user_id", user_id)
+    .maybeSingle();
+
+  if (error) return next(error);
+  res.json({ glasses: data?.glasses ?? 8 });
+};
+
+// Set water goal
+export const setWaterGoal = async (req: Request, res: Response, next: NextFunction) => {
+  const user_id = req.user?.id;
+  if (!user_id) return res.status(401).json({ message: "Unauthorized" });
+
+  const { glasses } = req.body;
+  if (!glasses || isNaN(Number(glasses))) {
+    return res.status(400).json({ message: "glasses is required" });
+  }
+
+  const { data, error } = await supabase
+    .from("water_goals")
+    .upsert({ user_id, glasses: Number(glasses), updated_at: new Date().toISOString() }, { onConflict: "user_id" })
+    .select()
+    .single();
+
+  if (error) return next(error);
+  res.json({ message: "Water goal updated", data });
+};
