@@ -1,27 +1,27 @@
 import { router } from "expo-router";
 import {
-  Award,
-  BookOpen,
-  ChevronRight,
-  Droplets,
-  Leaf,
-  Search,
-  TrendingUp,
+    Award,
+    BookOpen,
+    ChevronRight,
+    Droplets,
+    Leaf,
+    Search,
+    TrendingUp,
 } from "lucide-react-native";
 import React from "react";
 import {
-  Dimensions,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 interface landingPageProps {
-  onGetStarted: () => void;
-  onLogin: () => void;
+  onGetStarted?: () => void;
+  onLogin?: () => void;
 }
 
 export default function LandingPage({
