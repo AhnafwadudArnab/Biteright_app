@@ -381,3 +381,51 @@ CREATE POLICY "Users can update own user_diet_plans"
 -- NOTE: foods, diet_plans, and doctor_bmi_mealplans intentionally have NO RLS.
 -- They are public reference tables readable by all roles (including anon).
 -- =============================================================================
+
+-- =============================================================================
+-- NEW TABLES (added for full DB connectivity)
+-- =============================================================================
+
+-- User streaks & gamification
+CREATE TABLE IF NOT EXISTS user_streaks (
+  user_id                  uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  current_streak           INT DEFAULT 0,
+  total_points             INT DEFAULT 0,
+  last_logged_date         DATE,
+  meals_logged_week        INT DEFAULT 0,
+  water_goal_days_week     INT DEFAULT 0,
+  calorie_goal_days_week   INT DEFAULT 0,
+  updated_at               TIMESTAMPTZ DEFAULT now()
+);
+
+-- Weight history (separate from profileUser for trend tracking)
+CREATE TABLE IF NOT EXISTS weight_history (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  weight_kg   DECIMAL(5,2) NOT NULL,
+  recorded_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Health insight reports
+CREATE TABLE IF NOT EXISTS health_reports (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  date_range   VARCHAR(50) NOT NULL,
+  avg_calories INT NOT NULL,
+  status       VARCHAR(30) DEFAULT 'On Track',
+  created_at   TIMESTAMPTZ DEFAULT now()
+);
+
+-- RLS for new tables
+ALTER TABLE user_streaks    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE weight_history  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE health_reports  ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users manage own streaks"
+  ON user_streaks FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users manage own weight_history"
+  ON weight_history FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users manage own health_reports"
+  ON health_reports FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);

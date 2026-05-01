@@ -1,3 +1,5 @@
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { ArrowLeft, Clock, Flame, Plus, Search, X } from 'lucide-react-native';
 import { useState } from 'react';
 import {
@@ -448,7 +450,23 @@ export function IngredientSearchScreen({ onNavigate }: IngredientSearchScreenPro
   );
 }
 
-// ----- MEAL CARD -----
+// Simple inline bottom navigation (replaces the commented-out import)
+function BottomNavigation({
+  currentScreen,
+  onNavigate,
+}: {
+  currentScreen: string;
+  onNavigate: (screen: any) => void;
+}) {
+  return (
+    <View style={styles.bottomNav}>
+      <TouchableOpacity onPress={() => router.push("/(tabs)/MainHomePage")} style={styles.navItem}>
+        <Ionicons name="home-outline" size={22} color="#3BB273" />
+        <Text style={styles.navLabel}>Home</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
 interface MealCardProps {
   meal: typeof suggestedMeals[0];
   favorited: boolean;
@@ -514,6 +532,19 @@ const styles = StyleSheet.create({
   backButtonResults: { marginTop: 16, marginBottom: 8 },
   resultsTitle: { fontSize: 20, fontWeight: 'bold' },
   resultsSubtitle: { fontSize: 14, color: 'gray', marginBottom: 12 },
+
+  // Bottom nav
+  bottomNav: {
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#F1F5F9",
+    justifyContent: "center",
+  },
+  navItem: { alignItems: "center", paddingHorizontal: 20 },
+  navLabel: { fontSize: 11, color: "#3BB273", marginTop: 3, fontWeight: "600" },
 });
 
 

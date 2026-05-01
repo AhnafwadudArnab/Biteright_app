@@ -102,11 +102,53 @@ const AnimatedPressable: React.FC<{
   );
 };
 
+const WATER_CONSUMED_KEY = "water_consumed_today";
+const WATER_TARGET_KEY   = "water_target";
+const WATER_DATE_KEY     = "water_date";
+
 // ─── Main component ──────────────────────────────────────────────────────────
 const WaterIntake: React.FC = () => {
-  // ── existing state (unchanged) ──
-  const [waterConsumed, setWaterConsumed] = useState<number>(3);
-  const [waterTarget, setWaterTarget] = useState<number>(8);
+  // ── state ──
+  const [waterConsumed, setWaterConsumedState] = useState<number>(0);
+  const [waterTarget, setWaterTargetState] = useState<number>(8);
+
+  // Persist consumed count
+  const setWaterConsumed = (val: number | ((prev: number) => number)) => {
+    setWaterConsumedState((prev) => {
+      const next = typeof val === "function" ? val(prev) : val;
+      AsyncStorage.setItem(WATER_CONSUMED_KEY, String(next)).catch(() => {});
+      return next;
+    });
+  };
+
+  // Load from storage on mount; reset if it's a new day
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const today = new Date().toDateString();
+        const savedDate = await AsyncStorage.getItem(WATER_DATE_KEY);
+        const savedTarget = await AsyncStorage.getItem(WATER_TARGET_KEY);
+
+        if (savedTarget) setWaterTargetState(Number(savedTarget));
+
+        if (savedDate !== today) {
+          // New day — reset consumed
+          await AsyncStorage.setItem(WATER_DATE_KEY, today);
+          await AsyncStorage.setItem(WATER_CONSUMED_KEY, "0");
+          setWaterConsumedState(0);
+        } else {
+          const saved = await AsyncStorage.getItem(WATER_CONSUMED_KEY);
+          if (saved !== null) setWaterConsumedState(Number(saved));
+        }
+      } catch {}
+    };
+    load();
+  }, []);
+
+  const setWaterTarget = (val: number) => {
+    setWaterTargetState(val);
+    AsyncStorage.setItem(WATER_TARGET_KEY, String(val)).catch(() => {});
+  };
 
   const percentage = Math.min((waterConsumed / waterTarget) * 100, 100);
 
@@ -373,7 +415,10 @@ const WaterIntake: React.FC = () => {
         {/* ── Reset ── */}
         <AnimatedPressable
           style={styles.resetBtn}
-          onPress={() => setWaterConsumed(0)}
+          onPress={() => {
+            setWaterConsumed(0);
+            AsyncStorage.setItem(WATER_CONSUMED_KEY, "0").catch(() => {});
+          }}
         >
           <RotateCcw size={18} color="#6b7280" />
           <Text style={styles.resetText}>Reset Today</Text>

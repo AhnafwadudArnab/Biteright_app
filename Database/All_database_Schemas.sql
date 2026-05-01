@@ -145,8 +145,6 @@ CREATE TABLE `doctor_bmi_mealplans` (
 
 -- Doctor suggested BMI meal plans (seed data)
 
-
-
 -- MALE BMI PLANS
 INSERT INTO
     diet_plans (
@@ -985,6 +983,7 @@ ALTER TABLE `doctor_bmi_mealplans` ADD PRIMARY KEY (`id`);
 ALTER TABLE `doctor_bmi_mealplans`
 MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,
 AUTO_INCREMENT = 56;
+
 DROP TABLE IF EXISTS profileUser;
 
 -- CREATE TABLE profileUser (
@@ -1012,28 +1011,21 @@ DROP TABLE IF EXISTS profileUser;
 
 CREATE TABLE profileUser (
     user_id CHAR(36) PRIMARY KEY,
-
-    gender ENUM('male','female','other') DEFAULT NULL,
+    gender ENUM('male', 'female', 'other') DEFAULT NULL,
     age INT NULL,
     avatar VARCHAR(255),
-
-    height_cm DECIMAL(5,2) DEFAULT 0.00,
-
-    start_weight_kg DECIMAL(5,2) DEFAULT 0.00,
-    current_weight_kg DECIMAL(5,2) DEFAULT 0.00,
-    target_weight_kg DECIMAL(5,2) DEFAULT 0.00,
-
-    goal ENUM('Weight Loss','Weight Gain','Maintain Weight')
-         DEFAULT 'Maintain Weight',
-
+    height_cm DECIMAL(5, 2) DEFAULT 0.00,
+    start_weight_kg DECIMAL(5, 2) DEFAULT 0.00,
+    current_weight_kg DECIMAL(5, 2) DEFAULT 0.00,
+    target_weight_kg DECIMAL(5, 2) DEFAULT 0.00,
+    goal ENUM(
+        'Weight Loss',
+        'Weight Gain',
+        'Maintain Weight'
+    ) DEFAULT 'Maintain Weight',
     diet TEXT DEFAULT NULL,
     activity TEXT DEFAULT NULL,
-
-    CONSTRAINT fk_profile_user
-      FOREIGN KEY (user_id)
-      REFERENCES users(id)
-      ON DELETE CASCADE
+    CONSTRAINT fk_profile_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
-
 
 DESCRIBE profileUser;

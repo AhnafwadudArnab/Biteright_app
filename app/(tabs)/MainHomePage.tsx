@@ -160,10 +160,11 @@ export default function MainHomePage() {
         {/* ── Quick Actions ── */}
         <SectionLabel title="Quick Actions" />
         <View style={styles.quickGrid}>
-          <QuickBtn icon="calendar" color="#3B82F6" label="Weekly Plan" onPress={() => router.push("../Dietplans/weeklyPlans")} />
-          <QuickBtn icon="bar-chart" color="#8B5CF6" label="Progress" onPress={() => router.push("../Others/Progress")} />
-          <QuickBtn icon="heart" color="#EC4899" label="Health" onPress={() => router.push("../HealthInsights/HealthInsight")} />
-          <QuickBtn icon="settings" color="#6B7280" label="Settings" onPress={() => router.push("../Others/Settings")} />
+          <QuickBtn icon="calendar"  color="#3B82F6" label="Weekly Plan" onPress={() => router.push("../Dietplans/weeklyPlans")} />
+          <QuickBtn icon="bar-chart" color="#8B5CF6" label="Progress"    onPress={() => router.push("../Others/Progress")} />
+          <QuickBtn icon="heart"     color="#EC4899" label="Health"      onPress={() => router.push("../HealthInsights/HealthInsight")} />
+          <QuickBtn icon="flame"     color="#F97316" label="Streaks"     onPress={() => router.push("../MotivationStreak")} />
+          <QuickBtn icon="settings"  color="#6B7280" label="Settings"    onPress={() => router.push("../Others/Settings")} />
         </View>
 
         <View style={{ height: 100 }} />
