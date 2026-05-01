@@ -10,9 +10,10 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View
+    View,
 } from "react-native";
 import { useAuth } from "../AuthContext";
+import { fetchWithTimeout } from "../lib/fetchWithTimeout";
 import { SERVER_URL } from "../serverhost";
 
 const GREEN = "#3BB273";
@@ -37,37 +38,42 @@ function ForgotPasswordModal({ visible, onClose }: { visible: boolean; onClose: 
     if (!email.trim()) { setError("Please enter your email"); return; }
     setLoading(true); setError(null);
     try {
-      const res = await fetch(`${SERVER_URL}/users/forgot-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim().toLowerCase() }),
-      });
+      const res = await fetchWithTimeout(
+        `${SERVER_URL}/users/forgot-password`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email.trim().toLowerCase() }),
+        }
+      );
       const data = await res.json();
       if (!res.ok) { setError(data.message || "Failed to send code"); return; }
-      // Dev mode: auto-fill OTP if returned
       if (data.otp) setOtp(data.otp);
       setStep("otp");
-    } catch { setError("Network error. Please try again."); }
+    } catch (e: any) { setError(e.message); }
     finally { setLoading(false); }
   };
 
   // Step 2 — verify OTP + reset password
   const doReset = async () => {
-    if (!otp.trim())    { setError("Please enter the 6-digit code"); return; }
-    if (!newPass)       { setError("Please enter a new password"); return; }
-    if (newPass.length < 6) { setError("Password must be at least 6 characters"); return; }
+    if (!otp.trim())         { setError("Please enter the 6-digit code"); return; }
+    if (!newPass)            { setError("Please enter a new password"); return; }
+    if (newPass.length < 6)  { setError("Password must be at least 6 characters"); return; }
     if (newPass !== confirmPass) { setError("Passwords do not match"); return; }
     setLoading(true); setError(null);
     try {
-      const res = await fetch(`${SERVER_URL}/users/reset-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), otp: otp.trim(), newPassword: newPass }),
-      });
+      const res = await fetchWithTimeout(
+        `${SERVER_URL}/users/reset-password`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email.trim().toLowerCase(), otp: otp.trim(), newPassword: newPass }),
+        }
+      );
       const data = await res.json();
       if (!res.ok) { setError(data.message || "Reset failed"); return; }
       setStep("done");
-    } catch { setError("Network error. Please try again."); }
+    } catch (e: any) { setError(e.message); }
     finally { setLoading(false); }
   };
 

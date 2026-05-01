@@ -4,6 +4,7 @@ import express from "express";
 import path from "path";
 
 import healthInsightRoutes from "./Controllers/HealthInsightRoutes";
+import ingredientRoutes from "./Controllers/IngredientRoutes";
 import mealPlanRoutes from "./Controllers/MealPlanRoutes";
 import mealTrackerRoutes from "./Controllers/MealTrackerRoutes";
 import profileRoutes from "./Controllers/ProfileRoutes";
@@ -30,6 +31,7 @@ app.use("/api", waterRoutes);           // POST /api/water  GET /api/water/today
 app.use("/api", streakRoutes);          // GET/PUT /api/streak  POST /api/streak/reset
 app.use("/api", progressRoutes);        // GET/POST /api/progress/weight  GET/POST /api/progress/nutrition/today
 app.use("/api", healthInsightRoutes);   // GET/POST /api/reports  DELETE /api/reports/:id
+app.use("/api", ingredientRoutes);      // POST /api/ingredients/suggest
 
 app.get("/", (_req, res) => res.send("BiteRight API running ✅"));
 

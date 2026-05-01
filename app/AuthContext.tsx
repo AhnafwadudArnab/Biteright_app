@@ -7,6 +7,7 @@ import {
     useState,
 } from "react";
 import { Platform } from "react-native";
+import { fetchWithTimeout } from "./lib/fetchWithTimeout";
 import { SERVER_URL } from "./serverhost";
 
 // ── Platform-safe storage (SecureStore on native, localStorage on web) ─────────
@@ -108,11 +109,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ── login ──────────────────────────────────────────────────────────────────
 
   async function login(email: string, password: string): Promise<void> {
-    const response = await fetch(SERVER_URL + "/users/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    const response = await fetchWithTimeout(
+      SERVER_URL + "/users/login",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      },
+      10_000
+    );
 
     const data = await response.json();
 

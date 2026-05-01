@@ -1,16 +1,58 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     Animated,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from "react-native";
 import { useAuth } from "../AuthContext";
 import { useCalories } from "../CaloriesContext";
+
+// ── Notification setup ────────────────────────────────────────────────────────
+try {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+} catch (_) {}
+
+async function scheduleMealTimeAlerts() {
+  if (Platform.OS === "web") return;
+  try {
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status !== "granted") return;
+
+    // Cancel old meal alerts before re-scheduling
+    await Notifications.cancelScheduledNotificationAsync("meal_breakfast").catch(() => {});
+    await Notifications.cancelScheduledNotificationAsync("meal_lunch").catch(() => {});
+    await Notifications.cancelScheduledNotificationAsync("meal_dinner").catch(() => {});
+
+    await Notifications.scheduleNotificationAsync({
+      identifier: "meal_breakfast",
+      content: { title: "🍳 Breakfast Time!", body: "Time to eat breakfast. Log it in your diet plan!", sound: true },
+      trigger: { hour: 8, minute: 0, repeats: true } as any,
+    });
+    await Notifications.scheduleNotificationAsync({
+      identifier: "meal_lunch",
+      content: { title: "🥗 Lunch Time!", body: "Don't skip lunch — log your meal and stay on track.", sound: true },
+      trigger: { hour: 13, minute: 0, repeats: true } as any,
+    });
+    await Notifications.scheduleNotificationAsync({
+      identifier: "meal_dinner",
+      content: { title: "🍽️ Dinner Time!", body: "Evening meal time! Check your diet plan for tonight.", sound: true },
+      trigger: { hour: 19, minute: 0, repeats: true } as any,
+    });
+  } catch (_) {}
+}
 
 const GREEN = "#3BB273";
 const DARK = "#0F172A";
@@ -20,6 +62,7 @@ export default function MainHomePage() {
   const { user } = useAuth();
   const remaining = Math.max(0, goal - consumed);
   const progress = goal > 0 ? Math.min(consumed / goal, 1) : 0;
+  const [hasUnread, setHasUnread] = useState(false);
 
   // Entrance animations
   const headerFade = useRef(new Animated.Value(0)).current;
@@ -31,6 +74,19 @@ export default function MainHomePage() {
   useEffect(() => {
     if (user?.id) loadUserGoal(user.id);
   }, [user?.id]);
+
+  // Schedule meal-time notifications on first load
+  useEffect(() => {
+    scheduleMealTimeAlerts().catch(() => {});
+    // Check if there are any scheduled notifications (show badge dot) — native only
+    if (Platform.OS !== "web" && typeof Notifications.getScheduledNotificationsAsync === "function") {
+      Notifications.getScheduledNotificationsAsync()
+        .then((notifs) => setHasUnread(notifs.length > 0))
+        .catch(() => {});
+    } else {
+      setHasUnread(false);
+    }
+  }, []);
 
   useEffect(() => {
     Animated.parallel([
@@ -73,8 +129,15 @@ export default function MainHomePage() {
             <Text style={styles.subtitle}>Let's track your nutrition today</Text>
           </View>
           <View style={styles.headerActions}>
-            <TouchableOpacity style={styles.iconBtn}>
+            <TouchableOpacity
+              style={styles.iconBtn}
+              onPress={() => {
+                setHasUnread(false);
+                router.push("../Others/Settings_page files/notifications");
+              }}
+            >
               <Ionicons name="notifications-outline" size={22} color={DARK} />
+              {hasUnread && <View style={styles.notifDot} />}
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.iconBtn, { marginLeft: 8 }]}
@@ -284,6 +347,11 @@ const styles = StyleSheet.create({
     shadowColor: "#000", shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07, shadowRadius: 6, elevation: 3,
   },
+  notifDot: {
+    position: "absolute", top: 8, right: 8,
+    width: 8, height: 8, borderRadius: 4,
+    backgroundColor: "#EF4444", borderWidth: 1.5, borderColor: "#fff",
+  },
 
   // Calories card
   caloriesCard: {
@@ -325,7 +393,7 @@ const styles = StyleSheet.create({
   actionBtnText: { fontSize: 13, fontWeight: "700" },
 
   // Quick actions
-  quickGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+  quickGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginBottom: 4 },
   quickBtn: {
     width: "46%", backgroundColor: "#fff", borderRadius: 18,
     padding: 16, alignItems: "center",

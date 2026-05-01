@@ -18,13 +18,16 @@ const GREEN = "#3BB273";
 const STORAGE_KEY = "notification_prefs";
 
 // Configure how notifications appear when app is in foreground
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+// Guard: some Expo Go / web environments don't support all notification APIs
+try {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+} catch (_) {}
 
 type NotifSetting = {
   key: string;
@@ -38,25 +41,33 @@ type NotifSetting = {
 // ── Schedule helpers ──────────────────────────────────────────────────────────
 
 async function scheduleDailyNotif(id: string, title: string, body: string, hour: number, minute: number) {
-  await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
-  await Notifications.scheduleNotificationAsync({
-    identifier: id,
-    content: { title, body, sound: true },
-    trigger: { hour, minute, repeats: true } as any,
-  });
+  try {
+    await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
+    await Notifications.scheduleNotificationAsync({
+      identifier: id,
+      content: { title, body, sound: true },
+      trigger: { hour, minute, repeats: true } as any,
+    });
+  } catch (_) {}
 }
 
 async function cancelNotif(id: string) {
-  await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
+  try {
+    await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
+  } catch (_) {}
 }
 
 // ── Request permission ────────────────────────────────────────────────────────
 async function requestPermission(): Promise<boolean> {
   if (Platform.OS === "web") return false;
-  const { status: existing } = await Notifications.getPermissionsAsync();
-  if (existing === "granted") return true;
-  const { status } = await Notifications.requestPermissionsAsync();
-  return status === "granted";
+  try {
+    const { status: existing } = await Notifications.getPermissionsAsync();
+    if (existing === "granted") return true;
+    const { status } = await Notifications.requestPermissionsAsync();
+    return status === "granted";
+  } catch (_) {
+    return false;
+  }
 }
 
 // ── Settings config ───────────────────────────────────────────────────────────
@@ -131,13 +142,14 @@ async function applySchedules(toggles: Record<string, boolean>) {
   }
 
   if (toggles.weeklyReport) {
-    // Sunday = 1 in Expo's weekday numbering
-    await Notifications.cancelScheduledNotificationAsync("weekly_report").catch(() => {});
-    await Notifications.scheduleNotificationAsync({
-      identifier: "weekly_report",
-      content: { title: "📊 Weekly Report Ready", body: "Check your health insights for this week!", sound: true },
-      trigger: { weekday: 1, hour: 20, minute: 0, repeats: true } as any,
-    });
+    try {
+      await Notifications.cancelScheduledNotificationAsync("weekly_report").catch(() => {});
+      await Notifications.scheduleNotificationAsync({
+        identifier: "weekly_report",
+        content: { title: "📊 Weekly Report Ready", body: "Check your health insights for this week!", sound: true },
+        trigger: { weekday: 1, hour: 20, minute: 0, repeats: true } as any,
+      });
+    } catch (_) {}
   } else {
     await cancelNotif("weekly_report");
   }
@@ -189,16 +201,22 @@ export default function NotificationsScreen() {
     const all = Object.fromEntries(SETTINGS.map((s) => [s.key, false]));
     setToggles(all);
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(all));
-    await Notifications.cancelAllScheduledNotificationsAsync();
+    try {
+      await Notifications.cancelAllScheduledNotificationsAsync();
+    } catch (_) {}
   };
 
   const testNotif = async () => {
     if (!permGranted) { Alert.alert("Enable notifications first"); return; }
-    await Notifications.scheduleNotificationAsync({
-      content: { title: "🔔 Test Notification", body: "BiteRight notifications are working!", sound: true },
-      trigger: { seconds: 2 } as any,
-    });
-    Alert.alert("Test sent", "You'll receive a notification in 2 seconds.");
+    try {
+      await Notifications.scheduleNotificationAsync({
+        content: { title: "🔔 Test Notification", body: "BiteRight notifications are working!", sound: true },
+        trigger: { seconds: 2 } as any,
+      });
+      Alert.alert("Test sent", "You'll receive a notification in 2 seconds.");
+    } catch (_) {
+      Alert.alert("Error", "Could not send test notification on this device.");
+    }
   };
 
   const enabledCount = Object.values(toggles).filter(Boolean).length;

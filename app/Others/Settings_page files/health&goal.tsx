@@ -4,11 +4,9 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     ScrollView,
     StyleSheet,
     Text,
-    TextInput,
     TouchableOpacity,
     View,
 } from "react-native";
@@ -29,12 +27,11 @@ const ACTIVITY_LEVELS = [
 
 export default function HealthGoalScreen() {
   const { user, token } = useAuth();
-  const { goal: calorieGoal, setGoal } = useCalories();
+  const { goal: calorieGoal } = useCalories();
 
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
 
-  // Form state
+  // Form state (read-only display)
   const [currentWeight, setCurrentWeight] = useState("");
   const [targetWeight, setTargetWeight] = useState("");
   const [height, setHeight] = useState("");
@@ -90,46 +87,6 @@ export default function HealthGoalScreen() {
     load();
   }, []);
 
-  const handleSave = async () => {
-    if (!currentWeight || !targetWeight || !height || !age) {
-      Alert.alert("Missing fields", "Please fill in all fields.");
-      return;
-    }
-    setSaving(true);
-    try {
-      const userId = user?.id ?? (await AsyncStorage.getItem("userId"));
-      if (!userId) throw new Error("Not logged in");
-      const headers: any = { "Content-Type": "application/json" };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-      await fetch(`${SERVER_URL}/api/profile`, {
-        method: "PUT",
-        headers,
-        body: JSON.stringify({
-          user_id: userId,
-          age: Number(age),
-          height_cm: Number(height),
-          current_weight_kg: Number(currentWeight),
-          target_weight_kg: Number(targetWeight),
-          goal: selectedGoal,
-          activity: [selectedActivity],
-          diet: [],
-        }),
-      });
-      // Update calorie goal based on BMI
-      if (bmi) {
-        const b = parseFloat(bmi);
-        const cal =
-          b < 18.5 ? 2400 : b < 25 ? 2000 : b < 30 ? 1700 : 1500;
-        setGoal(cal, userId);
-      }
-      Alert.alert("Saved", "Your health & goals have been updated.");
-    } catch {
-      Alert.alert("Error", "Could not save. Please try again.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
   if (loading) {
     return (
       <View style={styles.loaderWrap}>
@@ -170,30 +127,10 @@ export default function HealthGoalScreen() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Measurements</Text>
           <View style={styles.inputGrid}>
-            <InputField
-              label="Age"
-              value={age}
-              onChange={setAge}
-              unit="yrs"
-            />
-            <InputField
-              label="Height"
-              value={height}
-              onChange={setHeight}
-              unit="cm"
-            />
-            <InputField
-              label="Current Weight"
-              value={currentWeight}
-              onChange={setCurrentWeight}
-              unit="kg"
-            />
-            <InputField
-              label="Target Weight"
-              value={targetWeight}
-              onChange={setTargetWeight}
-              unit="kg"
-            />
+            <DisplayField label="Age"            value={age}           unit="yrs" />
+            <DisplayField label="Height"         value={height}        unit="cm"  />
+            <DisplayField label="Current Weight" value={currentWeight} unit="kg"  />
+            <DisplayField label="Target Weight"  value={targetWeight}  unit="kg"  />
           </View>
         </View>
 
@@ -209,11 +146,9 @@ export default function HealthGoalScreen() {
           <Text style={styles.cardTitle}>My Goal</Text>
           <View style={styles.chipRow}>
             {GOALS.map((g) => (
-              <TouchableOpacity
+              <View
                 key={g}
                 style={[styles.chip, selectedGoal === g && styles.chipActive]}
-                onPress={() => setSelectedGoal(g)}
-                activeOpacity={0.8}
               >
                 {selectedGoal === g && (
                   <Ionicons name="checkmark-circle" size={14} color={GREEN} style={{ marginRight: 4 }} />
@@ -221,7 +156,7 @@ export default function HealthGoalScreen() {
                 <Text style={[styles.chipText, selectedGoal === g && styles.chipTextActive]}>
                   {g}
                 </Text>
-              </TouchableOpacity>
+              </View>
             ))}
           </View>
         </View>
@@ -231,11 +166,9 @@ export default function HealthGoalScreen() {
           <Text style={styles.cardTitle}>Activity Level</Text>
           <View style={styles.chipRow}>
             {ACTIVITY_LEVELS.map((a) => (
-              <TouchableOpacity
+              <View
                 key={a}
                 style={[styles.chip, selectedActivity === a && styles.chipActive]}
-                onPress={() => setSelectedActivity(a)}
-                activeOpacity={0.8}
               >
                 {selectedActivity === a && (
                   <Ionicons name="checkmark-circle" size={14} color={GREEN} style={{ marginRight: 4 }} />
@@ -243,56 +176,32 @@ export default function HealthGoalScreen() {
                 <Text style={[styles.chipText, selectedActivity === a && styles.chipTextActive]}>
                   {a}
                 </Text>
-              </TouchableOpacity>
+              </View>
             ))}
           </View>
         </View>
 
-        {/* Save button */}
-        <TouchableOpacity
-          style={[styles.saveBtn, saving && { opacity: 0.7 }]}
-          onPress={handleSave}
-          disabled={saving}
-          activeOpacity={0.85}
-        >
-          {saving ? (
-            <ActivityIndicator color="#fff" size="small" />
-          ) : (
-            <>
-              <Ionicons name="checkmark" size={18} color="#fff" />
-              <Text style={styles.saveBtnText}>Save Changes</Text>
-            </>
-          )}
-        </TouchableOpacity>
+        {/* Save button removed — data is read-only */}
       </ScrollView>
     </View>
   );
 }
 
-// ── Input field ───────────────────────────────────────────────────────────────
-function InputField({
+// ── Display field (read-only) ─────────────────────────────────────────────────
+function DisplayField({
   label,
   value,
-  onChange,
   unit,
 }: {
   label: string;
   value: string;
-  onChange: (v: string) => void;
   unit: string;
 }) {
   return (
     <View style={styles.inputWrap}>
       <Text style={styles.inputLabel}>{label}</Text>
-      <View style={styles.inputRow}>
-        <TextInput
-          style={styles.input}
-          value={value}
-          onChangeText={onChange}
-          keyboardType="numeric"
-          placeholder="0"
-          placeholderTextColor="#C4C4C4"
-        />
+      <View style={styles.displayRow}>
+        <Text style={styles.displayValue}>{value || "—"}</Text>
         <Text style={styles.inputUnit}>{unit}</Text>
       </View>
     </View>
@@ -351,7 +260,7 @@ const styles = StyleSheet.create({
   inputGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   inputWrap: { width: "47%" },
   inputLabel: { fontSize: 12, color: "#6B7280", fontWeight: "600", marginBottom: 6 },
-  inputRow: {
+  displayRow: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#F9FAFB",
@@ -359,8 +268,9 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     borderRadius: 12,
     paddingHorizontal: 12,
+    paddingVertical: 10,
   },
-  input: { flex: 1, paddingVertical: 10, fontSize: 15, color: DARK },
+  displayValue: { flex: 1, fontSize: 15, color: DARK, fontWeight: "600" },
   inputUnit: { fontSize: 13, color: "#9CA3AF", fontWeight: "600" },
 
   calCard: {
@@ -389,20 +299,4 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: "#ECFDF5", borderColor: GREEN },
   chipText: { fontSize: 13, fontWeight: "600", color: "#6B7280" },
   chipTextActive: { color: GREEN },
-
-  saveBtn: {
-    backgroundColor: GREEN,
-    borderRadius: 16,
-    paddingVertical: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    shadowColor: GREEN,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  saveBtnText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 });

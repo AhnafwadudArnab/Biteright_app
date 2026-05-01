@@ -9,54 +9,54 @@ function syncDailyNutritionBg(user_id: string) {
   const todayStart = `${today}T00:00:00.000Z`;
   const todayEnd   = `${today}T23:59:59.999Z`;
 
-  supabase
-    .from("meals")
-    .select("meal_items(calories)")
-    .eq("user_id", user_id)
-    .gte("eaten_at", todayStart)
-    .lte("eaten_at", todayEnd)
-    .then(({ data: meals }) => {
-      let total_calories = 0;
-      for (const meal of meals || []) {
-        for (const item of (meal as any).meal_items || []) {
-          total_calories += item.calories || 0;
-        }
+  Promise.resolve(
+    supabase
+      .from("meals")
+      .select("meal_items(calories)")
+      .eq("user_id", user_id)
+      .gte("eaten_at", todayStart)
+      .lte("eaten_at", todayEnd)
+  ).then(({ data: meals }) => {
+    let total_calories = 0;
+    for (const meal of meals || []) {
+      for (const item of (meal as any).meal_items || []) {
+        total_calories += item.calories || 0;
       }
-      return supabase
-        .from("daily_nutrition_summary")
-        .upsert(
-          { user_id, date: today, total_calories, protein_g: 0, carbs_g: 0, fats_g: 0 },
-          { onConflict: "user_id,date" }
-        );
-    })
-    .catch(() => {}); // silent — non-critical
+    }
+    return supabase
+      .from("daily_nutrition_summary")
+      .upsert(
+        { user_id, date: today, total_calories, protein_g: 0, carbs_g: 0, fats_g: 0 },
+        { onConflict: "user_id,date" }
+      );
+  }).catch(() => {}); // silent — non-critical
 }
 
 // Increment streak — runs in background, never blocks response
 function incrementMealsLoggedBg(user_id: string) {
-  supabase
-    .from("user_streaks")
-    .select("current_streak,total_points,meals_logged_week,last_logged_date")
-    .eq("user_id", user_id)
-    .maybeSingle()
-    .then(({ data: existing }) => {
-      const today = new Date().toISOString().split("T")[0];
-      const isNewDay = existing?.last_logged_date !== today;
-      return supabase.from("user_streaks").upsert(
-        {
-          user_id,
-          current_streak: isNewDay
-            ? (existing?.current_streak ?? 0) + 1
-            : (existing?.current_streak ?? 0),
-          total_points: (existing?.total_points ?? 0) + 10,
-          meals_logged_week: (existing?.meals_logged_week ?? 0) + 1,
-          last_logged_date: isNewDay ? today : existing?.last_logged_date,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id" }
-      );
-    })
-    .catch(() => {});
+  Promise.resolve(
+    supabase
+      .from("user_streaks")
+      .select("current_streak,total_points,meals_logged_week,last_logged_date")
+      .eq("user_id", user_id)
+      .maybeSingle()
+  ).then(({ data: existing }) => {
+    const today = new Date().toISOString().split("T")[0];
+    const isNewDay = existing?.last_logged_date !== today;
+    return supabase.from("user_streaks").upsert(
+      {
+        user_id,
+        current_streak: isNewDay
+          ? (existing?.current_streak ?? 0) + 1
+          : (existing?.current_streak ?? 0),
+        total_points: (existing?.total_points ?? 0) + 10,
+        meals_logged_week: (existing?.meals_logged_week ?? 0) + 1,
+        last_logged_date: isNewDay ? today : existing?.last_logged_date,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" }
+    );
+  }).catch(() => {});
 }
 
 // ── Add a new meal ────────────────────────────────────────────────────────────

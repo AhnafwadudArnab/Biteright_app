@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
+    ActivityIndicator,
     Animated,
     ScrollView,
     StyleSheet,
@@ -9,8 +10,10 @@ import {
     TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
-    View,
+    View
 } from "react-native";
+import { useAuth } from "../AuthContext";
+import { SERVER_URL } from "../serverhost";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const GREEN = "#38B36A";
@@ -62,9 +65,40 @@ export default function GenerateDietPlan() {
   const [dietType, setDietType] = useState("Veg");
   const [meals, setMeals] = useState(3);
   const [allergies, setAllergies] = useState("");
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  const { user, token } = useAuth();
 
   // ── Focus states for input border highlight ────────────────────────────────
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
+
+  // ── Auto-fill from saved profile ──────────────────────────────────────────
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        if (!user?.id) return;
+        const headers: any = { "Content-Type": "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+        const res = await fetch(`${SERVER_URL}/api/profile?user_id=${user.id}`, { headers });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.age)                setAge(String(data.age));
+        if (data.height_cm)          setHeight(String(data.height_cm));
+        if (data.current_weight_kg)  setWeight(String(data.current_weight_kg));
+        // Map profile goal → plan goal
+        if (data.goal) {
+          if (data.goal.toLowerCase().includes("loss"))     setGoal("Lose");
+          else if (data.goal.toLowerCase().includes("gain")) setGoal("Gain");
+          else                                               setGoal("Maintain");
+        }
+      } catch {
+        // silent — user can fill manually
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    loadProfile();
+  }, [user?.id]);
 
   // ── Card slide-up + fade on mount ─────────────────────────────────────────
   const cardOpacity = useRef(new Animated.Value(0)).current;
@@ -129,8 +163,8 @@ export default function GenerateDietPlan() {
     }).start();
   };
 
-  // ── Generate logic (unchanged) ─────────────────────────────────────────────
-  const handleGenerate = () => {
+  // ── Generate logic ─────────────────────────────────────────────────────────
+  const handleGenerate = async () => {
     if (!age || !height || !weight) {
       alert("Please fill in all required fields: Age, Height, and Weight.");
       return;
@@ -147,7 +181,30 @@ export default function GenerateDietPlan() {
       return;
     }
     const bmi = weightNum / ((heightNum / 100) * (heightNum / 100));
-    alert(`Your BMI is ${bmi.toFixed(1)}`);
+
+    // Save plan inputs to profile (auto-fill next time)
+    try {
+      if (user?.id && token) {
+        await fetch(`${SERVER_URL}/api/profile`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            user_id: user.id,
+            age: Number(age),
+            height_cm: heightNum,
+            current_weight_kg: weightNum,
+            goal:
+              goal === "Lose" ? "Weight Loss" :
+              goal === "Gain" ? "Weight Gain" : "Maintain Weight",
+            diet: [dietType],
+            activity: [],
+          }),
+        });
+      }
+    } catch {
+      // silent — profile save failure shouldn't block plan generation
+    }
+
     router.push({
       pathname: "/Dietplans/Daily_diet_plannigs",
       params: {
@@ -348,10 +405,19 @@ export default function GenerateDietPlan() {
           }}
         >
           <Text style={styles.title}>Generate Your Diet Plan</Text>
-          <Text style={styles.subtitle}>Enter your body details</Text>
+          <Text style={styles.subtitle}>
+            {profileLoading ? "Loading your profile…" : "Auto-filled from your profile"}
+          </Text>
         </Animated.View>
 
         <View style={styles.divider} />
+
+        {profileLoading && (
+          <View style={styles.profileLoadingRow}>
+            <ActivityIndicator size="small" color={GREEN} />
+            <Text style={styles.profileLoadingText}>Loading your saved profile…</Text>
+          </View>
+        )}
 
         {/* Staggered form sections */}
         {sections.map((section, index) => (
@@ -495,5 +561,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     letterSpacing: 0.4,
+  },
+  profileLoadingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#F0FDF4",
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 8,
+  },
+  profileLoadingText: {
+    fontSize: 13,
+    color: GREEN,
+    fontWeight: "500",
   },
 });

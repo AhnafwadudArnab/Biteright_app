@@ -82,6 +82,7 @@ export default function ProgressScreen() {
   const [loading, setLoading] = useState(true);
   const [nutrition, setNutrition] = useState<NutritionSummary>({ total_calories: 0, protein_g: 0, carbs_g: 0, fats_g: 0 });
   const [weightHistory, setWeightHistory] = useState<WeightEntry[]>([]);
+  const [profileHeight, setProfileHeight] = useState(170);
 
   const authHeaders = useCallback(() => ({
     "Content-Type": "application/json",
@@ -91,8 +92,8 @@ export default function ProgressScreen() {
   useEffect(() => {
     const load = async () => {
       try {
-        // Both requests fire in parallel, results cached for 30s
-        const [nutData, wtData] = await Promise.all([
+        // Fetch nutrition summary, weight history, AND today's meals in parallel
+        const [nutData, wtData, mealsData] = await Promise.all([
           cachedFetch(
             `nutrition_today_${token}`,
             async () => {
@@ -107,14 +108,41 @@ export default function ProgressScreen() {
               const res = await fetch(`${SERVER_URL}/api/progress/weight`, { headers: authHeaders() });
               return res.ok ? res.json() : [];
             },
-            60_000 // weight history changes less often
+            60_000
           ),
+          // Also fetch today's meals to calculate real calorie total
+          cachedFetch(
+            `meals_today_${token}`,
+            async () => {
+              if (!user?.id) return [];
+              const res = await fetch(`${SERVER_URL}/api/meals/${user.id}`, { headers: authHeaders() });
+              return res.ok ? res.json() : [];
+            },
+            30_000
+          ).catch(() => []),
         ]);
 
+        // Calculate calories from meals if nutrition summary is empty
+        const mealsCalories = Array.isArray(mealsData)
+          ? mealsData.reduce((sum: number, m: any) => {
+              const itemCals = Array.isArray(m.meal_items)
+                ? m.meal_items.reduce((s: number, i: any) => s + (i.calories || 0), 0)
+                : m.kcal || 0;
+              return sum + itemCals;
+            }, 0)
+          : 0;
+
+        // Priority: live consumed > DB nutrition summary > meals calculation
+        const effectiveCalories = consumed > 0
+          ? consumed
+          : (nutData?.total_calories ?? 0) > 0
+            ? nutData.total_calories
+            : mealsCalories;
+
         if (nutData) {
-          setNutrition({ ...nutData, total_calories: consumed > 0 ? consumed : (nutData.total_calories ?? 0) });
+          setNutrition({ ...nutData, total_calories: effectiveCalories });
         } else {
-          setNutrition((n) => ({ ...n, total_calories: consumed }));
+          setNutrition((n) => ({ ...n, total_calories: effectiveCalories }));
         }
 
         if (Array.isArray(wtData)) setWeightHistory(wtData);
@@ -130,10 +158,23 @@ export default function ProgressScreen() {
   const minW = weightHistory.length ? Math.min(...weightHistory.map((w) => w.weight_kg)) : 0;
   const latestWeight = weightHistory[0]?.weight_kg ?? 0;
 
-  // BMI from profile (use latest weight if available)
-  const bmi = latestWeight > 0 ? (latestWeight / (1.7 * 1.7)).toFixed(1) : "—";
-  const bmiStatus = latestWeight > 0
-    ? parseFloat(bmi) < 18.5 ? "Underweight" : parseFloat(bmi) < 25 ? "Normal" : parseFloat(bmi) < 30 ? "Overweight" : "Obese"
+  // Fetch profile height for accurate BMI
+  useEffect(() => {
+    if (!token) return;
+    cachedFetch(`profile_height_${token}`, async () => {
+      const res = await fetch(`${SERVER_URL}/api/profile`, { headers: authHeaders() });
+      return res.ok ? res.json() : null;
+    }, 120_000).then((d) => {
+      if (d?.height_cm && d.height_cm > 0) setProfileHeight(d.height_cm);
+    }).catch(() => {});
+  }, [token, authHeaders]);
+
+  const bmiNum = latestWeight > 0 && profileHeight > 0
+    ? latestWeight / ((profileHeight / 100) * (profileHeight / 100))
+    : 0;
+  const bmi = bmiNum > 0 ? bmiNum.toFixed(1) : "—";
+  const bmiStatus = bmiNum > 0
+    ? bmiNum < 18.5 ? "Underweight" : bmiNum < 25 ? "Normal" : bmiNum < 30 ? "Overweight" : "Obese"
     : "—";
 
   const headerOpacity = useRef(new Animated.Value(0)).current;

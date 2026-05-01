@@ -151,6 +151,18 @@ export const getAvatarUploadUrl = async (req: Request, res: Response, next: Next
   const filePath = `avatars/${user_id}.${fileExt}`;
 
   try {
+    // Ensure bucket exists — create if missing
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const bucketExists = buckets?.some((b) => b.name === "avatars");
+    if (!bucketExists) {
+      const { error: createErr } = await supabase.storage.createBucket("avatars", {
+        public: true,
+        fileSizeLimit: 5 * 1024 * 1024, // 5 MB
+        allowedMimeTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+      });
+      if (createErr) return next(createErr);
+    }
+
     const { data, error } = await supabase.storage
       .from("avatars")
       .createSignedUploadUrl(filePath);

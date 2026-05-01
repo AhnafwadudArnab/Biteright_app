@@ -26,11 +26,61 @@ function dailyCaloriesForBmi(bmi: number, gender: string): number {
 }
 
 // ── AI meal plan generator ────────────────────────────────────────────────────
-async function generateAiMealPlan(gender: string, bmi: number) {
+async function callGemini(prompt: string): Promise<string> {
   const genAI = getGemini();
   if (!genAI) throw new Error("Gemini API key not configured");
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+  const result = await model.generateContent(prompt);
+  return result.response.text().trim();
+}
 
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+async function callDeepSeek(prompt: string): Promise<string> {
+  const key = process.env.DEEPSEEK_API_KEY;
+  if (!key) throw new Error("DeepSeek API key not configured");
+  const response = await fetch("https://api.deepseek.com/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${key}`,
+    },
+    body: JSON.stringify({
+      model: "deepseek-chat",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+    }),
+  });
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`DeepSeek error ${response.status}: ${err}`);
+  }
+  const data = await response.json() as any;
+  return data.choices[0].message.content.trim();
+}
+
+async function callGroq(prompt: string): Promise<string> {
+  const key = process.env.GROQ_API_KEY;
+  if (!key) throw new Error("Groq API key not configured");
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${key}`,
+    },
+    body: JSON.stringify({
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+    }),
+  });
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Groq error ${response.status}: ${err}`);
+  }
+  const data = await response.json() as any;
+  return data.choices[0].message.content.trim();
+}
+
+async function generateAiMealPlan(gender: string, bmi: number) {
   const category = bmiCategory(bmi);
   const dailyCal  = dailyCaloriesForBmi(bmi, gender);
 
@@ -58,10 +108,23 @@ Rules:
 - Meal names must be real, specific food items (e.g. "Oatmeal with banana and honey")
 - Tailor meals to the ${category} goal (${bmi < 18.5 ? "high calorie, nutrient dense" : bmi < 25 ? "balanced, maintenance" : "low calorie, high protein, low carb"})`;
 
-  const result = await model.generateContent(prompt);
-  const text = result.response.text().trim();
+  // Try Gemini → DeepSeek → Groq
+  let text: string;
+  try {
+    text = await callGemini(prompt);
+    console.log("Meal plan: used Gemini");
+  } catch (geminiErr: any) {
+    console.warn("Gemini failed, trying DeepSeek:", geminiErr.message);
+    try {
+      text = await callDeepSeek(prompt);
+      console.log("Meal plan: used DeepSeek");
+    } catch (deepSeekErr: any) {
+      console.warn("DeepSeek failed, trying Groq:", deepSeekErr.message);
+      text = await callGroq(prompt);
+      console.log("Meal plan: used Groq");
+    }
+  }
 
-  // Strip markdown code fences if present
   const clean = text.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
   return JSON.parse(clean);
 }

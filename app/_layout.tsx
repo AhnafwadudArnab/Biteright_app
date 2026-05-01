@@ -1,10 +1,13 @@
 import { Stack } from "expo-router";
 import { AuthProvider } from "./AuthContext";
+import { CaloriesProvider } from "./CaloriesContext";
 
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <Stack screenOptions={{ headerShown: false }} />
+      <CaloriesProvider>
+        <Stack screenOptions={{ headerShown: false }} />
+      </CaloriesProvider>
     </AuthProvider>
   );
 }

@@ -14,6 +14,7 @@ import {
     View,
 } from "react-native";
 import { useAuth } from "../AuthContext";
+import { fetchWithTimeout } from "../lib/fetchWithTimeout";
 import { SERVER_URL } from "../serverhost";
 
 const GREEN = "#3BB273";
@@ -53,11 +54,15 @@ export default function SignupScreen() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(SERVER_URL + "/users/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, gender }),
-      });
+      const response = await fetchWithTimeout(
+        SERVER_URL + "/users/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password, gender }),
+        },
+        15_000  // 15s for registration (slightly longer — creates profile too)
+      );
       const data = await response.json();
       if (!response.ok) {
         setError(data.message?.toLowerCase().includes("email already")
@@ -67,8 +72,8 @@ export default function SignupScreen() {
         await login(email, password);
         router.replace("/(tabs)/MainHomePage");
       }
-    } catch {
-      setError("Network error. Please try again.");
+    } catch (e: any) {
+      setError(e.message);
     } finally {
       setLoading(false);
     }
